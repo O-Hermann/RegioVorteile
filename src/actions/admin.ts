@@ -164,3 +164,22 @@ export async function renewEmployerContract(formData: FormData) {
   revalidatePath("/admin/arbeitgeber");
   revalidatePath(`/admin/arbeitgeber/${id}`);
 }
+
+export async function deleteEmployer(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const employer = await prisma.employer.findUnique({ where: { id } });
+  if (!employer || employer.subscriptionStatus !== "gekündigt") return;
+
+  await prisma.$transaction([
+    prisma.redemption.deleteMany({ where: { employee: { employerId: id } } }),
+    prisma.feedback.deleteMany({ where: { OR: [{ employerId: id }, { employee: { employerId: id } }] } }),
+    prisma.employee.deleteMany({ where: { employerId: id } }),
+    prisma.employer.delete({ where: { id } }),
+    prisma.user.delete({ where: { id: employer.userId } }),
+  ]);
+
+  revalidatePath("/admin/arbeitgeber");
+  revalidatePath("/admin/dashboard");
+  redirect("/admin/arbeitgeber");
+}

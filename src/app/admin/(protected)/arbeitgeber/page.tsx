@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { cancelEmployerContract, renewEmployerContract, toggleEmployerApproval } from "@/actions/admin";
+import {
+  cancelEmployerContract,
+  renewEmployerContract,
+  toggleEmployerApproval,
+  deleteEmployer,
+} from "@/actions/admin";
 import { cardClass, secondaryButtonClass, dangerButtonClass, primaryButtonClass } from "@/lib/ui";
 import { getContractStatus } from "@/lib/contract";
 
@@ -120,6 +125,14 @@ export default async function AdminArbeitgeberPage() {
                     Kündigen
                   </button>
                 </form>
+                {employer.subscriptionStatus === "gekündigt" && (
+                  <form action={deleteEmployer}>
+                    <input type="hidden" name="id" value={employer.id} />
+                    <button type="submit" className={dangerButtonClass}>
+                      Löschen
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           );
