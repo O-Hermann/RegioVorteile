@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYER
+}
+
+enum EmployeeStatus {
+  INVITED
+  ACTIVE
+}
+
+enum FeedbackCategory {
+  SUGGESTION
+  BUG
+  OTHER
+}
+
+enum FeedbackStatus {
+  OPEN
+  DONE
+}
+
+enum LegalPageSlug {
+  IMPRESSUM
+  DATENSCHUTZ
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+
+  employer Employer?
+}
+
+model Region {
+  id       String @id @default(cuid())
+  name     String @unique
+  plzCodes String // Komma-getrennte Liste, z.B. "12345,12347,12350"
+
+  employers Employer[]
+  partners  PartnerBusiness[]
+
+  createdAt DateTime @default(now())
+}
+
+model PricingTier {
+  id               String @id @default(cuid())
+  label            String
+  minEmployees     Int
+  maxEmployees     Int? // null = unbegrenzt
+  monthlyPriceCents Int
+
+  employers Employer[]
+}
+
+model Employer {
+  id                 String   @id @default(cuid())
+  companyName        String
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  employeeCount      Int
+  regionId           String
+  region             Region   @relation(fields: [regionId], references: [id])
+  pricingTierId      String
+  pricingTier        PricingTier @relation(fields: [pricingTierId], references: [id])
+  subscriptionStatus String   @default("ausstehend") // Platzhalter, spaeter durch echte Stripe-Subscription ersetzt
+  contractEndDate    DateTime // Ende der aktuellen Vertragslaufzeit
+  createdAt          DateTime @default(now())
+
+  employees Employee[]
+  feedback  Feedback[]
+}
+
+model Employee {
+  id         String         @id @default(cuid())
+  employerId String
+  employer   Employer       @relation(fields: [employerId], references: [id])
+  name       String
+  email      String?
+  inviteCode String         @unique
+  status     EmployeeStatus @default(INVITED)
+  createdAt  DateTime       @default(now())
+
+  redemptions Redemption[]
+  feedback    Feedback[]
+}
+
+model PartnerBusiness {
+  id           String  @id @default(cuid())
+  name         String
+  category     String
+  description  String
+  discountText String
+  regionId     String
+  region       Region  @relation(fields: [regionId], references: [id])
+  street       String // Strasse und Hausnummer
+  plz          String
+  city         String
+  logoUrl      String?
+  active       Boolean  @default(true)
+  contractEndDate DateTime // Ende der Vereinbarung mit dem Partnerbetrieb
+
+  redemptions Redemption[]
+  createdAt   DateTime @default(now())
+}
+
+model Redemption {
+  id                String          @id @default(cuid())
+  employeeId        String
+  employee          Employee        @relation(fields: [employeeId], references: [id])
+  partnerBusinessId String
+  partnerBusiness   PartnerBusiness @relation(fields: [partnerBusinessId], references: [id])
+  code              String
+  createdAt         DateTime        @default(now())
+}
+
+model Feedback {
+  id         String           @id @default(cuid())
+  message    String
+  category   FeedbackCategory
+  status     FeedbackStatus   @default(OPEN)
+  employerId String?
+  employer   Employer?        @relation(fields: [employerId], references: [id])
+  employeeId String?
+  employee   Employee?        @relation(fields: [employeeId], references: [id])
+  createdAt  DateTime         @default(now())
+}
+
+model LegalPage {
+  id        String        @id @default(cuid())
+  slug      LegalPageSlug @unique
+  title     String
+  content   String // Freitext, Absaetze durch Leerzeile getrennt
+  updatedAt DateTime      @updatedAt
+}
