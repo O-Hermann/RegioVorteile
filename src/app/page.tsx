@@ -75,7 +75,7 @@ export default async function LandingPage() {
             </div>
             {regionList && (
               <p className="mt-6 text-xs font-medium text-gold-200">
-                Jetzt verfügbar in: {regionList}
+                Jetzt verfügbar in folgenden Regionen: {regionList}
               </p>
             )}
           </div>
