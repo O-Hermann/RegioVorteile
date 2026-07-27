@@ -97,28 +97,28 @@ export default async function LandingPage() {
               Warum Regiovorteile?
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+              <div className="rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
                 <h3 className="font-display text-lg font-bold">
                   Regional und relevant
                 </h3>
-                <p className="mt-2 text-sm text-white/80">
+                <p className="mt-2 text-sm text-gold-800 dark:text-white/80">
                   Angebote bei Betrieben, die Ihre Mitarbeitenden tatsächlich erreichen
                   können.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+              <div className="rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
                 <h3 className="font-display text-lg font-bold">
                   Einfach für Arbeitgeber
                 </h3>
-                <p className="mt-2 text-sm text-white/80">
+                <p className="mt-2 text-sm text-gold-800 dark:text-white/80">
                   Mitarbeitende einladen, Nutzung anonymisiert verfolgen, fertig.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+              <div className="rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
                 <h3 className="font-display text-lg font-bold">
                   Mehr Wert als die Kosten
                 </h3>
-                <p className="mt-2 text-sm text-white/80">
+                <p className="mt-2 text-sm text-gold-800 dark:text-white/80">
                   Schon wenige regelmäßig genutzte Vorteile können den monatlichen
                   Preis für Mitarbeitende spürbar übersteigen.
                 </p>
@@ -137,9 +137,9 @@ export default async function LandingPage() {
         {/* Vorteile im Überblick */}
         <section className="pb-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 grid gap-6 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
+            <div className="rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 sm:p-8 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
               <h3 className="font-display text-lg font-bold">Vorteile für Arbeitgeber</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-white/80">
+              <ul className="mt-4 space-y-2.5 text-sm text-gold-800 dark:text-white/80">
                 {[
                   "Fertig eingerichtetes Vorteilsportal für Ihr Unternehmen",
                   "Keine Einrichtung, keine Software nötig",
@@ -148,15 +148,15 @@ export default async function LandingPage() {
                   "Preisstufe passend zur Unternehmensgröße",
                 ].map((item) => (
                   <li key={item} className="flex gap-2.5">
-                    <span className="mt-0.5 text-gold-400">+</span>
+                    <span className="mt-0.5 text-gold-600 dark:text-gold-400">+</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
+            <div className="rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 sm:p-8 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
               <h3 className="font-display text-lg font-bold">Vorteile für Mitarbeitende</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-white/80">
+              <ul className="mt-4 space-y-2.5 text-sm text-gold-800 dark:text-white/80">
                 {[
                   "Rabatte bei Betrieben aus der eigenen Region",
                   "Einlösung direkt vor Ort per Code oder QR-Code",
@@ -165,7 +165,7 @@ export default async function LandingPage() {
                   "Alle Vorteile der eigenen Region an einem Ort",
                 ].map((item) => (
                   <li key={item} className="flex gap-2.5">
-                    <span className="mt-0.5 text-gold-400">+</span>
+                    <span className="mt-0.5 text-gold-600 dark:text-gold-400">+</span>
                     {item}
                   </li>
                 ))}
@@ -358,17 +358,17 @@ export default async function LandingPage() {
         <section id="partnerbetriebe" className="py-20 bg-card border-t border-card-border">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-              <div className="order-2 lg:order-1 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
+              <div className="order-2 lg:order-1 rounded-2xl border border-gold-200 dark:border-white/10 bg-gold-50 dark:bg-ink-800 p-6 sm:p-8 text-gold-900 dark:text-white shadow-warm dark:shadow-warm-lg">
                 <h3 className="font-display text-xl font-bold tracking-tight">
                   So funktioniert die Zusammenarbeit
                 </h3>
-                <ol className="mt-5 space-y-4 text-white/80">
+                <ol className="mt-5 space-y-4 text-gold-800 dark:text-white/80">
                   <li className="flex gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-ink-900">
                       1
                     </span>
                     <span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-gold-900 dark:text-white">
                         Sie legen Ihren Vorteil fest.
                       </span>{" "}
                       Zum Beispiel 10 %, eine kostenlose Zusatzleistung oder ein
@@ -380,7 +380,7 @@ export default async function LandingPage() {
                       2
                     </span>
                     <span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-gold-900 dark:text-white">
                         Wir erstellen Ihr Profil.
                       </span>{" "}
                       Sie müssen keine Software einrichten und nichts programmieren.
@@ -391,7 +391,7 @@ export default async function LandingPage() {
                       3
                     </span>
                     <span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-gold-900 dark:text-white">
                         Mitarbeitende lösen den Vorteil vor Ort ein.
                       </span>{" "}
                       Per Code oder QR-Code, direkt auf dem Smartphone.
@@ -402,7 +402,7 @@ export default async function LandingPage() {
                       4
                     </span>
                     <span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-gold-900 dark:text-white">
                         Sie sehen die Einlösungen.
                       </span>{" "}
                       So erkennen Sie, wie Ihr Angebot angenommen wird.
