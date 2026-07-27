@@ -137,7 +137,7 @@ export default async function LandingPage() {
         {/* Vorteile im Überblick */}
         <section className="pb-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 grid gap-6 sm:grid-cols-2">
-            <div className="rounded-2xl bg-ink-900 p-6 sm:p-8 text-white">
+            <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
               <h3 className="font-display text-lg font-bold">Vorteile für Arbeitgeber</h3>
               <ul className="mt-4 space-y-2.5 text-sm text-white/80">
                 {[
@@ -154,7 +154,7 @@ export default async function LandingPage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl bg-ink-900 p-6 sm:p-8 text-white">
+            <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
               <h3 className="font-display text-lg font-bold">Vorteile für Mitarbeitende</h3>
               <ul className="mt-4 space-y-2.5 text-sm text-white/80">
                 {[
