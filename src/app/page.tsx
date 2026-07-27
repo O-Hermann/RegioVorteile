@@ -343,13 +343,13 @@ export default async function LandingPage() {
                 <h3 className="font-display text-xl font-bold tracking-tight text-gold-900">
                   So funktioniert die Zusammenarbeit
                 </h3>
-                <ol className="mt-5 space-y-4 text-sand-800">
+                <ol className="mt-5 space-y-4 text-gold-800">
                   <li className="flex gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
                       1
                     </span>
                     <span>
-                      <span className="font-semibold text-sand-900">
+                      <span className="font-semibold text-gold-900">
                         Sie legen Ihren Vorteil fest.
                       </span>{" "}
                       Zum Beispiel 10 %, eine kostenlose Zusatzleistung oder ein
@@ -361,7 +361,7 @@ export default async function LandingPage() {
                       2
                     </span>
                     <span>
-                      <span className="font-semibold text-sand-900">
+                      <span className="font-semibold text-gold-900">
                         Wir erstellen Ihr Profil.
                       </span>{" "}
                       Sie müssen keine Software einrichten und nichts programmieren.
@@ -372,7 +372,7 @@ export default async function LandingPage() {
                       3
                     </span>
                     <span>
-                      <span className="font-semibold text-sand-900">
+                      <span className="font-semibold text-gold-900">
                         Mitarbeitende lösen den Vorteil vor Ort ein.
                       </span>{" "}
                       Per Code oder QR-Code, direkt auf dem Smartphone.
@@ -383,7 +383,7 @@ export default async function LandingPage() {
                       4
                     </span>
                     <span>
-                      <span className="font-semibold text-sand-900">
+                      <span className="font-semibold text-gold-900">
                         Sie sehen die Einlösungen.
                       </span>{" "}
                       So erkennen Sie, wie Ihr Angebot angenommen wird.
