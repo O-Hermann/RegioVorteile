@@ -97,28 +97,28 @@ export default async function LandingPage() {
               Warum Regiovorteile?
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
-              <div className="rounded-2xl border border-card-border bg-card p-6 shadow-warm-sm">
-                <h3 className="font-display text-lg font-bold text-sand-900">
+              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+                <h3 className="font-display text-lg font-bold">
                   Regional und relevant
                 </h3>
-                <p className="mt-2 text-sm text-sand-600">
+                <p className="mt-2 text-sm text-white/80">
                   Angebote bei Betrieben, die Ihre Mitarbeitenden tatsächlich erreichen
                   können.
                 </p>
               </div>
-              <div className="rounded-2xl border border-card-border bg-card p-6 shadow-warm-sm">
-                <h3 className="font-display text-lg font-bold text-sand-900">
+              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+                <h3 className="font-display text-lg font-bold">
                   Einfach für Arbeitgeber
                 </h3>
-                <p className="mt-2 text-sm text-sand-600">
+                <p className="mt-2 text-sm text-white/80">
                   Mitarbeitende einladen, Nutzung anonymisiert verfolgen, fertig.
                 </p>
               </div>
-              <div className="rounded-2xl border border-card-border bg-card p-6 shadow-warm-sm">
-                <h3 className="font-display text-lg font-bold text-sand-900">
+              <div className="rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 text-white shadow-warm-lg">
+                <h3 className="font-display text-lg font-bold">
                   Mehr Wert als die Kosten
                 </h3>
-                <p className="mt-2 text-sm text-sand-600">
+                <p className="mt-2 text-sm text-white/80">
                   Schon wenige regelmäßig genutzte Vorteile können den monatlichen
                   Preis für Mitarbeitende spürbar übersteigen.
                 </p>
