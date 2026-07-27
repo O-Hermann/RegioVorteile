@@ -12,6 +12,14 @@ function formatPrice(cents: number) {
   });
 }
 
+function lastMonthLabels(count: number) {
+  const now = new Date();
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - i), 1);
+    return d.toLocaleDateString("de-DE", { month: "short" });
+  });
+}
+
 function formatRegionList(names: string[]) {
   if (names.length === 0) return null;
   if (names.length === 1) return names[0];
@@ -26,6 +34,7 @@ export default async function LandingPage() {
 
   const cheapestTier = pricingTiers[0];
   const regionList = formatRegionList(regions.map((r) => r.name));
+  const previewMonths = lastMonthLabels(6);
 
   return (
     <>
@@ -284,6 +293,16 @@ export default async function LandingPage() {
                       className="flex-1 rounded-t bg-gold-400"
                       style={{ height: `${h}%` }}
                     />
+                  ))}
+                </div>
+                <div className="mt-1.5 flex gap-1.5">
+                  {previewMonths.map((label) => (
+                    <span
+                      key={label}
+                      className="flex-1 text-center text-[10px] font-medium text-sand-500"
+                    >
+                      {label}
+                    </span>
                   ))}
                 </div>
               </div>
