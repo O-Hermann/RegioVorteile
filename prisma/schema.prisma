@@ -36,6 +36,11 @@ enum LegalPageSlug {
   DATENSCHUTZ
 }
 
+enum PartnerInquiryStatus {
+  OPEN
+  DONE
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -146,4 +151,15 @@ model LegalPage {
   title     String
   content   String // Freitext, Absaetze durch Leerzeile getrennt
   updatedAt DateTime      @updatedAt
+}
+
+model PartnerInquiry {
+  id           String               @id @default(cuid())
+  businessName String
+  contactName  String
+  email        String
+  phone        String?
+  message      String?
+  status       PartnerInquiryStatus @default(OPEN)
+  createdAt    DateTime             @default(now())
 }

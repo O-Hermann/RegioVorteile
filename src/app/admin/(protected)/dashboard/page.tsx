@@ -3,20 +3,28 @@ import { prisma } from "@/lib/prisma";
 import { cardClass } from "@/lib/ui";
 
 export default async function AdminDashboardPage() {
-  const [regionCount, partnerCount, employerCount, redemptionCount, openFeedbackCount] =
-    await Promise.all([
-      prisma.region.count(),
-      prisma.partnerBusiness.count(),
-      prisma.employer.count(),
-      prisma.redemption.count(),
-      prisma.feedback.count({ where: { status: "OPEN" } }),
-    ]);
+  const [
+    regionCount,
+    partnerCount,
+    employerCount,
+    redemptionCount,
+    openFeedbackCount,
+    openInquiryCount,
+  ] = await Promise.all([
+    prisma.region.count(),
+    prisma.partnerBusiness.count(),
+    prisma.employer.count(),
+    prisma.redemption.count(),
+    prisma.feedback.count({ where: { status: "OPEN" } }),
+    prisma.partnerInquiry.count({ where: { status: "OPEN" } }),
+  ]);
 
   const stats = [
     { label: "Regionen", value: regionCount, href: "/admin/regionen" },
     { label: "Partnerbetriebe", value: partnerCount, href: "/admin/partnerbetriebe" },
     { label: "Arbeitgeber", value: employerCount, href: "/admin/arbeitgeber" },
     { label: "Eingelöste Rabatte", value: redemptionCount, href: "/admin/arbeitgeber" },
+    { label: "Offene Partneranfragen", value: openInquiryCount, href: "/admin/partneranfragen" },
     { label: "Offenes Feedback", value: openFeedbackCount, href: "/admin/feedback" },
   ];
 
@@ -37,7 +45,8 @@ export default async function AdminDashboardPage() {
             <p className="text-sm text-sand-500">{stat.label}</p>
             <p
               className={`mt-1 font-display text-3xl font-semibold ${
-                stat.label === "Offenes Feedback" && stat.value > 0
+                (stat.label === "Offenes Feedback" || stat.label === "Offene Partneranfragen") &&
+                stat.value > 0
                   ? "text-gold-700 dark:text-gold-300"
                   : "text-sand-900"
               }`}

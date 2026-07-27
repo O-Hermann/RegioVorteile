@@ -358,17 +358,17 @@ export default async function LandingPage() {
         <section id="partnerbetriebe" className="py-20 bg-card border-t border-card-border">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-              <div className="order-2 lg:order-1 rounded-2xl border border-gold-200 bg-gold-50 p-6 sm:p-8 shadow-warm">
-                <h3 className="font-display text-xl font-bold tracking-tight text-gold-900">
+              <div className="order-2 lg:order-1 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-6 sm:p-8 text-white shadow-warm-lg">
+                <h3 className="font-display text-xl font-bold tracking-tight">
                   So funktioniert die Zusammenarbeit
                 </h3>
-                <ol className="mt-5 space-y-4 text-gold-800">
+                <ol className="mt-5 space-y-4 text-white/80">
                   <li className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-ink-900">
                       1
                     </span>
                     <span>
-                      <span className="font-semibold text-gold-900">
+                      <span className="font-semibold text-white">
                         Sie legen Ihren Vorteil fest.
                       </span>{" "}
                       Zum Beispiel 10 %, eine kostenlose Zusatzleistung oder ein
@@ -376,33 +376,33 @@ export default async function LandingPage() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-ink-900">
                       2
                     </span>
                     <span>
-                      <span className="font-semibold text-gold-900">
+                      <span className="font-semibold text-white">
                         Wir erstellen Ihr Profil.
                       </span>{" "}
                       Sie müssen keine Software einrichten und nichts programmieren.
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-ink-900">
                       3
                     </span>
                     <span>
-                      <span className="font-semibold text-gold-900">
+                      <span className="font-semibold text-white">
                         Mitarbeitende lösen den Vorteil vor Ort ein.
                       </span>{" "}
                       Per Code oder QR-Code, direkt auf dem Smartphone.
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-ink-900">
                       4
                     </span>
                     <span>
-                      <span className="font-semibold text-gold-900">
+                      <span className="font-semibold text-white">
                         Sie sehen die Einlösungen.
                       </span>{" "}
                       So erkennen Sie, wie Ihr Angebot angenommen wird.
@@ -420,13 +420,13 @@ export default async function LandingPage() {
                   bestimmen den Vorteil und die Bedingungen – wir übernehmen die
                   Einrichtung.
                 </p>
-                <a
-                  href="mailto:partner@regiovorteile.de"
+                <Link
+                  href="/partner-werden"
                   className="group mt-8 inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold text-ink-900 shadow-warm hover:bg-gold-400 hover:shadow-warm-lg transition-all"
                 >
                   Partnerbetrieb werden
                   <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>

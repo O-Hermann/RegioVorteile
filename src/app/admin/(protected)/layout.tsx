@@ -8,6 +8,7 @@ const NAV = [
   { href: "/admin/regionen", label: "Regionen" },
   { href: "/admin/partnerbetriebe", label: "Partnerbetriebe" },
   { href: "/admin/arbeitgeber", label: "Arbeitgeber" },
+  { href: "/admin/partneranfragen", label: "Partneranfragen" },
   { href: "/admin/feedback", label: "Feedback" },
   { href: "/admin/rechtliches", label: "Rechtliches" },
 ];
