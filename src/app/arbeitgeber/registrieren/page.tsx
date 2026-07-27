@@ -22,9 +22,9 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default async function ArbeitgeberRegistrierenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; sent?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, sent } = await searchParams;
   const [regions, pricingTiers] = await Promise.all([
     prisma.region.findMany({ orderBy: { name: "asc" } }),
     prisma.pricingTier.findMany({ orderBy: { minEmployees: "asc" } }),
@@ -38,82 +38,155 @@ export default async function ArbeitgeberRegistrierenPage({
           <h1 className="font-display text-2xl font-semibold text-sand-900">
             Arbeitgeber-Registrierung
           </h1>
-          <p className="mt-1 text-sm text-sand-600">
-            Nach der Registrierung können Sie sofort Mitarbeitende einladen.
-          </p>
-          {error && (
-            <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-              {ERROR_MESSAGES[error] ?? "Registrierung fehlgeschlagen."}
-            </p>
+          {sent ? (
+            <>
+              <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+                Vielen Dank für Ihre Registrierung! Wir prüfen Ihre Angaben und schalten Ihren
+                Account zeitnah frei. Sie erhalten dann über den Login Zugriff auf Ihr Dashboard.
+              </p>
+              <p className="mt-6 text-center text-sm text-sand-500">
+                <Link href="/arbeitgeber/login" className="text-sand-900 hover:underline">
+                  Zum Login
+                </Link>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 text-sm text-sand-600">
+                Nach Prüfung Ihrer Angaben schalten wir Ihren Account frei, dann können Sie
+                sofort Mitarbeitende einladen.
+              </p>
+              {error && (
+                <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {ERROR_MESSAGES[error] ?? "Registrierung fehlgeschlagen."}
+                </p>
+              )}
+              <form action={registerEmployer} className="mt-6 space-y-4">
+                <div>
+                  <label className={labelClass} htmlFor="companyName">
+                    Firmenname
+                  </label>
+                  <input className={inputClass} name="companyName" id="companyName" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass} htmlFor="contactFirstName">
+                      Vorname (Ansprechpartner)
+                    </label>
+                    <input
+                      className={inputClass}
+                      name="contactFirstName"
+                      id="contactFirstName"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="contactLastName">
+                      Nachname (Ansprechpartner)
+                    </label>
+                    <input
+                      className={inputClass}
+                      name="contactLastName"
+                      id="contactLastName"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass} htmlFor="email">
+                      E-Mail
+                    </label>
+                    <input className={inputClass} type="email" name="email" id="email" required />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="phone">
+                      Telefon / Handynummer
+                    </label>
+                    <input className={inputClass} type="tel" name="phone" id="phone" required />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="password">
+                    Passwort
+                  </label>
+                  <input
+                    className={inputClass}
+                    type="password"
+                    name="password"
+                    id="password"
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="street">
+                    Straße und Hausnummer
+                  </label>
+                  <input className={inputClass} name="street" id="street" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass} htmlFor="plz">
+                      PLZ
+                    </label>
+                    <input className={inputClass} name="plz" id="plz" required />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="city">
+                      Ort
+                    </label>
+                    <input className={inputClass} name="city" id="city" required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass} htmlFor="employeeCount">
+                      Mitarbeiterzahl
+                    </label>
+                    <input
+                      className={inputClass}
+                      type="number"
+                      min={1}
+                      name="employeeCount"
+                      id="employeeCount"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="regionId">
+                      Region
+                    </label>
+                    <select
+                      className={inputClass}
+                      name="regionId"
+                      id="regionId"
+                      required
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Bitte wählen
+                      </option>
+                      {regions.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" className={`w-full ${primaryButtonClass}`}>
+                  Registrieren &amp; Abo starten
+                </button>
+              </form>
+              <p className="mt-6 text-center text-sm text-sand-500">
+                Schon registriert?{" "}
+                <Link href="/arbeitgeber/login" className="text-sand-900 hover:underline">
+                  Zum Login
+                </Link>
+              </p>
+            </>
           )}
-          <form action={registerEmployer} className="mt-6 space-y-4">
-            <div>
-              <label className={labelClass} htmlFor="companyName">
-                Firmenname
-              </label>
-              <input className={inputClass} name="companyName" id="companyName" required />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass} htmlFor="email">
-                  E-Mail
-                </label>
-                <input className={inputClass} type="email" name="email" id="email" required />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="password">
-                  Passwort
-                </label>
-                <input
-                  className={inputClass}
-                  type="password"
-                  name="password"
-                  id="password"
-                  minLength={8}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass} htmlFor="employeeCount">
-                  Mitarbeiterzahl
-                </label>
-                <input
-                  className={inputClass}
-                  type="number"
-                  min={1}
-                  name="employeeCount"
-                  id="employeeCount"
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="regionId">
-                  Region
-                </label>
-                <select className={inputClass} name="regionId" id="regionId" required defaultValue="">
-                  <option value="" disabled>
-                    Bitte wählen
-                  </option>
-                  {regions.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <button type="submit" className={`w-full ${primaryButtonClass}`}>
-              Registrieren &amp; Abo starten
-            </button>
-          </form>
-          <p className="mt-6 text-center text-sm text-sand-500">
-            Schon registriert?{" "}
-            <Link href="/arbeitgeber/login" className="text-sand-900 hover:underline">
-              Zum Login
-            </Link>
-          </p>
         </div>
 
         <div className={cardClass}>

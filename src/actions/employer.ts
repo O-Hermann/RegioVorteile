@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 import { hashPassword, requireEmployer } from "@/lib/auth";
 import { generateCode } from "@/lib/codes";
 
@@ -21,8 +20,26 @@ export async function registerEmployer(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const employeeCount = Number(formData.get("employeeCount") ?? 0);
   const regionId = String(formData.get("regionId") ?? "");
+  const contactFirstName = String(formData.get("contactFirstName") ?? "").trim();
+  const contactLastName = String(formData.get("contactLastName") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const street = String(formData.get("street") ?? "").trim();
+  const plz = String(formData.get("plz") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
 
-  if (!companyName || !email || !password || !employeeCount || !regionId) {
+  if (
+    !companyName ||
+    !email ||
+    !password ||
+    !employeeCount ||
+    !regionId ||
+    !contactFirstName ||
+    !contactLastName ||
+    !phone ||
+    !street ||
+    !plz ||
+    !city
+  ) {
     redirect("/arbeitgeber/registrieren?error=missing");
   }
 
@@ -40,7 +57,7 @@ export async function registerEmployer(formData: FormData) {
   const contractEndDate = new Date();
   contractEndDate.setFullYear(contractEndDate.getFullYear() + 1);
 
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email,
       passwordHash,
@@ -52,16 +69,19 @@ export async function registerEmployer(formData: FormData) {
           regionId,
           pricingTierId: pricingTierId as string,
           contractEndDate,
+          approved: false,
+          contactFirstName,
+          contactLastName,
+          phone,
+          street,
+          plz,
+          city,
         },
       },
     },
   });
 
-  const session = await getSession();
-  session.userId = user.id;
-  session.userRole = "EMPLOYER";
-  await session.save();
-  redirect("/arbeitgeber/dashboard");
+  redirect("/arbeitgeber/registrieren?sent=1");
 }
 
 export async function inviteEmployee(formData: FormData) {

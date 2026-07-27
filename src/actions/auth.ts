@@ -25,9 +25,13 @@ export async function loginEmployer(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email }, include: { employer: true } });
   if (!user || user.role !== "EMPLOYER" || !(await verifyPassword(password, user.passwordHash))) {
     redirect("/arbeitgeber/login?error=1");
+  }
+
+  if (!user.employer?.approved) {
+    redirect("/arbeitgeber/login?error=pending");
   }
 
   const session = await getSession();

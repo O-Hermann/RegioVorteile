@@ -84,6 +84,13 @@ model Employer {
   pricingTier        PricingTier @relation(fields: [pricingTierId], references: [id])
   subscriptionStatus String   @default("ausstehend") // Platzhalter, spaeter durch echte Stripe-Subscription ersetzt
   contractEndDate    DateTime // Ende der aktuellen Vertragslaufzeit
+  approved           Boolean  @default(true) // neue Registrierungen starten explizit mit false, siehe registerEmployer
+  contactFirstName   String?
+  contactLastName    String?
+  phone              String?
+  street             String?
+  plz                String?
+  city               String?
   createdAt          DateTime @default(now())
 
   employees Employee[]

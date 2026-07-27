@@ -10,6 +10,7 @@ export default async function AdminDashboardPage() {
     redemptionCount,
     openFeedbackCount,
     openInquiryCount,
+    pendingApprovalCount,
   ] = await Promise.all([
     prisma.region.count(),
     prisma.partnerBusiness.count(),
@@ -17,6 +18,7 @@ export default async function AdminDashboardPage() {
     prisma.redemption.count(),
     prisma.feedback.count({ where: { status: "OPEN" } }),
     prisma.partnerInquiry.count({ where: { status: "OPEN" } }),
+    prisma.employer.count({ where: { approved: false } }),
   ]);
 
   const stats = [
@@ -24,6 +26,7 @@ export default async function AdminDashboardPage() {
     { label: "Partnerbetriebe", value: partnerCount, href: "/admin/partnerbetriebe" },
     { label: "Arbeitgeber", value: employerCount, href: "/admin/arbeitgeber" },
     { label: "Eingelöste Rabatte", value: redemptionCount, href: "/admin/arbeitgeber" },
+    { label: "Arbeitgeber wartet auf Freigabe", value: pendingApprovalCount, href: "/admin/arbeitgeber" },
     { label: "Offene Partneranfragen", value: openInquiryCount, href: "/admin/partneranfragen" },
     { label: "Offenes Feedback", value: openFeedbackCount, href: "/admin/feedback" },
   ];
@@ -45,7 +48,9 @@ export default async function AdminDashboardPage() {
             <p className="text-sm text-sand-500">{stat.label}</p>
             <p
               className={`mt-1 font-display text-3xl font-semibold ${
-                (stat.label === "Offenes Feedback" || stat.label === "Offene Partneranfragen") &&
+                (stat.label === "Offenes Feedback" ||
+                  stat.label === "Offene Partneranfragen" ||
+                  stat.label === "Arbeitgeber wartet auf Freigabe") &&
                 stat.value > 0
                   ? "text-gold-700 dark:text-gold-300"
                   : "text-sand-900"

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { cancelEmployerContract, renewEmployerContract } from "@/actions/admin";
+import { cancelEmployerContract, renewEmployerContract, toggleEmployerApproval } from "@/actions/admin";
 import { cardClass, secondaryButtonClass, dangerButtonClass, primaryButtonClass } from "@/lib/ui";
 import { getContractStatus } from "@/lib/contract";
 
@@ -51,14 +51,32 @@ export default async function AdminArbeitgeberPage() {
                     {employer.companyName}
                   </Link>
                   <p className="text-sm text-sand-500">{employer.user.email}</p>
+                  {(employer.contactFirstName || employer.phone) && (
+                    <p className="mt-1 text-xs text-sand-500">
+                      {employer.contactFirstName} {employer.contactLastName}
+                      {employer.phone && <> · {employer.phone}</>}
+                    </p>
+                  )}
+                  {employer.street && (
+                    <p className="text-xs text-sand-400">
+                      {employer.street}, {employer.plz} {employer.city}
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-sand-400">
                     {employer.region.name} · {employer._count.employees} Mitarbeitende eingeladen
                   </p>
-                  <span
-                    className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${contractStatus.className}`}
-                  >
-                    {contractStatus.label}
-                  </span>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {!employer.approved && (
+                      <span className="inline-block rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
+                        Wartet auf Freigabe
+                      </span>
+                    )}
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${contractStatus.className}`}
+                    >
+                      {contractStatus.label}
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-sand-900">{employer.pricingTier.label}</p>
@@ -84,6 +102,12 @@ export default async function AdminArbeitgeberPage() {
                 >
                   Bearbeiten
                 </Link>
+                <form action={toggleEmployerApproval}>
+                  <input type="hidden" name="id" value={employer.id} />
+                  <button type="submit" className={employer.approved ? secondaryButtonClass : primaryButtonClass}>
+                    {employer.approved ? "Freigabe entziehen" : "Freigeben"}
+                  </button>
+                </form>
                 <form action={renewEmployerContract}>
                   <input type="hidden" name="id" value={employer.id} />
                   <button type="submit" className={primaryButtonClass}>

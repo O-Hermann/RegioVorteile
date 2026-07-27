@@ -49,6 +49,67 @@ export default async function EditEmployerPage({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className={labelClass} htmlFor="contactFirstName">
+                Vorname (Ansprechpartner)
+              </label>
+              <input
+                className={inputClass}
+                name="contactFirstName"
+                id="contactFirstName"
+                defaultValue={employer.contactFirstName ?? ""}
+              />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="contactLastName">
+                Nachname (Ansprechpartner)
+              </label>
+              <input
+                className={inputClass}
+                name="contactLastName"
+                id="contactLastName"
+                defaultValue={employer.contactLastName ?? ""}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="phone">
+              Telefon / Handynummer
+            </label>
+            <input
+              className={inputClass}
+              type="tel"
+              name="phone"
+              id="phone"
+              defaultValue={employer.phone ?? ""}
+            />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="street">
+              Straße und Hausnummer
+            </label>
+            <input
+              className={inputClass}
+              name="street"
+              id="street"
+              defaultValue={employer.street ?? ""}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass} htmlFor="plz">
+                PLZ
+              </label>
+              <input className={inputClass} name="plz" id="plz" defaultValue={employer.plz ?? ""} />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="city">
+                Ort
+              </label>
+              <input className={inputClass} name="city" id="city" defaultValue={employer.city ?? ""} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label className={labelClass} htmlFor="employeeCount">
                 Mitarbeiterzahl
               </label>

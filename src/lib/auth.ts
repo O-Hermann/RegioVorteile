@@ -30,6 +30,10 @@ export async function requireEmployer() {
   if (!employer) {
     redirect("/arbeitgeber/login");
   }
+  if (!employer.approved) {
+    session.destroy();
+    redirect("/arbeitgeber/login?error=pending");
+  }
   return { session, employer };
 }
 

@@ -20,7 +20,13 @@ export default async function ArbeitgeberLoginPage({
         <h1 className="mt-1 font-display text-2xl font-semibold text-sand-900">
           Arbeitgeber-Login
         </h1>
-        {error && (
+        {error === "pending" && (
+          <p className="mt-3 rounded-lg bg-gold-50 px-3 py-2 text-sm text-gold-700">
+            Ihr Account wird noch von uns geprüft. Wir schalten Sie zeitnah frei, sobald die
+            Prüfung abgeschlossen ist.
+          </p>
+        )}
+        {error && error !== "pending" && (
           <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             E-Mail oder Passwort ist falsch.
           </p>

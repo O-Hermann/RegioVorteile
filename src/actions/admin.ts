@@ -107,6 +107,12 @@ export async function updateEmployer(formData: FormData) {
     pricingTierId: String(formData.get("pricingTierId") ?? ""),
     subscriptionStatus: String(formData.get("subscriptionStatus") ?? "").trim(),
     contractEndDate: new Date(String(formData.get("contractEndDate") ?? "")),
+    contactFirstName: String(formData.get("contactFirstName") ?? "").trim() || null,
+    contactLastName: String(formData.get("contactLastName") ?? "").trim() || null,
+    phone: String(formData.get("phone") ?? "").trim() || null,
+    street: String(formData.get("street") ?? "").trim() || null,
+    plz: String(formData.get("plz") ?? "").trim() || null,
+    city: String(formData.get("city") ?? "").trim() || null,
   };
   if (!id || !data.companyName || !data.employeeCount || !data.regionId || !data.pricingTierId) return;
 
@@ -114,6 +120,21 @@ export async function updateEmployer(formData: FormData) {
   revalidatePath("/admin/arbeitgeber");
   revalidatePath(`/admin/arbeitgeber/${id}`);
   redirect(`/admin/arbeitgeber/${id}`);
+}
+
+export async function toggleEmployerApproval(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const employer = await prisma.employer.findUnique({ where: { id } });
+  if (!employer) return;
+
+  await prisma.employer.update({
+    where: { id },
+    data: { approved: !employer.approved },
+  });
+  revalidatePath("/admin/arbeitgeber");
+  revalidatePath(`/admin/arbeitgeber/${id}`);
+  revalidatePath("/admin/dashboard");
 }
 
 export async function cancelEmployerContract(formData: FormData) {
