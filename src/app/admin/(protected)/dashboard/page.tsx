@@ -242,7 +242,7 @@ export default async function AdminDashboardPage() {
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(360px,440px)_1fr]">
+      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(400px,2fr)_3fr]">
         {/* Linke Spalte: Kennzahlen */}
         <div className={`${cardClass} flex min-h-0 flex-col gap-4 overflow-hidden`}>
           <div className="flex items-center gap-3 shrink-0">
@@ -274,65 +274,65 @@ export default async function AdminDashboardPage() {
           </div>
 
           <div className="grid shrink-0 grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
-                <BriefcaseIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
+                <BriefcaseIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
-              <p className="text-[11px] text-sand-500">Arbeitgeber</p>
-              <p className="text-[10px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
+              <p className="text-xs text-sand-500">Arbeitgeber</p>
+              <p className="text-[11px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
-                <StoreIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
+                <StoreIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{partnerCount}</p>
-              <p className="text-[11px] text-sand-500">Partnerbetriebe</p>
-              <p className="text-[10px] text-sand-400">+{newPartners} seit letztem Monat</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{partnerCount}</p>
+              <p className="text-xs text-sand-500">Partnerbetriebe</p>
+              <p className="text-[11px] text-sand-400">+{newPartners} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <MapPinIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <MapPinIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{regionCount}</p>
-              <p className="text-[11px] text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
-              <p className="text-[10px] text-sand-400">aktiv</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{regionCount}</p>
+              <p className="text-xs text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
+              <p className="text-[11px] text-sand-400">aktiv</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
-                <TrendingUpIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
+                <TrendingUpIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">
                 {formatPrice(monthlyRevenueCents)}
               </p>
-              <p className="text-[11px] text-sand-500">Umsatz / Monat</p>
-              <p className="text-[10px] text-sand-400">{employers.length} aktive Abos</p>
+              <p className="text-xs text-sand-500">Umsatz / Monat</p>
+              <p className="text-[11px] text-sand-400">{employers.length} aktive Abos</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
-                <TagIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
+                <TagIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{redemptionCount}</p>
-              <p className="text-[11px] text-sand-500">Einlösungen</p>
-              <p className="text-[10px] text-sand-400">seit letztem Monat</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{redemptionCount}</p>
+              <p className="text-xs text-sand-500">Einlösungen</p>
+              <p className="text-[11px] text-sand-400">seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <ActivityIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <ActivityIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{activationRate}%</p>
-              <p className="text-[11px] text-sand-500">Aktivierung</p>
-              <p className="text-[10px] text-sand-400">
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{activationRate}%</p>
+              <p className="text-xs text-sand-500">Aktivierung</p>
+              <p className="text-[11px] text-sand-400">
                 {activeEmployeeCount} von {totalEmployeeCount}
               </p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-2.5">
-              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
-                <BellIcon className="h-3.5 w-3.5" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
+                <BellIcon className="h-4 w-4" />
               </span>
-              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{openTasksCount}</p>
-              <p className="text-[11px] text-sand-500">Offene Vorgänge</p>
-              <p className="text-[10px] text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
+              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{openTasksCount}</p>
+              <p className="text-xs text-sand-500">Offene Vorgänge</p>
+              <p className="text-[11px] text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
             </div>
           </div>
 
