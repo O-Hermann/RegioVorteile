@@ -262,8 +262,8 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-white shadow-warm-lg">
-            <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-white/60">
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-center text-white shadow-warm-lg">
+            <p className="flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-white/60">
               <UsersIcon className="h-3.5 w-3.5" />
               Mitarbeitende insgesamt
             </p>
@@ -274,7 +274,7 @@ export default async function AdminDashboardPage() {
           </div>
 
           <div className="grid shrink-0 grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
                 <BriefcaseIcon className="h-4 w-4" />
               </span>
@@ -282,7 +282,7 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-sand-500">Arbeitgeber</p>
               <p className="text-[11px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
                 <StoreIcon className="h-4 w-4" />
               </span>
@@ -290,7 +290,7 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-sand-500">Partnerbetriebe</p>
               <p className="text-[11px] text-sand-400">+{newPartners} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
                 <MapPinIcon className="h-4 w-4" />
               </span>
@@ -298,7 +298,7 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
               <p className="text-[11px] text-sand-400">aktiv</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
                 <TrendingUpIcon className="h-4 w-4" />
               </span>
@@ -308,7 +308,7 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-sand-500">Umsatz / Monat</p>
               <p className="text-[11px] text-sand-400">{employers.length} aktive Abos</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
                 <TagIcon className="h-4 w-4" />
               </span>
@@ -316,7 +316,7 @@ export default async function AdminDashboardPage() {
               <p className="text-xs text-sand-500">Einlösungen</p>
               <p className="text-[11px] text-sand-400">seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
                 <ActivityIcon className="h-4 w-4" />
               </span>
@@ -326,7 +326,7 @@ export default async function AdminDashboardPage() {
                 {activeEmployeeCount} von {totalEmployeeCount}
               </p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
+            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
               <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
                 <BellIcon className="h-4 w-4" />
               </span>
