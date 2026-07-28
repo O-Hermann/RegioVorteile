@@ -371,7 +371,7 @@ export default async function AdminDashboardPage() {
             </Link>
           )}
 
-          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 justify-items-start gap-4 overflow-y-auto lg:grid-cols-3">
+          <div className="grid min-h-0 flex-1 content-start auto-rows-min grid-cols-2 justify-items-start gap-4 overflow-y-auto lg:grid-cols-3">
             {modules.map((m) => {
               const Icon = m.icon;
               return (
