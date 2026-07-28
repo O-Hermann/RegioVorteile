@@ -304,7 +304,10 @@ async function main() {
   console.log("Arbeitgeber: arbeitgeber1@example.com / test1234 (Nordlicht Software GmbH)");
   console.log("Arbeitgeber: arbeitgeber2@example.com / test1234 (Metallbau Schmidt & Söhne)");
   console.log("Arbeitgeber: arbeitgeber3@example.com / test1234 (Klinikum Musterstadt)");
-  console.log("Mitarbeiter-Codes: NORD-ANNA, META-PETRA, KLIN-JULIA (aktiv) / NORD-BEN1, META-JONAS, KLIN-TOM1 (eingeladen)");
+  console.log(
+    "Mitarbeitende (noch kein Passwort gesetzt, Konto einrichten unter /mitarbeiter/einladung/<Code>): " +
+      "NORD-ANNA, NORD-BEN1, META-PETRA, META-JONAS, KLIN-JULIA, KLIN-TOM1, KLIN-SARA"
+  );
 }
 
 main()

@@ -48,7 +48,8 @@ model User {
   role         UserRole
   createdAt    DateTime @default(now())
 
-  employer Employer?
+  employer            Employer?
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Region {
@@ -98,17 +99,19 @@ model Employer {
 }
 
 model Employee {
-  id         String         @id @default(cuid())
-  employerId String
-  employer   Employer       @relation(fields: [employerId], references: [id])
-  name       String
-  email      String?
-  inviteCode String         @unique
-  status     EmployeeStatus @default(INVITED)
-  createdAt  DateTime       @default(now())
+  id           String         @id @default(cuid())
+  employerId   String
+  employer     Employer       @relation(fields: [employerId], references: [id])
+  name         String
+  email        String         @unique
+  passwordHash String?
+  inviteCode   String         @unique
+  status       EmployeeStatus @default(INVITED)
+  createdAt    DateTime       @default(now())
 
-  redemptions Redemption[]
-  feedback    Feedback[]
+  redemptions         Redemption[]
+  feedback            Feedback[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model PartnerBusiness {
@@ -169,4 +172,16 @@ model PartnerInquiry {
   message      String?
   status       PartnerInquiryStatus @default(OPEN)
   createdAt    DateTime             @default(now())
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
 }

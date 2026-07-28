@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { verifyPassword } from "@/lib/auth";
+import { hashPassword, verifyPassword } from "@/lib/auth";
 
 export async function loginAdmin(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -41,20 +41,47 @@ export async function loginEmployer(formData: FormData) {
   redirect("/arbeitgeber/dashboard");
 }
 
-export async function joinAsEmployee(formData: FormData) {
-  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+export async function loginEmployee(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
 
-  const employee = await prisma.employee.findUnique({ where: { inviteCode: code } });
-  if (!employee) {
+  const employee = await prisma.employee.findUnique({ where: { email } });
+  if (!employee || !employee.passwordHash || !(await verifyPassword(password, employee.passwordHash))) {
     redirect("/mitarbeiter/login?error=1");
   }
 
-  if (employee.status === "INVITED") {
-    await prisma.employee.update({
-      where: { id: employee.id },
-      data: { status: "ACTIVE" },
-    });
+  const session = await getSession();
+  session.employeeId = employee.id;
+  await session.save();
+  redirect("/mitarbeiter/vorteile");
+}
+
+export async function activateEmployeeAccount(formData: FormData) {
+  const inviteCode = String(formData.get("inviteCode") ?? "").trim().toUpperCase();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const passwordConfirm = String(formData.get("passwordConfirm") ?? "");
+
+  const employee = await prisma.employee.findUnique({ where: { inviteCode } });
+  if (!employee || employee.passwordHash) {
+    redirect("/mitarbeiter/login?error=1");
   }
+
+  if (!email || password.length < 8 || password !== passwordConfirm) {
+    redirect(`/mitarbeiter/einladung/${inviteCode}?error=1`);
+  }
+
+  if (email !== employee.email) {
+    const clash = await prisma.employee.findUnique({ where: { email } });
+    if (clash) {
+      redirect(`/mitarbeiter/einladung/${inviteCode}?error=email`);
+    }
+  }
+
+  await prisma.employee.update({
+    where: { id: employee.id },
+    data: { email, passwordHash: await hashPassword(password), status: "ACTIVE" },
+  });
 
   const session = await getSession();
   session.employeeId = employee.id;

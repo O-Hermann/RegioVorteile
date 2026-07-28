@@ -47,9 +47,11 @@ export default async function MitarbeiterPage({
                   </span>
                 </div>
                 {employee.email && <p className="text-sm text-sand-500">{employee.email}</p>}
-                <p className="mt-1 text-xs text-sand-400 break-all">
-                  Einladungslink: {baseUrl}/mitarbeiter/login?code={employee.inviteCode}
-                </p>
+                {!employee.passwordHash && (
+                  <p className="mt-1 text-xs text-sand-400 break-all">
+                    Einladungslink: {baseUrl}/mitarbeiter/einladung/{employee.inviteCode}
+                  </p>
+                )}
               </div>
               <form action={removeEmployee}>
                 <input type="hidden" name="id" value={employee.id} />

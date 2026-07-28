@@ -6,9 +6,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export default async function ArbeitgeberLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, reset } = await searchParams;
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-16">
@@ -20,6 +20,11 @@ export default async function ArbeitgeberLoginPage({
         <h1 className="mt-1 font-display text-2xl font-semibold text-sand-900">
           Arbeitgeber-Login
         </h1>
+        {reset && (
+          <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+            Passwort erfolgreich geändert. Sie können sich jetzt anmelden.
+          </p>
+        )}
         {error === "pending" && (
           <p className="mt-3 rounded-lg bg-gold-50 px-3 py-2 text-sm text-gold-700">
             Ihr Account wird noch von uns geprüft. Wir schalten Sie zeitnah frei, sobald die
@@ -54,7 +59,15 @@ export default async function ArbeitgeberLoginPage({
             Anmelden
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-sand-500">
+        <p className="mt-4 text-center text-sm">
+          <Link
+            href="/arbeitgeber/passwort-vergessen"
+            className="text-sand-500 hover:text-sand-900 hover:underline"
+          >
+            Passwort vergessen?
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-sand-500">
           Noch kein Account?{" "}
           <Link href="/arbeitgeber/registrieren" className="text-sand-900 hover:underline">
             Jetzt registrieren
