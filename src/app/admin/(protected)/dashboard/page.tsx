@@ -186,137 +186,139 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col lg:h-[calc(100vh-9.5rem)]">
+    <div className="flex flex-col lg:h-[calc(100vh-7.5rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
-        <h1 className="font-display text-xl font-semibold text-sand-900">Admin-Übersicht</h1>
-        <p className="text-xs text-sand-500">{today}</p>
+        <h1 className="font-display text-2xl font-semibold text-sand-900">Admin-Übersicht</h1>
+        <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-3 grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(300px,380px)_1fr]">
+      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(360px,440px)_1fr]">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${cardClass} flex flex-col gap-3 overflow-hidden !p-4`}>
+        <div className={`${cardClass} flex min-h-0 flex-col gap-4 overflow-hidden`}>
           <div className="flex items-center justify-between gap-3 shrink-0">
-            <h2 className="font-display text-base font-bold text-sand-900">
+            <h2 className="font-display text-lg font-bold text-sand-900">
               Guten Tag, {adminDisplayName}
             </h2>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 text-sm font-display font-bold text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display font-bold text-white">
               {avatarInitial}
             </div>
           </div>
 
-          <div className="shrink-0 rounded-xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-3 text-white shadow-warm-lg">
-            <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-white/60">
-              <UsersIcon className="h-3 w-3" />
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-white shadow-warm-lg">
+            <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-white/60">
+              <UsersIcon className="h-3.5 w-3.5" />
               Mitarbeitende insgesamt
             </p>
-            <p className="mt-0.5 font-display text-2xl font-extrabold leading-none">{totalEmployeeCount}</p>
-            <p className="mt-1 text-[10px] text-white/60">
+            <p className="mt-1 font-display text-3xl font-extrabold leading-none">{totalEmployeeCount}</p>
+            <p className="mt-1.5 text-xs text-white/60">
               +{newEmployeeCount} seit letztem Monat · über {totalEmployerCount} Arbeitgeber
             </p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-3 gap-2">
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.violet}`}>
-                <BriefcaseIcon className="h-3 w-3" />
+          <div className="grid shrink-0 grid-cols-3 gap-2.5">
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
+                <BriefcaseIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
-              <p className="text-[10px] text-sand-500">Arbeitgeber</p>
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
+              <p className="text-xs text-sand-500">Arbeitgeber</p>
+              <p className="text-[11px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
             </div>
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.emerald}`}>
-                <StoreIcon className="h-3 w-3" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
+                <StoreIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">{partnerCount}</p>
-              <p className="text-[10px] text-sand-500">Partnerbetriebe</p>
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{partnerCount}</p>
+              <p className="text-xs text-sand-500">Partnerbetriebe</p>
+              <p className="text-[11px] text-sand-400">+{newPartners} seit letztem Monat</p>
             </div>
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.amber}`}>
-                <TrendingUpIcon className="h-3 w-3" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
+                <TrendingUpIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">
                 {formatPrice(monthlyRevenueCents)}
               </p>
-              <p className="text-[10px] text-sand-500">Umsatz / Monat</p>
+              <p className="text-xs text-sand-500">Umsatz / Monat</p>
             </div>
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.rose}`}>
-                <TagIcon className="h-3 w-3" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
+                <TagIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">{redemptionCount}</p>
-              <p className="text-[10px] text-sand-500">Einlösungen</p>
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{redemptionCount}</p>
+              <p className="text-xs text-sand-500">Einlösungen</p>
             </div>
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.sky}`}>
-                <ActivityIcon className="h-3 w-3" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <ActivityIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">{activationRate}%</p>
-              <p className="text-[10px] text-sand-500">Aktivierung</p>
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{activationRate}%</p>
+              <p className="text-xs text-sand-500">Aktivierung</p>
             </div>
-            <div className="rounded-lg border border-card-border bg-card p-2">
-              <span className={`inline-flex h-5 w-5 items-center justify-center rounded-md ${ACCENT_CLASSES.slate}`}>
-                <BellIcon className="h-3 w-3" />
+            <div className="rounded-xl border border-card-border bg-card p-3">
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
+                <BellIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1 font-display text-base font-semibold leading-tight text-sand-900">{openTasksCount}</p>
-              <p className="text-[10px] text-sand-500">Offene Vorgänge</p>
+              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{openTasksCount}</p>
+              <p className="text-xs text-sand-500">Offene Vorgänge</p>
             </div>
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
-            <h3 className="shrink-0 text-xs font-semibold text-sand-900">Letzte Aktivitäten</h3>
-            <ul className="mt-1.5 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
-              {activity.length === 0 && <p className="text-xs text-sand-500">Noch keine Aktivitäten.</p>}
+            <h3 className="shrink-0 text-sm font-semibold text-sand-900">Letzte Aktivitäten</h3>
+            <ul className="mt-2 min-h-[70px] flex-1 space-y-2.5 overflow-y-auto pr-1">
+              {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
               {activity.map((a) => (
-                <li key={a.id} className="flex items-start justify-between gap-2 text-xs">
+                <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
                   <div className="min-w-0">
                     <p className="truncate text-sand-900">{a.label}</p>
-                    <p className="truncate text-[11px] text-sand-500">{a.detail}</p>
+                    <p className="truncate text-xs text-sand-500">{a.detail}</p>
                   </div>
-                  <span className="shrink-0 text-[11px] text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                  <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 gap-2">
-            <Link href="/admin/partnerbetriebe/neu" className={`${secondaryButtonClass} !px-3 !py-1.5 text-xs`}>
+          <div className="grid shrink-0 grid-cols-2 gap-3">
+            <Link href="/admin/partnerbetriebe/neu" className={secondaryButtonClass}>
               + Partnerbetrieb
             </Link>
-            <Link href="/admin/arbeitgeber" className={`${primaryButtonClass} !px-3 !py-1.5 text-xs`}>
+            <Link href="/admin/arbeitgeber" className={primaryButtonClass}>
               Arbeitgeber ansehen
             </Link>
           </div>
         </div>
 
         {/* Rechte Spalte: Module */}
-        <div className="grid min-h-0 auto-rows-min grid-cols-2 gap-3 overflow-y-auto xl:grid-cols-3">
+        <div className="grid h-full min-h-0 auto-rows-min grid-cols-2 gap-4 overflow-y-auto lg:grid-cols-3">
           {modules.map((m) => {
             const Icon = m.icon;
             return (
               <Link
                 key={m.href}
                 href={m.href}
-                className={`${cardClass} group flex flex-col gap-2 !p-4 hover:border-ink-300 transition-colors`}
+                className={`${cardClass} group flex flex-col gap-3 hover:border-ink-300 transition-colors`}
               >
                 <div className="flex items-start justify-between">
                   <span
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                   </span>
                   {m.badge && (
-                    <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
+                    <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
                       {m.badge}
                     </span>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-display text-sm font-semibold text-sand-900">{m.title}</h3>
-                  <p className="mt-0.5 text-xs text-sand-600">{m.description}</p>
+                  <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
+                  <p className="mt-1 text-sm text-sand-600">{m.description}</p>
                 </div>
-                <span className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-sand-700 group-hover:text-ink-900">
+                <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-sand-700 group-hover:text-ink-900">
                   Öffnen
-                  <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
             );

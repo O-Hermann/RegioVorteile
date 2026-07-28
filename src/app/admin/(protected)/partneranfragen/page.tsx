@@ -9,7 +9,7 @@ export default async function AdminPartnerInquiriesPage() {
   });
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-3xl font-semibold text-sand-900">Partneranfragen</h1>
       <p className="mt-2 text-sand-600">
         Anfragen von Betrieben, die über die Startseite Partnerbetrieb werden möchten.

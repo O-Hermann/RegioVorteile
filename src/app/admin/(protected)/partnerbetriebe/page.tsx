@@ -11,7 +11,7 @@ export default async function AdminPartnerbetriebePage() {
   });
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Partnerbetriebe</h1>

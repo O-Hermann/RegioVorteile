@@ -23,7 +23,7 @@ export default async function EditEmployerPage({
   if (!employer) notFound();
 
   return (
-    <div className="max-w-xl">
+    <div className="mx-auto max-w-xl">
       <Link href={`/admin/arbeitgeber/${employer.id}`} className="text-sm text-sand-500 hover:text-sand-900">
         ← Zurück zur Übersicht
       </Link>

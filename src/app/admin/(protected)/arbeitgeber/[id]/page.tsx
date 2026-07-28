@@ -65,7 +65,7 @@ export default async function EmployerOverviewPage({
   const contractStatus = getContractStatus(employer.contractEndDate);
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl">
       <Link href="/admin/arbeitgeber" className="text-sm text-sand-500 hover:text-sand-900">
         ← Zurück zur Übersicht
       </Link>

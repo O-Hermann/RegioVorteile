@@ -35,7 +35,7 @@ export default async function AdminArbeitgeberPage() {
   });
 
   return (
-    <div>
+    <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-3xl font-semibold text-sand-900">Arbeitgeber</h1>
       <p className="mt-2 text-sand-600">Registrierte Firmen-Accounts, Abo-Stufe und Vertragslaufzeit.</p>
 

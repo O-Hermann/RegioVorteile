@@ -9,7 +9,7 @@ export default async function AdminRechtlichesPage() {
   const datenschutz = pages.find((p) => p.slug === "DATENSCHUTZ");
 
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto max-w-3xl">
       <h1 className="font-display text-3xl font-semibold text-sand-900">Rechtliches</h1>
       <p className="mt-2 text-sand-600">
         Inhalt von Impressum und Datenschutzerklärung, öffentlich sichtbar unter{" "}

@@ -13,7 +13,7 @@ export default async function EditRegionPage({
   if (!region) notFound();
 
   return (
-    <div className="max-w-xl">
+    <div className="mx-auto max-w-xl">
       <h1 className="font-display text-3xl font-semibold text-sand-900">
         {region.name} bearbeiten
       </h1>
