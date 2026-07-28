@@ -37,6 +37,12 @@ const ACCENT_CLASSES: Record<string, string> = {
   slate: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
 };
 
+const BANNER_WRAP_CLASSES: Record<string, string> = {
+  emerald: "border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40",
+  rose: "border-rose-500/20 bg-rose-500/5 hover:border-rose-500/40",
+  violet: "border-violet-500/20 bg-violet-500/5 hover:border-violet-500/40",
+};
+
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   const now = new Date();
@@ -101,37 +107,54 @@ export default async function AdminDashboardPage() {
   const avatarInitial = adminDisplayName.charAt(0).toUpperCase();
   const today = now.toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-  type ActivityItem = { id: string; label: string; detail: string; createdAt: Date };
+  type ActivityItem = {
+    id: string;
+    label: string;
+    detail: string;
+    createdAt: Date;
+    icon: typeof StoreIcon;
+    color: string;
+  };
   const activity: ActivityItem[] = [
     ...recentPartners.map((p) => ({
       id: `partner-${p.id}`,
       label: "Neuer Partnerbetrieb hinzugefügt",
       detail: p.name,
       createdAt: p.createdAt,
+      icon: StoreIcon,
+      color: "emerald",
     })),
     ...recentEmployers.map((e) => ({
       id: `employer-${e.id}`,
       label: "Arbeitgeber registriert",
       detail: e.companyName,
       createdAt: e.createdAt,
+      icon: BriefcaseIcon,
+      color: "violet",
     })),
     ...recentEmployees.map((e) => ({
       id: `employee-${e.id}`,
       label: "Mitarbeiter eingeladen",
       detail: `${e.name} · ${e.employer.companyName}`,
       createdAt: e.createdAt,
+      icon: UsersIcon,
+      color: "sky",
     })),
     ...recentRedemptions.map((r) => ({
       id: `redemption-${r.id}`,
       label: "Vorteil eingelöst",
       detail: r.partnerBusiness.name,
       createdAt: r.createdAt,
+      icon: TagIcon,
+      color: "rose",
     })),
     ...recentInquiries.map((i) => ({
       id: `inquiry-${i.id}`,
       label: "Neue Partneranfrage",
       detail: i.businessName,
       createdAt: i.createdAt,
+      icon: InboxIcon,
+      color: "amber",
     })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -185,6 +208,33 @@ export default async function AdminDashboardPage() {
     },
   ];
 
+  const banner = [
+    {
+      count: openInquiryCount,
+      title: openInquiryCount === 1 ? "Neue Partneranfrage" : "Neue Partneranfragen",
+      subtitle: `${openInquiryCount} offene ${openInquiryCount === 1 ? "Anfrage wartet" : "Anfragen warten"} auf Prüfung.`,
+      href: "/admin/partneranfragen",
+      icon: InboxIcon,
+      color: "emerald",
+    },
+    {
+      count: openFeedbackCount,
+      title: openFeedbackCount === 1 ? "Neues Feedback" : "Neues Feedback",
+      subtitle: `${openFeedbackCount} offene ${openFeedbackCount === 1 ? "Meldung wartet" : "Meldungen warten"} auf Bearbeitung.`,
+      href: "/admin/feedback",
+      icon: ChatIcon,
+      color: "rose",
+    },
+    {
+      count: pendingApprovalCount,
+      title: pendingApprovalCount === 1 ? "Arbeitgeber wartet auf Freigabe" : "Arbeitgeber warten auf Freigabe",
+      subtitle: `${pendingApprovalCount} neue ${pendingApprovalCount === 1 ? "Registrierung" : "Registrierungen"} zu prüfen.`,
+      href: "/admin/arbeitgeber",
+      icon: BriefcaseIcon,
+      color: "violet",
+    },
+  ].find((b) => b.count > 0);
+
   return (
     <div className="flex flex-col lg:h-[calc(100vh-7.5rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
@@ -195,12 +245,20 @@ export default async function AdminDashboardPage() {
       <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(360px,440px)_1fr]">
         {/* Linke Spalte: Kennzahlen */}
         <div className={`${cardClass} flex min-h-0 flex-col gap-4 overflow-hidden`}>
-          <div className="flex items-center justify-between gap-3 shrink-0">
-            <h2 className="font-display text-lg font-bold text-sand-900">
-              Guten Tag, {adminDisplayName}
-            </h2>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display font-bold text-white">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-xl font-bold text-white">
               {avatarInitial}
+            </div>
+            <div>
+              <h2 className="font-display text-lg font-bold text-sand-900">
+                Guten Tag, {adminDisplayName}
+              </h2>
+              <div className="mt-0.5 flex items-center gap-2">
+                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
+                  Administrator
+                </span>
+                <span className="text-xs text-sand-500">Regiovorteile Plattform</span>
+              </div>
             </div>
           </div>
 
@@ -215,52 +273,66 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-3 gap-2.5">
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
+          <div className="grid shrink-0 grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
                 <BriefcaseIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
-              <p className="text-xs text-sand-500">Arbeitgeber</p>
-              <p className="text-[11px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
+              <p className="text-[11px] text-sand-500">Arbeitgeber</p>
+              <p className="text-[10px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
                 <StoreIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{partnerCount}</p>
-              <p className="text-xs text-sand-500">Partnerbetriebe</p>
-              <p className="text-[11px] text-sand-400">+{newPartners} seit letztem Monat</p>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{partnerCount}</p>
+              <p className="text-[11px] text-sand-500">Partnerbetriebe</p>
+              <p className="text-[10px] text-sand-400">+{newPartners} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <MapPinIcon className="h-3.5 w-3.5" />
+              </span>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{regionCount}</p>
+              <p className="text-[11px] text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
+              <p className="text-[10px] text-sand-400">aktiv</p>
+            </div>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
                 <TrendingUpIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">
                 {formatPrice(monthlyRevenueCents)}
               </p>
-              <p className="text-xs text-sand-500">Umsatz / Monat</p>
+              <p className="text-[11px] text-sand-500">Umsatz / Monat</p>
+              <p className="text-[10px] text-sand-400">{employers.length} aktive Abos</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
                 <TagIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{redemptionCount}</p>
-              <p className="text-xs text-sand-500">Einlösungen</p>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{redemptionCount}</p>
+              <p className="text-[11px] text-sand-500">Einlösungen</p>
+              <p className="text-[10px] text-sand-400">seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
                 <ActivityIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{activationRate}%</p>
-              <p className="text-xs text-sand-500">Aktivierung</p>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{activationRate}%</p>
+              <p className="text-[11px] text-sand-500">Aktivierung</p>
+              <p className="text-[10px] text-sand-400">
+                {activeEmployeeCount} von {totalEmployeeCount}
+              </p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
+            <div className="rounded-xl border border-card-border bg-card p-2.5">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
                 <BellIcon className="h-3.5 w-3.5" />
               </span>
-              <p className="mt-1.5 font-display text-lg font-semibold leading-tight text-sand-900">{openTasksCount}</p>
-              <p className="text-xs text-sand-500">Offene Vorgänge</p>
+              <p className="mt-1.5 font-display text-base font-semibold leading-tight text-sand-900">{openTasksCount}</p>
+              <p className="text-[11px] text-sand-500">Offene Vorgänge</p>
+              <p className="text-[10px] text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
             </div>
           </div>
 
@@ -268,15 +340,25 @@ export default async function AdminDashboardPage() {
             <h3 className="shrink-0 text-sm font-semibold text-sand-900">Letzte Aktivitäten</h3>
             <ul className="mt-2 min-h-[70px] flex-1 space-y-2.5 overflow-y-auto pr-1">
               {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
-              {activity.map((a) => (
-                <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
-                  <div className="min-w-0">
-                    <p className="truncate text-sand-900">{a.label}</p>
-                    <p className="truncate text-xs text-sand-500">{a.detail}</p>
-                  </div>
-                  <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
-                </li>
-              ))}
+              {activity.map((a) => {
+                const AIcon = a.icon;
+                return (
+                  <li key={a.id} className="flex items-start gap-2.5 text-sm">
+                    <span
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
+                    >
+                      <AIcon className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="min-w-0 flex-1 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sand-900">{a.label}</p>
+                        <p className="truncate text-xs text-sand-500">{a.detail}</p>
+                      </div>
+                      <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -290,39 +372,64 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Rechte Spalte: Module */}
-        <div className="grid h-full min-h-0 auto-rows-min grid-cols-2 gap-4 overflow-y-auto lg:grid-cols-3">
-          {modules.map((m) => {
-            const Icon = m.icon;
-            return (
-              <Link
-                key={m.href}
-                href={m.href}
-                className={`${cardClass} group flex flex-col gap-3 hover:border-ink-300 transition-colors`}
-              >
-                <div className="flex items-start justify-between">
-                  <span
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  {m.badge && (
-                    <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
-                      {m.badge}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
-                  <p className="mt-1 text-sm text-sand-600">{m.description}</p>
-                </div>
-                <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-sand-700 group-hover:text-ink-900">
-                  Öffnen
-                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+        {/* Rechte Spalte: Hinweis-Banner + Module */}
+        <div className="flex min-h-0 flex-col gap-4">
+          {banner && (
+            <Link
+              href={banner.href}
+              className={`shrink-0 flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors ${BANNER_WRAP_CLASSES[banner.color]}`}
+            >
+              <div className="flex min-w-0 items-center gap-4">
+                <span
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${ACCENT_CLASSES[banner.color]}`}
+                >
+                  <banner.icon className="h-6 w-6" />
                 </span>
-              </Link>
-            );
-          })}
+                <div className="min-w-0">
+                  <h3 className="font-display text-base font-semibold text-sand-900">{banner.title}</h3>
+                  <p className="truncate text-sm text-sand-600">{banner.subtitle}</p>
+                </div>
+              </div>
+              <div className="shrink-0 rounded-xl border border-card-border bg-card px-4 py-2 text-center">
+                <p className="font-display text-2xl font-bold leading-none text-sand-900">{banner.count}</p>
+                <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-sand-500">Offen</p>
+              </div>
+            </Link>
+          )}
+
+          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto lg:grid-cols-3">
+            {modules.map((m) => {
+              const Icon = m.icon;
+              return (
+                <Link
+                  key={m.href}
+                  href={m.href}
+                  className={`${cardClass} group flex flex-col gap-3 hover:border-ink-300 transition-colors`}
+                >
+                  <div className="flex items-start justify-between">
+                    <span
+                      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    {m.badge && (
+                      <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
+                        {m.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
+                    <p className="mt-1 text-sm text-sand-600">{m.description}</p>
+                  </div>
+                  <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-sand-700 group-hover:text-ink-900">
+                    Öffnen
+                    <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
