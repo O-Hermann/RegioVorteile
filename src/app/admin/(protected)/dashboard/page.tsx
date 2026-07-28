@@ -242,9 +242,9 @@ export default async function AdminDashboardPage() {
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(400px,2fr)_3fr]">
+      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[300px_1fr_300px]">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-4 overflow-hidden`}>
+        <div className={`${cardClass} flex min-h-0 flex-col gap-6 overflow-hidden`}>
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-xl font-bold text-white">
               {avatarInitial}
@@ -262,107 +262,81 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-center text-white shadow-warm-lg">
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-5 text-center text-white shadow-warm-lg">
             <p className="flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-white/60">
               <UsersIcon className="h-3.5 w-3.5" />
               Mitarbeitende insgesamt
             </p>
-            <p className="mt-1 font-display text-3xl font-extrabold leading-none">{totalEmployeeCount}</p>
-            <p className="mt-1.5 text-xs text-white/60">
+            <p className="mt-1.5 font-display text-4xl font-extrabold leading-none">{totalEmployeeCount}</p>
+            <p className="mt-2 text-xs text-white/60">
               +{newEmployeeCount} seit letztem Monat · über {totalEmployerCount} Arbeitgeber
             </p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
-                <BriefcaseIcon className="h-4 w-4" />
+          <div className="grid shrink-0 grid-cols-2 gap-3">
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
+                <BriefcaseIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
-              <p className="text-xs text-sand-500">Arbeitgeber</p>
-              <p className="text-[11px] text-sand-400">+{newEmployerCount} seit letztem Monat</p>
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
+              <p className="text-sm text-sand-500">Arbeitgeber</p>
+              <p className="text-xs text-sand-400">+{newEmployerCount} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
-                <StoreIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
+                <StoreIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{partnerCount}</p>
-              <p className="text-xs text-sand-500">Partnerbetriebe</p>
-              <p className="text-[11px] text-sand-400">+{newPartners} seit letztem Monat</p>
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{partnerCount}</p>
+              <p className="text-sm text-sand-500">Partnerbetriebe</p>
+              <p className="text-xs text-sand-400">+{newPartners} seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <MapPinIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <MapPinIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{regionCount}</p>
-              <p className="text-xs text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
-              <p className="text-[11px] text-sand-400">aktiv</p>
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{regionCount}</p>
+              <p className="text-sm text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
+              <p className="text-xs text-sand-400">aktiv</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
-                <TrendingUpIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
+                <TrendingUpIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">
                 {formatPrice(monthlyRevenueCents)}
               </p>
-              <p className="text-xs text-sand-500">Umsatz / Monat</p>
-              <p className="text-[11px] text-sand-400">{employers.length} aktive Abos</p>
+              <p className="text-sm text-sand-500">Umsatz / Monat</p>
+              <p className="text-xs text-sand-400">{employers.length} aktive Abos</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
-                <TagIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
+                <TagIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{redemptionCount}</p>
-              <p className="text-xs text-sand-500">Einlösungen</p>
-              <p className="text-[11px] text-sand-400">seit letztem Monat</p>
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{redemptionCount}</p>
+              <p className="text-sm text-sand-500">Einlösungen</p>
+              <p className="text-xs text-sand-400">seit letztem Monat</p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <ActivityIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
+                <ActivityIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{activationRate}%</p>
-              <p className="text-xs text-sand-500">Aktivierung</p>
-              <p className="text-[11px] text-sand-400">
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{activationRate}%</p>
+              <p className="text-sm text-sand-500">Aktivierung</p>
+              <p className="text-xs text-sand-400">
                 {activeEmployeeCount} von {totalEmployeeCount}
               </p>
             </div>
-            <div className="rounded-xl border border-card-border bg-card p-3 text-center">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
-                <BellIcon className="h-4 w-4" />
+            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
+                <BellIcon className="h-5 w-5" />
               </span>
-              <p className="mt-2 font-display text-lg font-semibold leading-tight text-sand-900">{openTasksCount}</p>
-              <p className="text-xs text-sand-500">Offene Vorgänge</p>
-              <p className="text-[11px] text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
+              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{openTasksCount}</p>
+              <p className="text-sm text-sand-500">Offene Vorgänge</p>
+              <p className="text-xs text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col">
-            <h3 className="shrink-0 text-sm font-semibold text-sand-900">Letzte Aktivitäten</h3>
-            <ul className="mt-2 min-h-[70px] flex-1 space-y-2.5 overflow-y-auto pr-1">
-              {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
-              {activity.map((a) => {
-                const AIcon = a.icon;
-                return (
-                  <li key={a.id} className="flex items-start gap-2.5 text-sm">
-                    <span
-                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
-                    >
-                      <AIcon className="h-3.5 w-3.5" />
-                    </span>
-                    <div className="min-w-0 flex-1 flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sand-900">{a.label}</p>
-                        <p className="truncate text-xs text-sand-500">{a.detail}</p>
-                      </div>
-                      <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          <div className="grid shrink-0 grid-cols-2 gap-3">
+          <div className="mt-auto grid shrink-0 grid-cols-2 gap-3">
             <Link href="/admin/partnerbetriebe/neu" className={secondaryButtonClass}>
               + Partnerbetrieb
             </Link>
@@ -372,7 +346,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Rechte Spalte: Hinweis-Banner + Module */}
+        {/* Mittlere Spalte: Hinweis-Banner + Module */}
         <div className="flex min-h-0 flex-col gap-4">
           {banner && (
             <Link
@@ -404,13 +378,13 @@ export default async function AdminDashboardPage() {
                 <Link
                   key={m.href}
                   href={m.href}
-                  className={`${cardClass} group flex flex-col gap-3 hover:border-ink-300 transition-colors`}
+                  className={`${cardClass} group flex flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
                 >
                   <div className="flex items-start justify-between">
                     <span
-                      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4 w-4" />
                     </span>
                     {m.badge && (
                       <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
@@ -430,6 +404,33 @@ export default async function AdminDashboardPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* Rechte Spalte: Letzte Aktivitäten */}
+        <div className={`${cardClass} flex min-h-0 flex-col gap-3 overflow-hidden`}>
+          <h3 className="shrink-0 font-display text-base font-semibold text-sand-900">Letzte Aktivitäten</h3>
+          <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
+            {activity.map((a) => {
+              const AIcon = a.icon;
+              return (
+                <li key={a.id} className="flex items-start gap-2.5 text-sm">
+                  <span
+                    className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
+                  >
+                    <AIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="truncate text-sand-900">{a.label}</p>
+                      <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                    </div>
+                    <p className="truncate text-xs text-sand-500">{a.detail}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </div>
