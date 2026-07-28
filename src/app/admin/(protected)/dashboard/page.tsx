@@ -236,15 +236,15 @@ export default async function AdminDashboardPage() {
   ].find((b) => b.count > 0);
 
   return (
-    <div className="flex flex-col min-[1950px]:h-[calc(100vh-7.5rem)]">
+    <div className="flex flex-col min-[1800px]:h-[calc(100vh-7.5rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
         <h1 className="font-display text-2xl font-semibold text-sand-900">Admin-Übersicht</h1>
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-5 min-[1950px]:flex-row">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-5 min-[1800px]:flex-row">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-6 overflow-hidden min-[1950px]:w-[500px] min-[1950px]:shrink-0`}>
+        <div className={`${cardClass} flex min-h-0 flex-col gap-6 overflow-hidden min-[1800px]:w-[440px] min-[1800px]:shrink-0`}>
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-xl font-bold text-white">
               {avatarInitial}
@@ -347,7 +347,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Mittlere Spalte: Hinweis-Banner + Module */}
-        <div className="flex min-h-0 flex-col gap-4 min-[1950px]:w-[812px] min-[1950px]:shrink-0">
+        <div className="flex min-h-0 flex-col gap-4 min-[1800px]:w-[692px] min-[1800px]:shrink-0">
           {banner && (
             <Link
               href={banner.href}
@@ -371,7 +371,7 @@ export default async function AdminDashboardPage() {
             </Link>
           )}
 
-          <div className="grid min-h-0 flex-1 content-start auto-rows-min grid-cols-2 gap-4 overflow-y-auto min-[1950px]:grid-cols-[repeat(auto-fill,260px)]">
+          <div className="grid min-h-0 flex-1 content-start auto-rows-min gap-4 overflow-y-auto grid-cols-[repeat(auto-fill,minmax(150px,260px))]">
             {modules.map((m) => {
               const Icon = m.icon;
               return (
@@ -407,7 +407,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Rechte Spalte: Letzte Aktivitäten */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-3 overflow-hidden min-[1950px]:w-[500px] min-[1950px]:shrink-0`}>
+        <div className={`${cardClass} flex min-h-0 flex-col gap-3 overflow-hidden min-[1800px]:w-[440px] min-[1800px]:shrink-0`}>
           <h3 className="shrink-0 font-display text-base font-semibold text-sand-900">Letzte Aktivitäten</h3>
           <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
