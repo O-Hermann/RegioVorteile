@@ -242,7 +242,7 @@ export default async function AdminDashboardPage() {
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[300px_1fr_300px]">
+      <div className="mt-4 grid min-h-0 flex-1 gap-5 lg:grid-cols-[500px_1fr_300px]">
         {/* Linke Spalte: Kennzahlen */}
         <div className={`${cardClass} flex min-h-0 flex-col gap-6 overflow-hidden`}>
           <div className="flex items-center gap-3 shrink-0">
@@ -273,7 +273,7 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 gap-3">
+          <div className="grid shrink-0 grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl border border-card-border bg-card p-4 text-center">
               <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
                 <BriefcaseIcon className="h-5 w-5" />
@@ -371,14 +371,14 @@ export default async function AdminDashboardPage() {
             </Link>
           )}
 
-          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-4 overflow-y-auto lg:grid-cols-3">
+          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 justify-items-start gap-4 overflow-y-auto lg:grid-cols-3">
             {modules.map((m) => {
               const Icon = m.icon;
               return (
                 <Link
                   key={m.href}
                   href={m.href}
-                  className={`${cardClass} group flex flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
+                  className={`${cardClass} group flex w-full max-w-[260px] flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
                 >
                   <div className="flex items-start justify-between">
                     <span
