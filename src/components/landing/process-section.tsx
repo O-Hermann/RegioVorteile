@@ -20,24 +20,27 @@ const STEPS = [
 
 export function ProcessSection() {
   return (
-    <section id="ablauf" className="py-20 border-y border-card-border bg-card">
+    <section id="ablauf" className="py-20 border-y border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-sand-900">
+        <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           So funktioniert es
         </h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-3">
           {STEPS.map(({ icon: Icon, title, text }, i) => (
-            <div key={title} className="relative rounded-2xl border border-card-border bg-background p-6">
+            <div
+              key={title}
+              className="relative rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950 p-6"
+            >
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-petrol-600 text-xs font-bold text-white">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 dark:bg-cyan-500 text-xs font-bold text-white dark:text-slate-950">
                   {i + 1}
                 </span>
-                <Icon className="h-5 w-5 text-petrol-600 dark:text-petrol-300" />
+                <Icon className="h-5 w-5 text-sky-600 dark:text-cyan-300" />
               </div>
-              <h3 className="mt-4 font-display text-lg font-bold text-sand-900">
+              <h3 className="mt-4 font-display text-lg font-bold text-slate-900 dark:text-white">
                 {title}
               </h3>
-              <p className="mt-2 text-sm text-sand-600">{text}</p>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{text}</p>
             </div>
           ))}
         </div>

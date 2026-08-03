@@ -7,19 +7,19 @@ const PROBLEMS = [
 
 export function ProblemSection() {
   return (
-    <section className="py-20 border-y border-card-border bg-card">
+    <section className="py-20 border-y border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
           <div>
-            <h2 className="font-display text-3xl font-extrabold tracking-tight text-sand-900">
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Die Zahlen sind da – aber niemand erklärt sie Ihnen.
             </h2>
-            <p className="mt-4 text-sand-700">
+            <p className="mt-4 text-slate-600 dark:text-slate-300">
               Viele kleine und mittlere Unternehmen bekommen ihre Buchhaltungszahlen
               zuverlässig geliefert. Was fehlt, ist die Einordnung: Was bedeuten diese
               Zahlen für mein Geschäft – und was sollte ich jetzt tun?
             </p>
-            <p className="mt-4 text-sand-700">
+            <p className="mt-4 text-slate-600 dark:text-slate-300">
               Genau hier setzt Controlling Cockpit an: Es übernimmt die Erklärung, die
               sonst ein eigener Controller liefern würde – verständlich, regelmäßig und
               ohne Fachjargon.
@@ -29,9 +29,9 @@ export function ProblemSection() {
             {PROBLEMS.map((item) => (
               <li
                 key={item}
-                className="flex gap-3 rounded-2xl border border-card-border bg-background p-4 text-sm text-sand-800"
+                className="flex gap-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950 p-4 text-sm text-slate-700 dark:text-slate-300"
               >
-                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-petrol-500" />
+                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500 dark:bg-cyan-400" />
                 {item}
               </li>
             ))}

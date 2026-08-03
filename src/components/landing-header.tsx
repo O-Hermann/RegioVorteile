@@ -5,14 +5,14 @@ import { SITE_NAME, NAV_ITEMS } from "@/lib/site-config";
 
 export function LandingHeader() {
   return (
-    <header className="border-b border-card-border bg-card/80 backdrop-blur sticky top-0 z-30">
+    <header className="border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-30">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="font-display text-xl font-bold tracking-tight text-sand-900">
+        <Link href="/" className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
           {SITE_NAME}
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-sand-700">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-sand-900">
+            <Link key={item.href} href={item.href} className="hover:text-slate-900 dark:hover:text-white">
               {item.label}
             </Link>
           ))}
@@ -21,13 +21,13 @@ export function LandingHeader() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="hidden sm:inline-flex text-sm font-medium text-sand-700 hover:text-sand-900 px-3 py-2"
+            className="hidden sm:inline-flex text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-2"
           >
             Login
           </Link>
           <a
             href="#preise"
-            className="group inline-flex items-center gap-1.5 rounded-full bg-petrol-600 px-4 py-2 text-sm font-semibold text-white shadow-warm-sm hover:bg-petrol-700 hover:shadow-warm transition-all"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_-8px_rgba(37,99,235,0.6)] hover:from-sky-400 hover:to-blue-500 transition-all"
           >
             Pilotphase anfragen
             <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
