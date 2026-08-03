@@ -20,7 +20,7 @@ const STEPS = [
 
 export function ProcessSection() {
   return (
-    <section id="ablauf" className="py-20 border-y border-cyan-100 dark:border-white/10 bg-blue-50 dark:bg-slate-900">
+    <section id="ablauf" className="py-20 border-y border-cyan-100 dark:border-white/10 bg-blue-100 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           So funktioniert es

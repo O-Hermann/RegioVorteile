@@ -5,7 +5,7 @@ import { SITE_NAME, NAV_ITEMS } from "@/lib/site-config";
 
 export function LandingHeader() {
   return (
-    <header className="border-b border-cyan-100 dark:border-white/10 bg-cyan-50/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+    <header className="border-b border-cyan-100 dark:border-white/10 bg-cyan-100/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-30">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
           {SITE_NAME}

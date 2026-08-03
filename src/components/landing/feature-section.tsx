@@ -42,7 +42,7 @@ const FEATURES = [
 
 export function FeatureSection() {
   return (
-    <section id="funktionen" className="py-20 bg-cyan-50 dark:bg-slate-950">
+    <section id="funktionen" className="py-20 bg-cyan-100 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Was Controlling Cockpit für Sie auswertet

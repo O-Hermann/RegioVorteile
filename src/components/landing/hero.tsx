@@ -3,7 +3,7 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-cyan-100 to-white dark:from-slate-950 dark:to-slate-950">
+    <section className="relative overflow-hidden bg-gradient-to-b from-cyan-200 to-cyan-50 dark:from-slate-950 dark:to-slate-950">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-20 [background-image:radial-gradient(rgba(8,145,178,0.35)_1px,transparent_1px)] dark:[background-image:radial-gradient(rgba(34,211,238,0.4)_1px,transparent_1px)] [background-size:22px_22px]"

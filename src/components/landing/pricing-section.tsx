@@ -22,7 +22,7 @@ const TIERS = [
 
 export function PricingSection() {
   return (
-    <section id="preise" className="py-20 bg-cyan-50 dark:bg-slate-950">
+    <section id="preise" className="py-20 bg-cyan-100 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Preise
