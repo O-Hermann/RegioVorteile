@@ -3,7 +3,7 @@ import { CONTACT_EMAIL } from "@/lib/site-config";
 
 export function CtaSection() {
   return (
-    <section className="relative overflow-hidden py-20 border-t border-cyan-100 dark:border-white/10 bg-blue-100 dark:bg-slate-900">
+    <section className="relative overflow-hidden py-20 border-t border-cyan-100 dark:border-white/10 bg-cyan-200 dark:bg-slate-900">
       <div
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300/30 dark:bg-cyan-500/10 blur-3xl"

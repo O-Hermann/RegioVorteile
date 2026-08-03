@@ -3,7 +3,7 @@ import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, NAV_ITEMS, FOOTER_LINKS } from 
 
 export function LandingFooter() {
   return (
-    <footer className="mt-auto border-t border-cyan-100 dark:border-white/10 bg-blue-100 dark:bg-slate-950">
+    <footer className="mt-auto border-t border-cyan-100 dark:border-white/10 bg-cyan-200 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3 text-sm">
         <div>
           <p className="font-display text-lg font-semibold text-slate-900 dark:text-white">{SITE_NAME}</p>
