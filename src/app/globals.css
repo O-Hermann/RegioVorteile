@@ -6,71 +6,74 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --background: #faf7f1;
-  --foreground: #221b14;
+  --background: #f7faf9;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-border: #e6dcc8;
-  --shadow-color: 30 20% 20%;
+  --card-border: #d7e6e1;
+  --shadow-color: 195 25% 15%;
 }
 
 /* Dunkelmodus: nur die neutrale Sand-Skala und die semantischen Oberflaechen
    werden invertiert. Ink/Gold bleiben als Akzentfarben unveraendert, da sie
    ihren eigenen Kontrast (z.B. weisser Text auf Button) mitbringen. */
 :root[data-theme="dark"] {
-  --background: #171310;
-  --foreground: #f2ead8;
-  --card: #221c16;
-  --card-border: #3a3023;
+  --background: #050f20;
+  --foreground: #f7f8fa;
+  --card: #101f32;
+  --card-border: #233449;
   --shadow-color: 0 0% 0%;
 
-  --color-sand-50: #17130f;
-  --color-sand-100: #211a13;
-  --color-sand-200: #2f261a;
-  --color-sand-300: #473b28;
-  --color-sand-400: #6b5940;
-  --color-sand-500: #93805f;
-  --color-sand-600: #b6a37e;
-  --color-sand-700: #d1c1a0;
-  --color-sand-800: #e6dac0;
-  --color-sand-900: #f7f0e0;
+  --color-sand-50: #091522;
+  --color-sand-100: #0d1b2d;
+  --color-sand-200: #233449;
+  --color-sand-300: #35424f;
+  --color-sand-400: #4d5c6e;
+  --color-sand-500: #68788b;
+  --color-sand-600: #9aa6b4;
+  --color-sand-700: #b7c0cb;
+  --color-sand-800: #d4d9e0;
+  --color-sand-900: #f7f8fa;
 }
 
 @theme {
-  /* Ink - dunkles, warmes Anthrazit als primaere Interaktionsfarbe (Buttons, Links, Badges) */
-  --color-ink-50: #f5f3f0;
-  --color-ink-100: #e9e3db;
-  --color-ink-200: #d3c8bb;
-  --color-ink-300: #b0a08c;
-  --color-ink-400: #8c7a63;
-  --color-ink-500: #6b5a45;
-  --color-ink-600: #4f4132;
-  --color-ink-700: #3a2f24;
-  --color-ink-800: #292118;
-  --color-ink-900: #1a1510;
+  /* Ink - Petrol/Teal als primaere Interaktionsfarbe (Buttons, Links, Badges).
+     ink-600/700/800 sind bewusst deckungsgleich mit --color-cockpit-accent/
+     -accent-hover/-accent-dark, damit Buttons in Hell- und Dunkelmodus
+     ueberall dieselbe Akzentfarbe zeigen. */
+  --color-ink-50: #eef4f2;
+  --color-ink-100: #d7e6e1;
+  --color-ink-200: #a8d4d0;
+  --color-ink-300: #6dbdb6;
+  --color-ink-400: #35a29b;
+  --color-ink-500: #1e9794;
+  --color-ink-600: #087a78;
+  --color-ink-700: #096460;
+  --color-ink-800: #005e60;
+  --color-ink-900: #033a3b;
 
-  /* Gold - einzelner warmer Akzent fuer Preise, CTAs, Hervorhebungen */
-  --color-gold-50: #fdf6e7;
-  --color-gold-100: #f9e8c4;
-  --color-gold-200: #f2d18e;
-  --color-gold-300: #e8b85c;
-  --color-gold-400: #da9f3a;
-  --color-gold-500: #c1852a;
-  --color-gold-600: #9c6a1f;
-  --color-gold-700: #7a5219;
-  --color-gold-800: #5c3d14;
-  --color-gold-900: #3d280d;
+  /* Gold - warmer Amber-Akzent fuer Preise, Hervorhebungen, Pending-/Warnzustaende */
+  --color-gold-50: #fbf3e4;
+  --color-gold-100: #f6e4c4;
+  --color-gold-200: #edd09a;
+  --color-gold-300: #e2ba71;
+  --color-gold-400: #d6a94d;
+  --color-gold-500: #c2923a;
+  --color-gold-600: #a67a2e;
+  --color-gold-700: #866324;
+  --color-gold-800: #664b1c;
+  --color-gold-900: #453313;
 
-  /* Beige/Sand - neutrale Basis statt Grau */
-  --color-sand-50: #fefcf9;
-  --color-sand-100: #f7f2e9;
-  --color-sand-200: #eee4d2;
-  --color-sand-300: #ded0b2;
-  --color-sand-400: #c3ac83;
-  --color-sand-500: #a08a63;
-  --color-sand-600: #7a674a;
-  --color-sand-700: #5a4c37;
-  --color-sand-800: #3a3123;
-  --color-sand-900: #221b14;
+  /* Sand - neutrale Basis, jetzt kuehles Slate-Grau statt Beige */
+  --color-sand-50: #f8fafc;
+  --color-sand-100: #f1f5f9;
+  --color-sand-200: #e2e8f0;
+  --color-sand-300: #cbd5e1;
+  --color-sand-400: #94a3b8;
+  --color-sand-500: #64748b;
+  --color-sand-600: #475569;
+  --color-sand-700: #334155;
+  --color-sand-800: #1e293b;
+  --color-sand-900: #0f172a;
 
   /* Petrol - gedaempftes Gruen/Petrol als primaere Akzentfarbe fuer Controlling Cockpit */
   --color-petrol-50: #eef4f2;
