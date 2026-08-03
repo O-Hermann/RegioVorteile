@@ -83,6 +83,37 @@
   --color-petrol-700: #264d43;
   --color-petrol-800: #1e3b34;
   --color-petrol-900: #142722;
+
+  /* Cockpit - praezise Dunkelmodus-Palette fuer die Controlling-Cockpit Landingpage
+     (ersetzt das vorherige leuchtende Cyan/Royalblau), plus Button-Akzent fuer
+     beide Modi. Nur in src/components/landing/* und landing-header/-footer/
+     -theme-toggle genutzt, nicht global. */
+  --color-cockpit-header: #020b1b;
+  --color-cockpit-hero: #050f20;
+  --color-cockpit-section: #091522;
+  --color-cockpit-section-alt: #0d1b2d;
+  --color-cockpit-card: #101f32;
+  --color-cockpit-card-dark: #0c192a;
+  --color-cockpit-border: #233449;
+
+  --color-cockpit-accent: #087a78;
+  --color-cockpit-accent-light: #1e9794;
+  --color-cockpit-accent-hover: #096460;
+  --color-cockpit-accent-dark: #005e60;
+  --color-cockpit-accent-subtle: #10343b;
+  --color-cockpit-icon-bg: #0c3543;
+
+  --color-cockpit-heading: #f7f8fa;
+  --color-cockpit-text: #d4d9e0;
+  --color-cockpit-text-secondary: #9aa6b4;
+  --color-cockpit-text-weak: #68788b;
+
+  --color-cockpit-positive: #38c5a5;
+  --color-cockpit-negative: #e36c70;
+  --color-cockpit-warning: #d6a94d;
+
+  --color-cockpit-bar: #096a69;
+  --color-cockpit-bar-highlight: #15918d;
 }
 
 @theme inline {

@@ -25,7 +25,7 @@ export function LandingThemeToggle() {
       aria-label={theme === "dark" ? "Zu hellem Modus wechseln" : "Zu dunklem Modus wechseln"}
       className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors ${
         theme === "dark"
-          ? "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+          ? "border-cockpit-border bg-cockpit-card text-cockpit-text-secondary hover:bg-cockpit-card-dark"
           : "border-petrol-200 bg-white text-petrol-700 hover:bg-petrol-50"
       }`}
     >
