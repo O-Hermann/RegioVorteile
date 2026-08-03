@@ -1,0 +1,71 @@
+import {
+  TrendingUpIcon,
+  PieChartIcon,
+  UsersIcon,
+  TargetIcon,
+  DropletIcon,
+  CheckCircleIcon,
+} from "@/components/icons";
+import { cardClass } from "@/lib/ui";
+
+const FEATURES = [
+  {
+    icon: TrendingUpIcon,
+    title: "Umsatz- und Kostenentwicklung",
+    text: "Sehen Sie auf einen Blick, wie sich Umsatz und Kosten Monat für Monat entwickeln – mit einer Erklärung, was dahintersteckt.",
+  },
+  {
+    icon: PieChartIcon,
+    title: "Betriebsergebnis & Rohertrag",
+    text: "Verstehen Sie, was am Ende wirklich übrig bleibt und wodurch sich Ihr Ergebnis verändert hat.",
+  },
+  {
+    icon: UsersIcon,
+    title: "Personalkostenquote",
+    text: "Behalten Sie im Blick, wie sich Personalkosten im Verhältnis zum Umsatz entwickeln.",
+  },
+  {
+    icon: TargetIcon,
+    title: "Plan-Ist-Vergleich",
+    text: "Vergleichen Sie Planzahlen mit den tatsächlichen Ergebnissen und erkennen Sie Abweichungen frühzeitig.",
+  },
+  {
+    icon: DropletIcon,
+    title: "Liquidität & offene Forderungen",
+    text: "Erhalten Sie eine verständliche Einschätzung Ihrer Liquiditätsentwicklung und offener Forderungen.",
+  },
+  {
+    icon: CheckCircleIcon,
+    title: "Empfehlungen in Klartext",
+    text: "Statt nur Zahlen zu zeigen, erhalten Sie konkrete, verständliche Handlungsempfehlungen.",
+  },
+];
+
+export function FeatureSection() {
+  return (
+    <section id="funktionen" className="py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-sand-900">
+          Was Controlling Cockpit für Sie auswertet
+        </h2>
+        <p className="mt-3 text-center text-sand-600 max-w-2xl mx-auto">
+          Aus Ihrem Excel-Export wird eine verständliche Erklärung Ihrer wichtigsten
+          Kennzahlen.
+        </p>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map(({ icon: Icon, title, text }) => (
+            <div key={title} className={cardClass}>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-petrol-50 dark:bg-petrol-900/30 text-petrol-600 dark:text-petrol-300">
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 font-display text-lg font-bold text-sand-900">
+                {title}
+              </h3>
+              <p className="mt-2 text-sm text-sand-600">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

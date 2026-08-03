@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site-config";
 
 const bodyFont = Geist({
   variable: "--font-body",
@@ -14,9 +15,8 @@ const displayFont = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Regiovorteile – Mitarbeiter-Rabatte bei Betrieben aus der Region",
-  description:
-    "Regiovorteile verbindet Arbeitgeber, lokale Partnerbetriebe und Mitarbeitende: regionale Mitarbeiter-Rabatte als Benefit.",
+  title: `${SITE_NAME} – ${SITE_DESCRIPTION}`,
+  description: SITE_DESCRIPTION,
 };
 
 const THEME_INIT_SCRIPT = `
