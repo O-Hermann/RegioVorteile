@@ -26,7 +26,7 @@ export function LandingThemeToggle() {
       className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors ${
         theme === "dark"
           ? "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
-          : "border-cyan-200 bg-white text-cyan-700 hover:bg-cyan-50"
+          : "border-petrol-200 bg-white text-petrol-700 hover:bg-petrol-50"
       }`}
     >
       {theme === "dark" ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}

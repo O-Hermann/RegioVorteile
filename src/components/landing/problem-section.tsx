@@ -7,7 +7,7 @@ const PROBLEMS = [
 
 export function ProblemSection() {
   return (
-    <section className="py-20 border-y border-cyan-100 dark:border-white/10 bg-cyan-200 dark:bg-slate-900">
+    <section className="py-20 border-y border-petrol-100 dark:border-white/10 bg-petrol-50 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
           <div>
@@ -29,9 +29,9 @@ export function ProblemSection() {
             {PROBLEMS.map((item) => (
               <li
                 key={item}
-                className="flex gap-3 rounded-2xl border border-cyan-100 dark:border-white/10 bg-white dark:bg-slate-950 p-4 text-sm text-slate-700 dark:text-slate-300"
+                className="flex gap-3 rounded-2xl border border-petrol-100 dark:border-white/10 bg-white dark:bg-slate-950 p-4 text-sm text-slate-700 dark:text-slate-300"
               >
-                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-cyan-500 dark:bg-cyan-400" />
+                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-petrol-600 dark:bg-cyan-400" />
                 {item}
               </li>
             ))}
