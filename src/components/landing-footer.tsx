@@ -3,7 +3,7 @@ import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, NAV_ITEMS, FOOTER_LINKS } from 
 
 export function LandingFooter() {
   return (
-    <footer className="mt-auto border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950">
+    <footer className="mt-auto border-t border-cyan-100 dark:border-white/10 bg-blue-50 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3 text-sm">
         <div>
           <p className="font-display text-lg font-semibold text-slate-900 dark:text-white">{SITE_NAME}</p>
@@ -25,7 +25,7 @@ export function LandingFooter() {
           <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">Kontakt</p>
           <p className="text-slate-600 dark:text-slate-400">
             Fragen zur Pilotphase?{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-sky-700 dark:text-cyan-300 hover:underline">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-cyan-700 dark:text-cyan-300 hover:underline">
               {CONTACT_EMAIL}
             </a>
           </p>
