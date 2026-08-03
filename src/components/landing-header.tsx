@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { LandingThemeToggle } from "@/components/landing-theme-toggle";
 import { SITE_NAME, NAV_ITEMS } from "@/lib/site-config";
 
 export function LandingHeader() {
@@ -18,7 +18,7 @@ export function LandingHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <LandingThemeToggle />
           <Link
             href="/login"
             className="hidden sm:inline-flex text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-2"
