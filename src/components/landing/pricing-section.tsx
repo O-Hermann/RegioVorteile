@@ -22,7 +22,7 @@ const TIERS = [
 
 export function PricingSection() {
   return (
-    <section id="preise" className="py-20 bg-cyan-50/60 dark:bg-slate-950">
+    <section id="preise" className="py-20 bg-cyan-50 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           Preise
@@ -36,7 +36,7 @@ export function PricingSection() {
           {TIERS.map((tier) => (
             <div
               key={tier.name}
-              className="flex flex-col rounded-2xl border border-cyan-100 dark:border-white/10 bg-white dark:bg-slate-900 p-6 shadow-sm"
+              className="flex flex-col rounded-2xl border border-cyan-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 shadow-[0_0_20px_-10px_rgba(6,182,212,0.3)]"
             >
               <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">{tier.name}</h3>
               <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>

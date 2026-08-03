@@ -32,7 +32,7 @@ export function ProcessSection() {
               className="relative rounded-2xl border border-cyan-100 dark:border-white/10 bg-white dark:bg-slate-950 p-6"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 bg-gradient-to-br from-cyan-400 to-blue-600 dark:bg-cyan-500 text-xs font-bold text-white dark:text-slate-950">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 dark:from-cyan-500 dark:to-cyan-500 text-xs font-bold text-white dark:text-slate-950">
                   {i + 1}
                 </span>
                 <Icon className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />

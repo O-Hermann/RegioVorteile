@@ -3,14 +3,18 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-cyan-50 to-white dark:bg-slate-950">
+    <section className="relative overflow-hidden bg-gradient-to-b from-cyan-100 to-white dark:from-slate-950 dark:to-slate-950">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-cyan-300/40 dark:bg-cyan-500/20 blur-3xl"
+        className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-20 [background-image:radial-gradient(rgba(8,145,178,0.35)_1px,transparent_1px)] dark:[background-image:radial-gradient(rgba(34,211,238,0.4)_1px,transparent_1px)] [background-size:22px_22px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-20 -left-24 h-80 w-80 rounded-full bg-blue-300/35 dark:bg-blue-600/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-cyan-400/50 dark:bg-cyan-500/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-20 -left-24 h-80 w-80 rounded-full bg-blue-400/40 dark:bg-blue-600/20 blur-3xl"
       />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
@@ -19,7 +23,10 @@ export function Hero() {
               Für Unternehmen ohne eigenen Controller
             </span>
             <h1 className="mt-6 font-display text-4xl sm:text-5xl font-extrabold leading-[1.08] tracking-tight text-slate-900 dark:text-white">
-              Ihre Zahlen. Endlich verständlich erklärt.
+              Ihre Zahlen. Endlich{" "}
+              <span className="bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-300 dark:to-blue-400 bg-clip-text text-transparent">
+                verständlich erklärt.
+              </span>
             </h1>
             <p className="mt-6 max-w-lg text-lg text-slate-600 dark:text-slate-300">
               Controlling Cockpit liest Ihre gewohnten Buchhaltungs-Exporte und erklärt
