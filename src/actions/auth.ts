@@ -56,6 +56,39 @@ export async function loginEmployee(formData: FormData) {
   redirect("/mitarbeiter/vorteile");
 }
 
+export async function login(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const remember = formData.get("remember") === "on";
+
+  if (!email || !password) {
+    redirect("/login?error=1");
+  }
+
+  const user = await prisma.user.findUnique({ where: { email }, include: { employer: true } });
+  if (user && (await verifyPassword(password, user.passwordHash))) {
+    if (user.role === "EMPLOYER" && !user.employer?.approved) {
+      redirect("/login?error=pending");
+    }
+
+    const session = await getSession({ persistent: remember });
+    session.userId = user.id;
+    session.userRole = user.role;
+    await session.save();
+    redirect(user.role === "ADMIN" ? "/admin/dashboard" : "/arbeitgeber/dashboard");
+  }
+
+  const employee = await prisma.employee.findUnique({ where: { email } });
+  if (employee?.passwordHash && (await verifyPassword(password, employee.passwordHash))) {
+    const session = await getSession({ persistent: remember });
+    session.employeeId = employee.id;
+    await session.save();
+    redirect("/mitarbeiter/vorteile");
+  }
+
+  redirect("/login?error=1");
+}
+
 export async function activateEmployeeAccount(formData: FormData) {
   const inviteCode = String(formData.get("inviteCode") ?? "").trim().toUpperCase();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();

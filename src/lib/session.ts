@@ -18,7 +18,16 @@ const sessionOptions: SessionOptions = {
   },
 };
 
-export async function getSession(): Promise<IronSession<SessionData>> {
+export async function getSession(options?: { persistent?: boolean }): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  const persistent = options?.persistent ?? true;
+  return getIronSession<SessionData>(cookieStore, {
+    ...sessionOptions,
+    cookieOptions: {
+      ...sessionOptions.cookieOptions,
+      // persistent: Cookie ueberlebt Browser-Neustart (ueber "Angemeldet bleiben").
+      // nicht persistent: reines Session-Cookie, verschwindet beim Schliessen des Browsers.
+      maxAge: persistent ? sessionOptions.ttl : undefined,
+    },
+  });
 }
