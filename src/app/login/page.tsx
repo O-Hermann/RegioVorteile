@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { LandingHeader } from "@/components/landing-header";
+import { LandingFooter } from "@/components/landing-footer";
 import { ArrowRightIcon } from "@/components/icons";
 import { cardClass } from "@/lib/ui";
 
@@ -20,7 +20,7 @@ const OPTIONS = [
 export default function LoginChooserPage() {
   return (
     <>
-      <SiteHeader />
+      <LandingHeader />
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-2xl">
           <h1 className="text-center font-display text-3xl font-semibold text-sand-900">
@@ -57,7 +57,7 @@ export default function LoginChooserPage() {
           </p>
         </div>
       </main>
-      <SiteFooter />
+      <LandingFooter />
     </>
   );
 }

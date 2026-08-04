@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireEmployee } from "@/lib/auth";
 import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SITE_NAME } from "@/lib/site-config";
 
 export default async function MitarbeiterLayout({ children }: { children: React.ReactNode }) {
   const { employee } = await requireEmployee();
@@ -11,7 +12,7 @@ export default async function MitarbeiterLayout({ children }: { children: React.
       <header className="border-b border-card-border bg-card sticky top-0 z-30">
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
           <Link href="/mitarbeiter/vorteile" className="font-display text-lg font-semibold text-sand-900">
-            Regiovorteile
+            {SITE_NAME}
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-xs text-sand-500 hidden sm:inline">{employee.name}</span>

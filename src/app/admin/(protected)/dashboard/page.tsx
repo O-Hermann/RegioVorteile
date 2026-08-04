@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { primaryButtonClass, secondaryButtonClass, cardClass } from "@/lib/ui";
 import { relativeTimeDe } from "@/lib/time";
+import { SITE_NAME } from "@/lib/site-config";
 import {
   ArrowRightIcon,
   MapPinIcon,
@@ -278,7 +279,7 @@ export default async function AdminDashboardPage() {
                 <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
                   Administrator
                 </span>
-                <span className="text-xs text-sand-500">Regiovorteile Plattform</span>
+                <span className="text-xs text-sand-500">{SITE_NAME} Plattform</span>
               </div>
             </div>
           </div>

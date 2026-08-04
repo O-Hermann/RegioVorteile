@@ -1,5 +1,5 @@
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { LandingHeader } from "@/components/landing-header";
+import { LandingFooter } from "@/components/landing-footer";
 import { cardClass } from "@/lib/ui";
 
 export function LegalPageView({
@@ -11,7 +11,7 @@ export function LegalPageView({
 }) {
   return (
     <>
-      <SiteHeader />
+      <LandingHeader />
       <main className="flex-1 mx-auto max-w-3xl px-4 sm:px-6 py-16 w-full">
         <h1 className="font-display text-3xl font-semibold text-sand-900">{title}</h1>
         <div className={`${cardClass} mt-6`}>
@@ -24,7 +24,7 @@ export function LegalPageView({
           )}
         </div>
       </main>
-      <SiteFooter />
+      <LandingFooter />
     </>
   );
 }

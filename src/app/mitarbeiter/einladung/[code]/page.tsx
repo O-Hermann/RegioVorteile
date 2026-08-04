@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { activateEmployeeAccount } from "@/actions/auth";
 import { inputClass, labelClass, primaryButtonClass, cardClass } from "@/lib/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SITE_NAME } from "@/lib/site-config";
 
 const ERROR_MESSAGES: Record<string, string> = {
   "1": "Bitte E-Mail und ein Passwort mit mindestens 8 Zeichen ausfüllen (zweimal identisch).",
@@ -50,7 +51,7 @@ export default async function MitarbeiterEinladungPage({
       <ThemeToggle className="fixed top-4 right-4" />
       <div className={`w-full max-w-sm ${cardClass}`}>
         <p className="text-xs font-semibold uppercase tracking-wide text-sand-500">
-          Regiovorteile
+          {SITE_NAME}
         </p>
         <h1 className="mt-1 font-display text-2xl font-semibold text-sand-900">
           Willkommen, {employee.name.split(" ")[0]}!

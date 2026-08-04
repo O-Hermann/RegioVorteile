@@ -1,6 +1,6 @@
 import { submitPartnerInquiry } from "@/actions/partner-inquiry";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { LandingHeader } from "@/components/landing-header";
+import { LandingFooter } from "@/components/landing-footer";
 import { inputClass, labelClass, primaryButtonClass, cardClass } from "@/lib/ui";
 
 export default async function PartnerWerdenPage({
@@ -12,7 +12,7 @@ export default async function PartnerWerdenPage({
 
   return (
     <>
-      <SiteHeader />
+      <LandingHeader />
       <main className="flex-1 mx-auto max-w-xl px-4 sm:px-6 py-16">
         <div className={cardClass}>
           <h1 className="font-display text-2xl font-semibold text-sand-900">
@@ -79,7 +79,7 @@ export default async function PartnerWerdenPage({
           </form>
         </div>
       </main>
-      <SiteFooter />
+      <LandingFooter />
     </>
   );
 }

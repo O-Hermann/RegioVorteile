@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SITE_NAME } from "@/lib/site-config";
 
 const NAV = [
   { href: "/admin/dashboard", label: "Übersicht" },
@@ -22,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-card-border bg-card">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/admin/dashboard" className="font-display text-lg font-semibold text-sand-900">
-            Regiovorteile <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
+            {SITE_NAME} <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-5 text-sm font-medium text-sand-700">
             {NAV.map((item) => (

@@ -25,13 +25,13 @@ export function LandingHeader() {
           >
             Login
           </Link>
-          <a
-            href="#preise"
+          <Link
+            href="/#preise"
             className="group inline-flex items-center gap-1.5 rounded-full bg-cockpit-accent hover:bg-cockpit-accent-hover px-4 py-2 text-sm font-semibold text-white transition-colors"
           >
             Pilotphase anfragen
             <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          </Link>
         </div>
       </div>
     </header>

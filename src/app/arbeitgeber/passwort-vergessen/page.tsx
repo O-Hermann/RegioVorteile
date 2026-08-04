@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requestEmployerPasswordReset } from "@/actions/password-reset";
 import { inputClass, labelClass, primaryButtonClass, cardClass } from "@/lib/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SITE_NAME } from "@/lib/site-config";
 
 export default async function ArbeitgeberPasswortVergessenPage({
   searchParams,
@@ -20,7 +21,7 @@ export default async function ArbeitgeberPasswortVergessenPage({
       <ThemeToggle className="fixed top-4 right-4" />
       <div className={`w-full max-w-sm ${cardClass}`}>
         <p className="text-xs font-semibold uppercase tracking-wide text-sand-500">
-          Regiovorteile
+          {SITE_NAME}
         </p>
         <h1 className="mt-1 font-display text-2xl font-semibold text-sand-900">
           Passwort vergessen

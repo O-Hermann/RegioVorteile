@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { registerEmployer } from "@/actions/employer";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { LandingHeader } from "@/components/landing-header";
+import { LandingFooter } from "@/components/landing-footer";
 import { inputClass, labelClass, primaryButtonClass, cardClass } from "@/lib/ui";
 
 function formatPrice(cents: number) {
@@ -32,7 +32,7 @@ export default async function ArbeitgeberRegistrierenPage({
 
   return (
     <>
-      <SiteHeader />
+      <LandingHeader />
       <main className="flex-1 mx-auto max-w-4xl px-4 sm:px-6 py-16 grid gap-10 lg:grid-cols-[3fr_2fr]">
         <div className={cardClass}>
           <h1 className="font-display text-2xl font-semibold text-sand-900">
@@ -211,7 +211,7 @@ export default async function ArbeitgeberRegistrierenPage({
           </div>
         </div>
       </main>
-      <SiteFooter />
+      <LandingFooter />
     </>
   );
 }

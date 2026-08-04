@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireEmployer } from "@/lib/auth";
 import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SITE_NAME } from "@/lib/site-config";
 
 const NAV = [
   { href: "/arbeitgeber/dashboard", label: "Übersicht" },
@@ -17,7 +18,7 @@ export default async function ArbeitgeberLayout({ children }: { children: React.
       <header className="border-b border-card-border bg-card">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/arbeitgeber/dashboard" className="font-display text-lg font-semibold text-sand-900">
-            Regiovorteile{" "}
+            {SITE_NAME}{" "}
             <span className="text-sand-500 font-sans text-sm font-normal">
               {employer.companyName}
             </span>

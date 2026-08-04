@@ -12,7 +12,7 @@ export default async function AdminContactRequestsPage() {
     <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-3xl font-semibold text-sand-900">Kontaktanfragen</h1>
       <p className="mt-2 text-sand-600">
-        Anfragen von Unternehmen, die über „Jetzt Kontakt aufnehmen" auf der Startseite die
+        Anfragen von Unternehmen, die über den Kontakt-Button auf der Startseite die
         Pilotphase angefragt haben.
       </p>
 
