@@ -4,8 +4,8 @@ import { Hero } from "@/components/landing/hero";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { FeatureSection } from "@/components/landing/feature-section";
 import { ProcessSection } from "@/components/landing/process-section";
+import { DisclaimerSection } from "@/components/landing/disclaimer-section";
 import { TargetGroupSection } from "@/components/landing/target-group-section";
-import { ComparisonSection } from "@/components/landing/comparison-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { CtaSection } from "@/components/landing/cta-section";
 
@@ -18,8 +18,8 @@ export default function LandingPage() {
         <ProblemSection />
         <FeatureSection />
         <ProcessSection />
+        <DisclaimerSection />
         <TargetGroupSection />
-        <ComparisonSection />
         <PricingSection />
         <CtaSection />
       </main>

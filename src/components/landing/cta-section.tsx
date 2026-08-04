@@ -10,11 +10,11 @@ export function CtaSection() {
       />
       <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
         <h2 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
-          Bereit für verständliches Controlling?
+          Bereit für den Überblick über Ihr Unternehmen?
         </h2>
         <p className="mt-4 text-slate-600 dark:text-cockpit-text">
-          Melden Sie sich für die Pilotphase und erfahren Sie, wie Controlling Cockpit
-          Ihre Zahlen für Sie erklärt.
+          Melden Sie sich für die Pilotphase an und erleben Sie, wie UnternehmensCockpit
+          Ihre wichtigsten Zahlen verständlich zusammenführt.
         </p>
         <Link
           href="/kontakt"

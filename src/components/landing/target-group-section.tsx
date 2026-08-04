@@ -3,19 +3,19 @@ import { BriefcaseIcon, StoreIcon, UsersIcon, TargetIcon } from "@/components/ic
 const GROUPS = [
   {
     icon: BriefcaseIcon,
-    text: "Geschäftsführer kleiner und mittlerer Unternehmen ohne eigene Controlling-Abteilung",
+    text: "Geschäftsführer kleiner und mittlerer Unternehmen mit etwa 5 bis 50 Mitarbeitenden, ohne eigenen Controller",
   },
   {
     icon: StoreIcon,
-    text: "Handwerksbetriebe, Dienstleister und produzierende Unternehmen mit DATEV-Buchhaltung",
+    text: "Dienstleister, Agenturen, Handwerksbetriebe und kleinere Handelsunternehmen",
   },
   {
     icon: TargetIcon,
-    text: "Unternehmen, die einen schnellen, verständlichen Überblick statt komplexer BWA-Tabellen wollen",
+    text: "Unternehmen, die einen schnellen und verständlichen Überblick statt vieler einzelner Tabellen wollen",
   },
   {
     icon: UsersIcon,
-    text: "Betriebe, die sich einen externen Controller (noch) nicht leisten wollen oder können",
+    text: "Betriebe mit vorhandenen Buchhaltungs-, Auftrags- oder Kundendaten, die bisher über mehrere Systeme verteilt sind",
   },
 ];
 
@@ -24,7 +24,7 @@ export function TargetGroupSection() {
     <section className="py-20 bg-white dark:bg-cockpit-section">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
-          Für wen Controlling Cockpit gemacht ist
+          Für wen UnternehmensCockpit gemacht ist
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {GROUPS.map(({ icon: Icon, text }) => (

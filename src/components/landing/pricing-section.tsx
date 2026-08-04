@@ -1,15 +1,15 @@
 const TIERS = [
   {
     name: "Starter",
-    description: "Für kleine Unternehmen mit überschaubarer Buchhaltung",
-    features: ["Monatlicher Excel-Upload", "Kernkennzahlen erklärt", "Verständliche Empfehlungen"],
+    description: "Für kleine Unternehmen mit überschaubarer Datenlage",
+    features: ["Monatlicher Datenimport", "Kernkennzahlen im Überblick", "Verständliche Monatsübersicht"],
   },
   {
     name: "Wachstum",
-    description: "Für wachsende Unternehmen mit mehreren Kostenstellen",
+    description: "Für wachsende Unternehmen mit mehreren Bereichen",
     features: [
       "Alles aus Starter",
-      "Plan-Ist-Vergleich",
+      "Aufträge & Vertrieb im Überblick",
       "Liquiditäts- und Forderungsüberblick",
     ],
   },
@@ -28,7 +28,7 @@ export function PricingSection() {
           Preise
         </h2>
         <p className="mt-3 text-center text-slate-600 dark:text-cockpit-text-secondary max-w-xl mx-auto">
-          Controlling Cockpit befindet sich aktuell in der Pilotphase. Alle Preise sind
+          UnternehmensCockpit befindet sich aktuell in der Pilotphase. Alle Preise sind
           auf Anfrage.
         </p>
 

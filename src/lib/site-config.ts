@@ -1,12 +1,12 @@
-export const SITE_NAME = "Controlling Cockpit";
+export const SITE_NAME = "UnternehmensCockpit";
 
 export const SITE_TAGLINE =
-  "Verständliches Controlling für Unternehmen ohne eigenen Controller";
+  "Die verständliche Unternehmensübersicht für kleine und mittlere Unternehmen.";
 
 export const SITE_DESCRIPTION =
-  "Controlling Cockpit erklärt Ihre Zahlen aus DATEV-Excel-Exporten in klarer Sprache: Umsatz, Kosten, Marge, Liquidität und was jetzt zu tun ist.";
+  "UnternehmensCockpit führt Ihre wichtigsten Unternehmenszahlen auf einer übersichtlichen Seite zusammen und zeigt verständlich, was sich seit dem letzten Monat verändert hat.";
 
-export const CONTACT_EMAIL = "kontakt@controlling-cockpit.de";
+export const CONTACT_EMAIL = "kontakt@unternehmenscockpit.de";
 
 export type NavItem = {
   label: string;

@@ -1,9 +1,9 @@
 import { TrendingUpIcon } from "@/components/icons";
 
 const KPI_TILES = [
-  { label: "Umsatz", value: "128.400 €", delta: "+3,1 %", positive: true },
-  { label: "Rohertrag", value: "41.200 €", delta: "-4,2 %", positive: false },
-  { label: "Personalkostenquote", value: "34 %", delta: "+1,4 Pp.", positive: false },
+  { label: "Umsatz", value: "128.400 €", delta: "-8,2 %", positive: false },
+  { label: "Ergebnis", value: "22.900 €", delta: "-3,6 %", positive: false },
+  { label: "Offene Aufträge", value: "34", delta: "-12", positive: false },
 ];
 
 const CHART_BARS = [55, 62, 48, 70, 65, 58, 74];
@@ -54,9 +54,8 @@ export function DashboardPreview() {
         <div className="flex items-start gap-2.5">
           <TrendingUpIcon className="mt-0.5 h-4 w-4 shrink-0 text-petrol-700 dark:text-cockpit-accent-light" />
           <p className="text-xs leading-relaxed text-slate-700 dark:text-cockpit-text">
-            Ihr Rohertrag ist im Juli um <strong>4,2 %</strong> gesunken – hauptsächlich
-            durch gestiegene Materialkosten im Einkauf. Empfehlung: Lieferantenkonditionen
-            prüfen.
+            Der Umsatz liegt <strong>8,2 %</strong> unter dem Vormonat. Gleichzeitig
+            wurden <strong>12 Aufträge</strong> weniger abgeschlossen.
           </p>
         </div>
       </div>

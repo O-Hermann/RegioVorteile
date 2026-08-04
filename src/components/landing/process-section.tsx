@@ -1,20 +1,25 @@
-import { UploadIcon, ActivityIcon, FileTextIcon } from "@/components/icons";
+import { UploadIcon, ActivityIcon, FileTextIcon, TrendingUpIcon } from "@/components/icons";
 
 const STEPS = [
   {
     icon: UploadIcon,
-    title: "Excel-Export hochladen",
-    text: "Laden Sie Ihren gewohnten Buchhaltungs-Export hoch, zum Beispiel im DATEV-Format – ohne zusätzliche Software oder Schnittstelle.",
+    title: "Daten importieren",
+    text: "Sie laden vorhandene Excel- oder CSV-Exporte aus Ihrem bisherigen System hoch – ohne zusätzliche Schnittstelle.",
   },
   {
     icon: ActivityIcon,
-    title: "Automatische Auswertung",
-    text: "Controlling Cockpit analysiert Ihre Zahlen und bereitet die wichtigsten Kennzahlen strukturiert auf.",
+    title: "Daten zuordnen",
+    text: "UnternehmensCockpit verarbeitet die vorhandenen Werte und ordnet sie den passenden Bereichen zu.",
   },
   {
     icon: FileTextIcon,
-    title: "Verständliche Erklärung erhalten",
-    text: "Sie erhalten eine klare, nicht-technische Zusammenfassung: was gut läuft, wo es hakt und was Sie jetzt prüfen sollten.",
+    title: "Überblick erhalten",
+    text: "Sie sehen Ihre wichtigsten Kennzahlen, Monatsvergleiche und Veränderungen in einem verständlichen Dashboard.",
+  },
+  {
+    icon: TrendingUpIcon,
+    title: "Entwicklung verfolgen",
+    text: "Mit weiteren Monatsimporten entsteht eine fortlaufende Übersicht über die Entwicklung Ihres Unternehmens.",
   },
 ];
 
@@ -25,7 +30,7 @@ export function ProcessSection() {
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
           So funktioniert es
         </h2>
-        <div className="mt-12 grid gap-8 sm:grid-cols-3">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map(({ icon: Icon, title, text }, i) => (
             <div
               key={title}

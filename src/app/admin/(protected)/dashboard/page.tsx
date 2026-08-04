@@ -378,10 +378,10 @@ export default async function AdminDashboardPage() {
                 >
                   <tile.icon className="h-4 w-4" />
                 </span>
-                <p className="mt-2 font-display text-lg font-bold leading-none text-sand-900">
+                <p className="mt-1.5 font-display text-[26px] font-extrabold leading-none tracking-tight text-sand-900">
                   {tile.value}
                 </p>
-                <p className={`mt-0.5 text-xs ${secondaryTextClass}`}>{tile.label}</p>
+                <p className={`mt-1 text-[13px] leading-tight ${secondaryTextClass}`}>{tile.label}</p>
               </div>
             ))}
           </div>

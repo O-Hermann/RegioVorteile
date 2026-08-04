@@ -16,18 +16,19 @@ export function Hero() {
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <span className="inline-block rounded-full border border-petrol-200 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-accent-subtle px-3 py-1 text-xs font-semibold tracking-wide uppercase text-petrol-800 dark:text-cockpit-accent-light">
-              Für Unternehmen ohne eigenen Controller
+              Das Dashboard für Geschäftsführer
             </span>
             <h1 className="mt-6 font-display text-4xl sm:text-5xl font-extrabold leading-[1.08] tracking-tight text-slate-900 dark:text-cockpit-heading">
-              Ihre Zahlen. Endlich{" "}
+              Ihr Unternehmen.{" "}
               <span className="text-petrol-800 dark:text-cockpit-accent-light">
-                verständlich erklärt.
+                Auf einen Blick.
               </span>
             </h1>
             <p className="mt-6 max-w-lg text-lg text-slate-600 dark:text-cockpit-text">
-              Controlling Cockpit liest Ihre gewohnten Buchhaltungs-Exporte und erklärt
-              Ihnen in klarer Sprache, wie es um Umsatz, Kosten und Ergebnis wirklich
-              steht – ganz ohne Controlling-Vorwissen.
+              UnternehmensCockpit führt Ihre wichtigsten Unternehmenszahlen auf einer
+              übersichtlichen Seite zusammen. Vergleichen Sie Umsatz, Kosten, Ergebnis,
+              Aufträge und weitere Kennzahlen mit dem Vormonat und erkennen Sie sofort,
+              was sich verändert hat.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <a
