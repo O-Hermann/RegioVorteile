@@ -35,18 +35,23 @@ const panelClass =
 const panelHoverClass =
   "hover:-translate-y-0.5 hover:border-ink-300 dark:hover:border-cockpit-accent-light/40 hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-cockpit-accent/20";
 
+// Sekundaertext-Ton nur fuer diese Seite etwas heller als das globale
+// sand-500 im Dunkelmodus (#68788b), damit Datum/Beschreibungen/Labels
+// ohne Anstrengung lesbar sind. Kein rein weisser Text.
+const secondaryTextClass = "text-sand-500 dark:text-cockpit-text-secondary";
+
 const ACCENT_CLASSES: Record<string, string> = {
-  sky: "bg-gradient-to-br from-sky-400/25 to-sky-600/5 text-sky-600 dark:text-sky-300 border border-sky-400/30 dark:border-sky-400/20 shadow-lg shadow-sky-500/10 dark:shadow-sky-500/20",
+  sky: "bg-gradient-to-br from-sky-400/30 to-sky-500/10 text-sky-600 dark:text-sky-200 border border-sky-400/30 dark:border-sky-300/25 ring-1 ring-inset ring-white/10 shadow-md shadow-sky-500/10 dark:shadow-sky-400/20",
   emerald:
-    "bg-gradient-to-br from-emerald-400/25 to-emerald-600/5 text-emerald-600 dark:text-emerald-300 border border-emerald-400/30 dark:border-emerald-400/20 shadow-lg shadow-emerald-500/10 dark:shadow-emerald-500/20",
+    "bg-gradient-to-br from-emerald-400/30 to-emerald-500/10 text-emerald-600 dark:text-emerald-200 border border-emerald-400/30 dark:border-emerald-300/25 ring-1 ring-inset ring-white/10 shadow-md shadow-emerald-500/10 dark:shadow-emerald-400/20",
   violet:
-    "bg-gradient-to-br from-violet-400/25 to-violet-600/5 text-violet-600 dark:text-violet-300 border border-violet-400/30 dark:border-violet-400/20 shadow-lg shadow-violet-500/10 dark:shadow-violet-500/20",
+    "bg-gradient-to-br from-violet-400/30 to-violet-500/10 text-violet-600 dark:text-violet-200 border border-violet-400/30 dark:border-violet-300/25 ring-1 ring-inset ring-white/10 shadow-md shadow-violet-500/10 dark:shadow-violet-400/20",
   amber:
-    "bg-gradient-to-br from-amber-400/25 to-amber-600/5 text-amber-600 dark:text-amber-300 border border-amber-400/30 dark:border-amber-400/20 shadow-lg shadow-amber-500/10 dark:shadow-amber-500/20",
-  rose: "bg-gradient-to-br from-rose-400/25 to-rose-600/5 text-rose-600 dark:text-rose-300 border border-rose-400/30 dark:border-rose-400/20 shadow-lg shadow-rose-500/10 dark:shadow-rose-500/20",
+    "bg-gradient-to-br from-amber-400/35 to-amber-500/10 text-amber-600 dark:text-amber-200 border border-amber-400/35 dark:border-amber-300/30 ring-1 ring-inset ring-white/10 shadow-md shadow-amber-500/15 dark:shadow-amber-400/25",
+  rose: "bg-gradient-to-br from-rose-400/35 to-rose-500/10 text-rose-600 dark:text-rose-200 border border-rose-400/35 dark:border-rose-300/30 ring-1 ring-inset ring-white/10 shadow-md shadow-rose-500/15 dark:shadow-rose-400/25",
   slate:
-    "bg-gradient-to-br from-slate-400/25 to-slate-600/5 text-slate-600 dark:text-slate-300 border border-slate-400/30 dark:border-slate-400/20 shadow-lg shadow-slate-500/10 dark:shadow-slate-500/15",
-  ink: "bg-gradient-to-br from-ink-400/25 to-ink-600/10 text-ink-700 dark:text-cockpit-accent-light border border-ink-400/30 dark:border-cockpit-accent-light/25 shadow-lg shadow-ink-500/10 dark:shadow-cockpit-accent/25",
+    "bg-gradient-to-br from-slate-400/30 to-slate-500/10 text-slate-600 dark:text-slate-200 border border-slate-400/30 dark:border-slate-300/25 ring-1 ring-inset ring-white/10 shadow-md shadow-slate-500/10 dark:shadow-slate-400/15",
+  ink: "bg-gradient-to-br from-ink-400/30 to-ink-500/10 text-ink-700 dark:text-cockpit-accent-light border border-ink-400/30 dark:border-cockpit-accent-light/30 ring-1 ring-inset ring-white/10 shadow-md shadow-ink-500/10 dark:shadow-cockpit-accent/25",
 };
 
 // Module-Karten der mittleren Spalte. Karten ohne href verweisen auf noch
@@ -61,6 +66,49 @@ type ModuleCard = {
   badge?: string;
   wide?: boolean;
 };
+
+// Rein dekorative, ansteigende Linie fuer die Plattformstatus-Karte.
+// Keine echten oder erfundenen Werte, keine Achsen/Beschriftungen -
+// ausschliesslich optische Auflockerung im Kartenhintergrund.
+function DecorativeTrendGraph() {
+  const points: [number, number][] = [
+    [0, 46],
+    [28, 40],
+    [56, 42],
+    [84, 28],
+    [112, 31],
+    [140, 16],
+    [168, 19],
+    [196, 6],
+  ];
+  const polylinePoints = points.map(([x, y]) => `${x},${y}`).join(" ");
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 196 52"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-14 w-full opacity-50"
+    >
+      <defs>
+        <linearGradient id="platformTrendLine" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#5eead4" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#5eead4" stopOpacity="0.9" />
+        </linearGradient>
+      </defs>
+      <polyline
+        points={polylinePoints}
+        fill="none"
+        stroke="url(#platformTrendLine)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {points.map(([x, y]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r="2" fill="#99f6e4" fillOpacity="0.85" />
+      ))}
+    </svg>
+  );
+}
 
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
@@ -269,19 +317,22 @@ export default async function AdminDashboardPage() {
     })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 8);
+    // Rechte Spalte ist jetzt fest 50/50 aufgeteilt - die Aktivitaeten-Haelfte
+    // hat dadurch weniger Platz als vorher. Anzahl bewusst ueber die
+    // Datenauswahl begrenzt statt per Scrollcontainer zu verstecken.
+    .slice(0, 4);
 
   return (
     <div className="flex flex-col">
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Admin-Übersicht</h1>
-        <p className="text-sm text-sand-500">{today}</p>
+        <p className={`text-sm ${secondaryTextClass}`}>{today}</p>
       </div>
 
       {/* Kein overflow-y-auto / keine feste Hoehe mehr auf dieser Ebene:
           die Spalten wachsen mit ihrem Inhalt, die ganze Seite scrollt bei
           Bedarf normal statt einzelner Spalten. */}
-      <div className="mt-2.5 grid grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr] xl:items-stretch">
+      <div className="mt-2 grid grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr] xl:items-stretch">
         {/* Linke Spalte: Kennzahlen */}
         <div className={`${panelClass} flex min-w-0 flex-col gap-4 !p-5`}>
           <div className="flex items-center gap-3">
@@ -296,21 +347,23 @@ export default async function AdminDashboardPage() {
                 <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
                   Administrator
                 </span>
-                <span className="text-xs text-sand-500">{SITE_NAME} Plattform</span>
+                <span className={`text-xs ${secondaryTextClass}`}>{SITE_NAME} Plattform</span>
               </div>
             </div>
           </div>
 
-          <div className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 dark:from-cockpit-accent-dark dark:via-[#063a41] dark:to-cockpit-header p-4 text-white shadow-warm-lg">
-            <div aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-cockpit-accent-light/25 blur-3xl" />
-            <div aria-hidden className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-cockpit-accent/20 blur-3xl" />
-            <div className="relative">
-              <p className="flex items-center justify-between gap-1.5 text-xs uppercase tracking-wide text-white/60">
-                Plattformstatus
-                <ActivityIcon className="h-3.5 w-3.5" />
-              </p>
-              <p className="mt-1.5 font-display text-3xl font-extrabold leading-none">{activeEmployerCount}</p>
-              <p className="mt-1.5 text-xs text-white/60">Aktive Pilotunternehmen</p>
+          {/* Plattformstatus - visuelles Highlight der linken Spalte */}
+          <div className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 dark:from-cockpit-accent-light dark:via-cockpit-accent-dark dark:to-cockpit-header p-5 py-6 text-white shadow-warm-lg ring-1 ring-inset ring-white/10">
+            <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-cockpit-accent-light/25 blur-3xl" />
+            <div aria-hidden className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-cockpit-accent/25 blur-3xl" />
+            <DecorativeTrendGraph />
+            <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+              <ActivityIcon className="h-3.5 w-3.5 text-white/85" />
+            </span>
+            <div className="relative flex flex-col items-center gap-1.5 text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">Plattformstatus</p>
+              <p className="font-display text-4xl font-extrabold leading-none">{activeEmployerCount}</p>
+              <p className="text-sm text-white/70">Aktive Pilotunternehmen</p>
             </div>
           </div>
 
@@ -328,17 +381,10 @@ export default async function AdminDashboardPage() {
                 <p className="mt-2 font-display text-lg font-bold leading-none text-sand-900">
                   {tile.value}
                 </p>
-                <p className="mt-0.5 text-xs text-sand-500">{tile.label}</p>
+                <p className={`mt-0.5 text-xs ${secondaryTextClass}`}>{tile.label}</p>
               </div>
             ))}
           </div>
-
-          <Link
-            href="/admin/arbeitgeber"
-            className="mt-auto inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-ink-600 to-ink-700 dark:from-cockpit-accent dark:to-cockpit-accent-hover px-5 py-3 text-sm font-semibold text-white shadow-warm hover:shadow-warm-lg hover:brightness-110 transition-all"
-          >
-            Unternehmen ansehen
-          </Link>
         </div>
 
         {/* Mittlere Spalte: Module */}
@@ -361,7 +407,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div className="mt-2.5">
                   <h3 className="font-display text-base font-semibold tracking-tight text-sand-900">{m.title}</h3>
-                  <p className="mt-1 text-sm text-sand-600">{m.description}</p>
+                  <p className={`mt-1 text-sm ${secondaryTextClass}`}>{m.description}</p>
                 </div>
               </>
             );
@@ -392,14 +438,19 @@ export default async function AdminDashboardPage() {
           })}
         </div>
 
-        {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten */}
-        <div className="flex min-w-0 flex-col gap-6">
-          <div className={`${panelClass} !p-5`}>
-            <h3 className="font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
+        {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className={`${panelClass} flex flex-1 basis-0 flex-col !p-5`}>
+            <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
             {actionItems.length === 0 ? (
-              <p className="mt-4 text-sm text-sand-500">Aktuell besteht kein Handlungsbedarf.</p>
+              <div className="flex flex-1 flex-col items-center justify-center gap-2.5 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/30 to-emerald-500/10 text-emerald-600 dark:text-emerald-200 border border-emerald-400/30 dark:border-emerald-300/25 ring-1 ring-inset ring-white/10">
+                  <CheckCircleIcon className="h-5 w-5" />
+                </span>
+                <p className={`text-sm ${secondaryTextClass}`}>Aktuell besteht kein Handlungsbedarf.</p>
+              </div>
             ) : (
-              <ul className="mt-2 divide-y divide-card-border/60 dark:divide-white/5">
+              <ul className="mt-2 min-h-0 flex-1 divide-y divide-card-border/60 dark:divide-white/5">
                 {actionItems.map((item) => (
                   <li
                     key={item.id}
@@ -411,7 +462,7 @@ export default async function AdminDashboardPage() {
                       >
                         <item.icon className="h-4 w-4" />
                       </span>
-                      <p className="truncate text-sm text-sand-800">{item.label}</p>
+                      <p className="truncate text-sm text-sand-800 dark:text-cockpit-text">{item.label}</p>
                     </div>
                     <Link
                       href={item.href}
@@ -425,16 +476,18 @@ export default async function AdminDashboardPage() {
             )}
           </div>
 
-          <div className={`${panelClass} flex flex-col gap-1 !p-5`}>
-            <h3 className="font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Aktivitäten</h3>
+          <div className={`${panelClass} flex flex-1 basis-0 flex-col gap-1 !p-5`}>
+            <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Aktivitäten</h3>
             {activity.length === 0 ? (
-              <p className="mt-4 text-sm text-sand-500">Bisher sind keine Aktivitäten vorhanden.</p>
+              <div className="flex flex-1 items-center justify-center">
+                <p className={`text-sm ${secondaryTextClass}`}>Bisher sind keine Aktivitäten vorhanden.</p>
+              </div>
             ) : (
               <ul className="mt-1">
                 {activity.map((a) => (
                   <li
                     key={a.id}
-                    className="-mx-2 flex items-start gap-3 rounded-xl border-b border-card-border/60 px-2 py-3 text-sm transition-colors last:border-0 hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
+                    className="-mx-2 flex items-start gap-3 rounded-xl border-b border-card-border/60 px-2 py-2.5 text-sm transition-colors last:border-0 hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
                   >
                     <span
                       className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
@@ -444,9 +497,9 @@ export default async function AdminDashboardPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <p className="truncate font-medium text-sand-900">{a.label}</p>
-                        <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                        <span className={`shrink-0 text-xs ${secondaryTextClass}`}>{relativeTimeDe(a.createdAt)}</span>
                       </div>
-                      <p className="truncate text-xs text-sand-500">{a.detail}</p>
+                      <p className={`truncate text-xs ${secondaryTextClass}`}>{a.detail}</p>
                     </div>
                   </li>
                 ))}
