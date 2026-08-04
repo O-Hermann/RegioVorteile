@@ -14,7 +14,7 @@ export async function verifyPassword(password: string, hash: string) {
 export async function requireAdmin() {
   const session = await getSession();
   if (!session.userId || session.userRole !== "ADMIN") {
-    redirect("/admin/login");
+    redirect("/login");
   }
   return session;
 }
