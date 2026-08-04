@@ -4,6 +4,7 @@ import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AdminNav } from "@/components/admin-nav";
 import { SITE_NAME } from "@/lib/site-config";
+import { LogOutIcon } from "@/components/icons";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
@@ -11,17 +12,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex-1 flex flex-col">
       <header className="border-b border-card-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/admin/dashboard" className="font-display text-lg font-semibold text-sand-900 shrink-0">
-            {SITE_NAME} <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
+        <div className="mx-auto max-w-[1920px] px-8 h-20 flex items-center justify-between gap-6">
+          <Link href="/admin/dashboard" className="flex items-center gap-3 shrink-0">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-600 dark:bg-cockpit-accent font-display text-base font-bold text-white">
+              C
+            </span>
+            <span className="font-display text-lg font-semibold text-sand-900">
+              {SITE_NAME} <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
+            </span>
           </Link>
-          <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
+          <nav className="hidden lg:flex items-center gap-2 text-[15px] font-medium">
             <AdminNav />
           </nav>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-4 shrink-0">
             <ThemeToggle />
             <form action={logout}>
-              <button className="text-sm font-medium text-sand-500 hover:text-sand-900">
+              <button className="inline-flex items-center gap-1.5 text-sm font-medium text-sand-500 hover:text-sand-900">
+                <LogOutIcon className="h-4 w-4" />
                 Abmelden
               </button>
             </form>
@@ -31,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <AdminNav mobile />
         </nav>
       </header>
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">{children}</main>
+      <main className="flex-1 w-full max-w-[1920px] mx-auto px-8 py-8">{children}</main>
     </div>
   );
 }

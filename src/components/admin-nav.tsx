@@ -23,7 +23,7 @@ function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; ac
   if (!item.href) {
     return (
       <span
-        className={`${mobile ? "whitespace-nowrap" : ""} inline-flex items-center gap-1 text-sand-400 dark:text-cockpit-text-weak cursor-default`}
+        className={`${mobile ? "whitespace-nowrap" : ""} inline-flex items-center gap-1 px-3 py-2 text-sand-400 dark:text-cockpit-text-weak cursor-default`}
         title="Noch nicht verfügbar"
       >
         {item.label}
@@ -34,7 +34,7 @@ function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; ac
   return (
     <Link
       href={item.href}
-      className={`${mobile ? "whitespace-nowrap " : ""}rounded-lg px-2.5 py-1.5 transition-colors ${
+      className={`${mobile ? "whitespace-nowrap " : ""}rounded-full px-4 py-2 transition-colors ${
         active
           ? "bg-ink-50 text-ink-700 dark:bg-cockpit-accent-subtle dark:text-cockpit-accent-light border border-ink-200 dark:border-cockpit-accent/40"
           : "border border-transparent text-sand-700 hover:text-sand-900 dark:text-cockpit-text-secondary dark:hover:text-cockpit-heading"

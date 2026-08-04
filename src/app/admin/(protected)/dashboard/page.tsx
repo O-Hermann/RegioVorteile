@@ -46,6 +46,7 @@ type ModuleCard = {
   color: string;
   href?: string;
   badge?: string;
+  wide?: boolean;
 };
 
 export default async function AdminDashboardPage() {
@@ -181,6 +182,7 @@ export default async function AdminDashboardPage() {
       description: "Nicht erkannte Konten, doppelte Uploads und Zuordnungen prüfen.",
       icon: CheckCircleIcon,
       color: "slate",
+      wide: true,
     },
   ];
 
@@ -257,24 +259,24 @@ export default async function AdminDashboardPage() {
     .slice(0, 8);
 
   return (
-    <div className="flex flex-col min-[1800px]:h-[calc(100vh-7.5rem)]">
+    <div className="flex flex-col xl:h-[calc(100vh-9rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
-        <h1 className="font-display text-2xl font-semibold text-sand-900">Admin-Übersicht</h1>
+        <h1 className="font-display text-[28px] font-bold text-sand-900">Admin-Übersicht</h1>
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-5 min-[1800px]:flex-row">
+      <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr]">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-6 overflow-hidden min-[1800px]:w-[440px] min-[1800px]:shrink-0`}>
+        <div className={`${cardClass} flex min-h-0 flex-col gap-4 !p-5`}>
           <div className="flex items-center gap-3 shrink-0">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-xl font-bold text-white">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-lg font-bold text-white">
               {avatarInitial}
             </div>
             <div>
-              <h2 className="font-display text-lg font-bold text-sand-900">
+              <h2 className="font-display text-base font-bold text-sand-900">
                 Guten Tag, {adminDisplayName}
               </h2>
-              <div className="mt-0.5 flex items-center gap-2">
+              <div className="mt-1 flex items-center gap-2">
                 <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
                   Administrator
                 </span>
@@ -283,113 +285,106 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-5 text-white shadow-warm-lg">
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-white shadow-warm-lg">
             <p className="flex items-center justify-between gap-1.5 text-xs uppercase tracking-wide text-white/60">
               Plattformstatus
               <ActivityIcon className="h-3.5 w-3.5" />
             </p>
-            <p className="mt-1.5 font-display text-4xl font-extrabold leading-none">{activeEmployerCount}</p>
-            <p className="mt-2 text-xs text-white/60">Aktive Pilotunternehmen</p>
+            <p className="mt-1.5 font-display text-3xl font-extrabold leading-none">{activeEmployerCount}</p>
+            <p className="mt-1.5 text-xs text-white/60">Aktive Pilotunternehmen</p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 gap-3">
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-4 gap-3">
             {statTiles.map((tile) => (
-              <div key={tile.label} className="rounded-xl border border-card-border bg-card p-4 text-center">
+              <div key={tile.label} className="flex flex-col justify-center rounded-2xl border border-card-border bg-card px-4">
                 <span
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES[tile.color]}`}
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${ACCENT_CLASSES[tile.color]}`}
                 >
-                  <tile.icon className="h-5 w-5" />
+                  <tile.icon className="h-4 w-4" />
                 </span>
-                <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">
+                <p className="mt-1.5 font-display text-lg font-bold leading-none text-sand-900">
                   {tile.value}
                 </p>
-                <p className="text-sm text-sand-500">{tile.label}</p>
+                <p className="text-xs text-sand-500">{tile.label}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-auto grid shrink-0 grid-cols-1 gap-3">
-            <Link href="/admin/arbeitgeber" className="inline-flex items-center justify-center rounded-full bg-ink-600 px-5 py-2.5 text-sm font-semibold text-white shadow-warm hover:bg-ink-700 hover:shadow-warm-lg transition-all">
-              Unternehmen ansehen
-            </Link>
-          </div>
+          <Link
+            href="/admin/arbeitgeber"
+            className="mt-auto inline-flex shrink-0 items-center justify-center rounded-full bg-ink-600 px-5 py-3 text-sm font-semibold text-white shadow-warm hover:bg-ink-700 hover:shadow-warm-lg transition-all"
+          >
+            Unternehmen ansehen
+          </Link>
         </div>
 
         {/* Mittlere Spalte: Module */}
-        <div className="flex min-h-0 flex-col gap-4 min-[1800px]:w-[692px] min-[1800px]:shrink-0">
-          <div className="grid min-h-0 flex-1 content-start auto-rows-min gap-4 overflow-y-auto grid-cols-1 sm:grid-cols-2">
-            {modules.map((m) => {
-              const Icon = m.icon;
-              const content = (
-                <>
-                  <div className="flex items-start justify-between">
-                    <span
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    {m.badge && (
-                      <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-700">
-                        {m.badge}
-                      </span>
-                    )}
-                    {!m.href && (
-                      <span className="rounded-full bg-sand-100 dark:bg-cockpit-icon-bg px-2 py-0.5 text-xs font-medium text-sand-500 dark:text-cockpit-text-weak">
-                        In Vorbereitung
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
-                    <p className="mt-1 text-sm text-sand-600">{m.description}</p>
-                  </div>
-                </>
-              );
-
-              if (!m.href) {
-                return (
-                  <div
-                    key={m.title}
-                    className={`${cardClass} flex w-full flex-col gap-2.5 !p-5 opacity-70`}
+        <div className="grid min-h-0 auto-rows-min grid-cols-1 content-start gap-3.5 overflow-y-auto pr-1 sm:grid-cols-2">
+          {modules.map((m) => {
+            const Icon = m.icon;
+            const content = (
+              <>
+                <div className="flex items-start justify-between gap-2">
+                  <span
+                    className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${ACCENT_CLASSES[m.color]}`}
                   >
-                    {content}
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={m.title}
-                  href={m.href}
-                  className={`${cardClass} group flex w-full flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
-                >
-                  {content}
-                  <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-sand-700 group-hover:text-ink-900">
-                    Öffnen
-                    <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    <Icon className="h-5 w-5" />
                   </span>
-                </Link>
+                  {m.badge && (
+                    <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-semibold text-gold-700">
+                      {m.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3">
+                  <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
+                  <p className="mt-1 text-sm text-sand-600">{m.description}</p>
+                </div>
+              </>
+            );
+
+            const wideClass = m.wide ? "sm:col-span-2" : "";
+
+            if (!m.href) {
+              return (
+                <div key={m.title} className={`${cardClass} flex flex-col !p-4 ${wideClass}`}>
+                  {content}
+                </div>
               );
-            })}
-          </div>
+            }
+
+            return (
+              <Link
+                key={m.title}
+                href={m.href}
+                className={`${cardClass} group flex flex-col !p-4 hover:border-ink-300 dark:hover:border-cockpit-accent/50 transition-colors ${wideClass}`}
+              >
+                {content}
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 dark:text-cockpit-accent-light">
+                  Öffnen
+                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten */}
-        <div className="flex min-h-0 flex-col gap-4 min-[1800px]:flex-1">
+        <div className="flex min-h-0 flex-col gap-6">
           <div className={`${cardClass} shrink-0`}>
-            <h3 className="font-display text-base font-semibold text-sand-900">Handlungsbedarf</h3>
+            <h3 className="font-display text-lg font-semibold text-sand-900">Handlungsbedarf</h3>
             {actionItems.length === 0 ? (
-              <p className="mt-3 text-sm text-sand-500">Aktuell besteht kein Handlungsbedarf.</p>
+              <p className="mt-4 text-sm text-sand-500">Aktuell besteht kein Handlungsbedarf.</p>
             ) : (
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-4 space-y-3">
                 {actionItems.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-card-border px-3 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-card-border px-4 py-3.5"
                   >
-                    <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex min-w-0 items-center gap-3">
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${ACCENT_CLASSES[item.color]}`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[item.color]}`}
                       >
                         <item.icon className="h-4 w-4" />
                       </span>
@@ -397,7 +392,7 @@ export default async function AdminDashboardPage() {
                     </div>
                     <Link
                       href={item.href}
-                      className="shrink-0 rounded-full border border-card-border px-3 py-1.5 text-xs font-semibold text-sand-800 hover:bg-sand-100 transition-colors"
+                      className="shrink-0 rounded-full border border-card-border px-4 py-2 text-xs font-semibold text-sand-800 hover:bg-sand-100 transition-colors"
                     >
                       {item.cta}
                     </Link>
@@ -407,22 +402,22 @@ export default async function AdminDashboardPage() {
             )}
           </div>
 
-          <div className={`${cardClass} flex min-h-0 flex-1 flex-col gap-3 overflow-hidden`}>
-            <h3 className="shrink-0 font-display text-base font-semibold text-sand-900">Letzte Aktivitäten</h3>
-            <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+          <div className={`${cardClass} flex min-h-0 flex-1 flex-col gap-4 overflow-hidden`}>
+            <h3 className="shrink-0 font-display text-lg font-semibold text-sand-900">Letzte Aktivitäten</h3>
+            <ul className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
               {activity.length === 0 && (
                 <p className="text-sm text-sand-500">Bisher sind keine Aktivitäten vorhanden.</p>
               )}
               {activity.map((a) => (
-                <li key={a.id} className="flex items-start gap-2.5 text-sm">
+                <li key={a.id} className="flex items-start gap-3 text-sm">
                   <span
-                    className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
+                    className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
                   >
-                    <a.icon className="h-3.5 w-3.5" />
+                    <a.icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="truncate text-sand-900">{a.label}</p>
+                      <p className="truncate font-medium text-sand-900">{a.label}</p>
                       <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
                     </div>
                     <p className="truncate text-xs text-sand-500">{a.detail}</p>
