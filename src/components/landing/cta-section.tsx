@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons";
-import { CONTACT_EMAIL } from "@/lib/site-config";
 
 export function CtaSection() {
   return (
@@ -16,13 +16,13 @@ export function CtaSection() {
           Melden Sie sich für die Pilotphase und erfahren Sie, wie Controlling Cockpit
           Ihre Zahlen für Sie erklärt.
         </p>
-        <a
-          href={`mailto:${CONTACT_EMAIL}`}
+        <Link
+          href="/kontakt"
           className="group mt-8 inline-flex items-center gap-2 rounded-full bg-cockpit-accent hover:bg-cockpit-accent-hover px-6 py-3 text-sm font-semibold text-white transition-colors"
         >
           Jetzt Kontakt aufnehmen
           <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </a>
+        </Link>
       </div>
     </section>
   );

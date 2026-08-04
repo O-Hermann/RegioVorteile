@@ -41,6 +41,11 @@ enum PartnerInquiryStatus {
   DONE
 }
 
+enum ContactRequestStatus {
+  OPEN
+  DONE
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -172,6 +177,19 @@ model PartnerInquiry {
   message      String?
   status       PartnerInquiryStatus @default(OPEN)
   createdAt    DateTime             @default(now())
+}
+
+model ContactRequest {
+  id          String               @id @default(cuid())
+  firstName   String
+  lastName    String
+  companyName String
+  street      String
+  postalCode  String
+  phone       String
+  message     String?
+  status      ContactRequestStatus @default(OPEN)
+  createdAt   DateTime             @default(now())
 }
 
 model PasswordResetToken {

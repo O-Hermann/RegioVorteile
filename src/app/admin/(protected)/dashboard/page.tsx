@@ -61,12 +61,14 @@ export default async function AdminDashboardPage() {
     redemptionCount,
     openFeedbackCount,
     openInquiryCount,
+    openContactRequestCount,
     pendingApprovalCount,
     recentPartners,
     recentEmployers,
     recentEmployees,
     recentRedemptions,
     recentInquiries,
+    recentContactRequests,
   ] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.userId } }),
     prisma.region.count(),
@@ -80,6 +82,7 @@ export default async function AdminDashboardPage() {
     prisma.redemption.count(),
     prisma.feedback.count({ where: { status: "OPEN" } }),
     prisma.partnerInquiry.count({ where: { status: "OPEN" } }),
+    prisma.contactRequest.count({ where: { status: "OPEN" } }),
     prisma.employer.count({ where: { approved: false } }),
     prisma.partnerBusiness.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
     prisma.employer.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
@@ -94,11 +97,13 @@ export default async function AdminDashboardPage() {
       include: { partnerBusiness: true, employee: true },
     }),
     prisma.partnerInquiry.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.contactRequest.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
   ]);
 
   const totalEmployerCount = await prisma.employer.count();
   const monthlyRevenueCents = employers.reduce((sum, e) => sum + e.pricingTier.monthlyPriceCents, 0);
-  const openTasksCount = openFeedbackCount + openInquiryCount + pendingApprovalCount;
+  const openTasksCount =
+    openFeedbackCount + openInquiryCount + openContactRequestCount + pendingApprovalCount;
   const activationRate =
     totalEmployeeCount > 0 ? Math.round((activeEmployeeCount / totalEmployeeCount) * 100) : 0;
 
@@ -156,6 +161,14 @@ export default async function AdminDashboardPage() {
       icon: InboxIcon,
       color: "amber",
     })),
+    ...recentContactRequests.map((c) => ({
+      id: `contact-${c.id}`,
+      label: "Neue Kontaktanfrage",
+      detail: c.companyName,
+      createdAt: c.createdAt,
+      icon: ChatIcon,
+      color: "sky",
+    })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 6);
@@ -190,6 +203,14 @@ export default async function AdminDashboardPage() {
       icon: InboxIcon,
       color: "amber",
       badge: openInquiryCount > 0 ? `${openInquiryCount} offen` : undefined,
+    },
+    {
+      href: "/admin/kontaktanfragen",
+      title: "Kontaktanfragen",
+      description: "Anfragen über \"Jetzt Kontakt aufnehmen\" prüfen und bearbeiten.",
+      icon: ChatIcon,
+      color: "sky",
+      badge: openContactRequestCount > 0 ? `${openContactRequestCount} offen` : undefined,
     },
     {
       href: "/admin/feedback",

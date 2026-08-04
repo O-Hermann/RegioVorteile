@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/partnerbetriebe", label: "Partnerbetriebe" },
   { href: "/admin/arbeitgeber", label: "Arbeitgeber" },
   { href: "/admin/partneranfragen", label: "Partneranfragen" },
+  { href: "/admin/kontaktanfragen", label: "Kontaktanfragen" },
   { href: "/admin/feedback", label: "Feedback" },
   { href: "/admin/rechtliches", label: "Rechtliches" },
 ];
