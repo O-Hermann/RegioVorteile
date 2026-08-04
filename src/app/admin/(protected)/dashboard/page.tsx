@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
-import { cardClass } from "@/lib/ui";
 import { relativeTimeDe } from "@/lib/time";
 import { SITE_NAME } from "@/lib/site-config";
 import {
@@ -26,14 +25,28 @@ function formatPrice(cents: number) {
   });
 }
 
+// Hochwertigere Karten-Basis nur fuer die Admin-Uebersicht: dezenter
+// Farbverlauf + weicher Tiefenschatten im Dunkelmodus, schlichte helle
+// Karte im Hellmodus. Bewusst lokal statt der geteilten cardClass, damit
+// andere Admin-Seiten (Unternehmen, Kontaktanfragen, ...) unveraendert bleiben.
+const panelClass =
+  "rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark shadow-sm dark:shadow-xl dark:shadow-black/30 transition-all duration-300";
+
+const panelHoverClass =
+  "hover:-translate-y-0.5 hover:border-ink-300 dark:hover:border-cockpit-accent-light/40 hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-cockpit-accent/20";
+
 const ACCENT_CLASSES: Record<string, string> = {
-  sky: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-  emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  violet: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-  amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  rose: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
-  slate: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
-  ink: "bg-ink-50 text-ink-700 dark:bg-cockpit-accent-subtle dark:text-cockpit-accent-light",
+  sky: "bg-gradient-to-br from-sky-400/25 to-sky-600/5 text-sky-600 dark:text-sky-300 border border-sky-400/30 dark:border-sky-400/20 shadow-lg shadow-sky-500/10 dark:shadow-sky-500/20",
+  emerald:
+    "bg-gradient-to-br from-emerald-400/25 to-emerald-600/5 text-emerald-600 dark:text-emerald-300 border border-emerald-400/30 dark:border-emerald-400/20 shadow-lg shadow-emerald-500/10 dark:shadow-emerald-500/20",
+  violet:
+    "bg-gradient-to-br from-violet-400/25 to-violet-600/5 text-violet-600 dark:text-violet-300 border border-violet-400/30 dark:border-violet-400/20 shadow-lg shadow-violet-500/10 dark:shadow-violet-500/20",
+  amber:
+    "bg-gradient-to-br from-amber-400/25 to-amber-600/5 text-amber-600 dark:text-amber-300 border border-amber-400/30 dark:border-amber-400/20 shadow-lg shadow-amber-500/10 dark:shadow-amber-500/20",
+  rose: "bg-gradient-to-br from-rose-400/25 to-rose-600/5 text-rose-600 dark:text-rose-300 border border-rose-400/30 dark:border-rose-400/20 shadow-lg shadow-rose-500/10 dark:shadow-rose-500/20",
+  slate:
+    "bg-gradient-to-br from-slate-400/25 to-slate-600/5 text-slate-600 dark:text-slate-300 border border-slate-400/30 dark:border-slate-400/20 shadow-lg shadow-slate-500/10 dark:shadow-slate-500/15",
+  ink: "bg-gradient-to-br from-ink-400/25 to-ink-600/10 text-ink-700 dark:text-cockpit-accent-light border border-ink-400/30 dark:border-cockpit-accent-light/25 shadow-lg shadow-ink-500/10 dark:shadow-cockpit-accent/25",
 };
 
 // Module-Karten der mittleren Spalte. Karten ohne href verweisen auf noch
@@ -259,17 +272,20 @@ export default async function AdminDashboardPage() {
     .slice(0, 8);
 
   return (
-    <div className="flex flex-col xl:h-[calc(100vh-9rem)]">
-      <div className="flex items-baseline justify-between gap-3 shrink-0">
-        <h1 className="font-display text-[28px] font-bold text-sand-900">Admin-Übersicht</h1>
+    <div className="flex flex-col">
+      <div className="flex items-baseline justify-between gap-3">
+        <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Admin-Übersicht</h1>
         <p className="text-sm text-sand-500">{today}</p>
       </div>
 
-      <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr]">
+      {/* Kein overflow-y-auto / keine feste Hoehe mehr auf dieser Ebene:
+          die Spalten wachsen mit ihrem Inhalt, die ganze Seite scrollt bei
+          Bedarf normal statt einzelner Spalten. */}
+      <div className="mt-2.5 grid grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr] xl:items-stretch">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-4 !p-5`}>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink-900 dark:bg-ink-800 font-display text-lg font-bold text-white">
+        <div className={`${panelClass} flex min-w-0 flex-col gap-4 !p-5`}>
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:from-cockpit-accent dark:to-cockpit-accent-dark font-display text-lg font-bold text-white shadow-md shadow-ink-900/20">
               {avatarInitial}
             </div>
             <div>
@@ -285,41 +301,48 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-4 text-white shadow-warm-lg">
-            <p className="flex items-center justify-between gap-1.5 text-xs uppercase tracking-wide text-white/60">
-              Plattformstatus
-              <ActivityIcon className="h-3.5 w-3.5" />
-            </p>
-            <p className="mt-1.5 font-display text-3xl font-extrabold leading-none">{activeEmployerCount}</p>
-            <p className="mt-1.5 text-xs text-white/60">Aktive Pilotunternehmen</p>
+          <div className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 dark:from-cockpit-accent-dark dark:via-[#063a41] dark:to-cockpit-header p-4 text-white shadow-warm-lg">
+            <div aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-cockpit-accent-light/25 blur-3xl" />
+            <div aria-hidden className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-cockpit-accent/20 blur-3xl" />
+            <div className="relative">
+              <p className="flex items-center justify-between gap-1.5 text-xs uppercase tracking-wide text-white/60">
+                Plattformstatus
+                <ActivityIcon className="h-3.5 w-3.5" />
+              </p>
+              <p className="mt-1.5 font-display text-3xl font-extrabold leading-none">{activeEmployerCount}</p>
+              <p className="mt-1.5 text-xs text-white/60">Aktive Pilotunternehmen</p>
+            </div>
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-4 gap-3">
+          <div className="grid flex-1 grid-cols-2 grid-rows-4 gap-3">
             {statTiles.map((tile) => (
-              <div key={tile.label} className="flex flex-col justify-center rounded-2xl border border-card-border bg-card px-4">
+              <div
+                key={tile.label}
+                className={`${panelClass} ${panelHoverClass} flex flex-col justify-center !p-4`}
+              >
                 <span
                   className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${ACCENT_CLASSES[tile.color]}`}
                 >
                   <tile.icon className="h-4 w-4" />
                 </span>
-                <p className="mt-1.5 font-display text-lg font-bold leading-none text-sand-900">
+                <p className="mt-2 font-display text-lg font-bold leading-none text-sand-900">
                   {tile.value}
                 </p>
-                <p className="text-xs text-sand-500">{tile.label}</p>
+                <p className="mt-0.5 text-xs text-sand-500">{tile.label}</p>
               </div>
             ))}
           </div>
 
           <Link
             href="/admin/arbeitgeber"
-            className="mt-auto inline-flex shrink-0 items-center justify-center rounded-full bg-ink-600 px-5 py-3 text-sm font-semibold text-white shadow-warm hover:bg-ink-700 hover:shadow-warm-lg transition-all"
+            className="mt-auto inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-ink-600 to-ink-700 dark:from-cockpit-accent dark:to-cockpit-accent-hover px-5 py-3 text-sm font-semibold text-white shadow-warm hover:shadow-warm-lg hover:brightness-110 transition-all"
           >
             Unternehmen ansehen
           </Link>
         </div>
 
         {/* Mittlere Spalte: Module */}
-        <div className="grid min-h-0 auto-rows-min grid-cols-1 content-start gap-3.5 overflow-y-auto pr-1 sm:grid-cols-2">
+        <div className="grid min-w-0 auto-rows-min grid-cols-1 content-start gap-3 sm:grid-cols-2">
           {modules.map((m) => {
             const Icon = m.icon;
             const content = (
@@ -336,8 +359,8 @@ export default async function AdminDashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="mt-3">
-                  <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
+                <div className="mt-2.5">
+                  <h3 className="font-display text-base font-semibold tracking-tight text-sand-900">{m.title}</h3>
                   <p className="mt-1 text-sm text-sand-600">{m.description}</p>
                 </div>
               </>
@@ -347,7 +370,7 @@ export default async function AdminDashboardPage() {
 
             if (!m.href) {
               return (
-                <div key={m.title} className={`${cardClass} flex flex-col !p-4 ${wideClass}`}>
+                <div key={m.title} className={`${panelClass} flex flex-col !p-3.5 ${wideClass}`}>
                   {content}
                 </div>
               );
@@ -357,12 +380,12 @@ export default async function AdminDashboardPage() {
               <Link
                 key={m.title}
                 href={m.href}
-                className={`${cardClass} group flex flex-col !p-4 hover:border-ink-300 dark:hover:border-cockpit-accent/50 transition-colors ${wideClass}`}
+                className={`${panelClass} ${panelHoverClass} group flex flex-col !p-3.5 ${wideClass}`}
               >
                 {content}
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 dark:text-cockpit-accent-light">
                   Öffnen
-                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </span>
               </Link>
             );
@@ -370,17 +393,17 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten */}
-        <div className="flex min-h-0 flex-col gap-6">
-          <div className={`${cardClass} shrink-0`}>
-            <h3 className="font-display text-lg font-semibold text-sand-900">Handlungsbedarf</h3>
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className={`${panelClass} !p-5`}>
+            <h3 className="font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
             {actionItems.length === 0 ? (
               <p className="mt-4 text-sm text-sand-500">Aktuell besteht kein Handlungsbedarf.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-2 divide-y divide-card-border/60 dark:divide-white/5">
                 {actionItems.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-card-border px-4 py-3.5"
+                    className="-mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-sand-50 dark:hover:bg-white/[0.03]"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <span
@@ -392,7 +415,7 @@ export default async function AdminDashboardPage() {
                     </div>
                     <Link
                       href={item.href}
-                      className="shrink-0 rounded-full border border-card-border px-4 py-2 text-xs font-semibold text-sand-800 hover:bg-sand-100 transition-colors"
+                      className="shrink-0 rounded-full border border-card-border dark:border-white/15 px-4 py-2 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light hover:bg-ink-50 dark:hover:bg-cockpit-accent-subtle/40 transition-colors"
                     >
                       {item.cta}
                     </Link>
@@ -402,29 +425,33 @@ export default async function AdminDashboardPage() {
             )}
           </div>
 
-          <div className={`${cardClass} flex min-h-0 flex-1 flex-col gap-4 overflow-hidden`}>
-            <h3 className="shrink-0 font-display text-lg font-semibold text-sand-900">Letzte Aktivitäten</h3>
-            <ul className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
-              {activity.length === 0 && (
-                <p className="text-sm text-sand-500">Bisher sind keine Aktivitäten vorhanden.</p>
-              )}
-              {activity.map((a) => (
-                <li key={a.id} className="flex items-start gap-3 text-sm">
-                  <span
-                    className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
+          <div className={`${panelClass} flex flex-col gap-1 !p-5`}>
+            <h3 className="font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Aktivitäten</h3>
+            {activity.length === 0 ? (
+              <p className="mt-4 text-sm text-sand-500">Bisher sind keine Aktivitäten vorhanden.</p>
+            ) : (
+              <ul className="mt-1">
+                {activity.map((a) => (
+                  <li
+                    key={a.id}
+                    className="-mx-2 flex items-start gap-3 rounded-xl border-b border-card-border/60 px-2 py-3 text-sm transition-colors last:border-0 hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
                   >
-                    <a.icon className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="truncate font-medium text-sand-900">{a.label}</p>
-                      <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                    <span
+                      className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
+                    >
+                      <a.icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="truncate font-medium text-sand-900">{a.label}</p>
+                        <span className="shrink-0 text-xs text-sand-400">{relativeTimeDe(a.createdAt)}</span>
+                      </div>
+                      <p className="truncate text-xs text-sand-500">{a.detail}</p>
                     </div>
-                    <p className="truncate text-xs text-sand-500">{a.detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>

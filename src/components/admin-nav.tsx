@@ -34,10 +34,10 @@ function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; ac
   return (
     <Link
       href={item.href}
-      className={`${mobile ? "whitespace-nowrap " : ""}rounded-full px-4 py-2 transition-colors ${
+      className={`${mobile ? "whitespace-nowrap " : ""}rounded-full px-4 py-2 transition-all duration-200 ${
         active
-          ? "bg-ink-50 text-ink-700 dark:bg-cockpit-accent-subtle dark:text-cockpit-accent-light border border-ink-200 dark:border-cockpit-accent/40"
-          : "border border-transparent text-sand-700 hover:text-sand-900 dark:text-cockpit-text-secondary dark:hover:text-cockpit-heading"
+          ? "bg-gradient-to-r from-ink-50 to-ink-100/60 text-ink-700 dark:from-cockpit-accent-subtle dark:to-cockpit-accent-subtle/40 dark:text-cockpit-accent-light border border-ink-200 dark:border-cockpit-accent-light/30 shadow-[0_0_14px_-4px_rgba(8,122,120,0.35)] dark:shadow-[0_0_16px_-3px_rgba(30,151,148,0.4)]"
+          : "border border-transparent text-sand-700 hover:text-sand-900 hover:bg-sand-100 dark:text-cockpit-text-secondary dark:hover:text-cockpit-heading dark:hover:bg-white/5"
       }`}
     >
       {item.label}
