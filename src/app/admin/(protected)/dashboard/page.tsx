@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
-import { primaryButtonClass, secondaryButtonClass, cardClass } from "@/lib/ui";
+import { cardClass } from "@/lib/ui";
 import { relativeTimeDe } from "@/lib/time";
 import { SITE_NAME } from "@/lib/site-config";
 import {
-  ArrowRightIcon,
-  MapPinIcon,
-  StoreIcon,
   BriefcaseIcon,
   InboxIcon,
   ChatIcon,
@@ -15,11 +12,11 @@ import {
   UsersIcon,
   TrendingUpIcon,
   ActivityIcon,
-  TagIcon,
-  BellIcon,
+  UploadIcon,
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
 } from "@/components/icons";
-
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("de-DE", {
@@ -36,103 +33,196 @@ const ACCENT_CLASSES: Record<string, string> = {
   amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   rose: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   slate: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+  ink: "bg-ink-50 text-ink-700 dark:bg-cockpit-accent-subtle dark:text-cockpit-accent-light",
 };
 
-const BANNER_WRAP_CLASSES: Record<string, string> = {
-  emerald: "border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40",
-  rose: "border-rose-500/20 bg-rose-500/5 hover:border-rose-500/40",
-  violet: "border-violet-500/20 bg-violet-500/5 hover:border-violet-500/40",
+// Module-Karten der mittleren Spalte. Karten ohne href verweisen auf noch
+// nicht gebaute Funktionen (kein Datenmodell/keine Seite vorhanden) - sie
+// werden bewusst nicht verlinkt statt einen fiktiven/toten Link zu zeigen.
+type ModuleCard = {
+  title: string;
+  description: string;
+  icon: typeof BriefcaseIcon;
+  color: string;
+  href?: string;
+  badge?: string;
 };
 
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   const now = new Date();
-  const monthAgo = new Date(now.getTime() - THIRTY_DAYS_MS);
 
   const [
     admin,
-    regionCount,
-    partnerCount,
-    newPartners,
-    employers,
-    newEmployerCount,
-    totalEmployeeCount,
-    activeEmployeeCount,
-    newEmployeeCount,
-    redemptionCount,
-    openFeedbackCount,
-    openInquiryCount,
-    openContactRequestCount,
+    totalEmployerCount,
+    activeEmployerCount,
     pendingApprovalCount,
-    recentPartners,
+    employerUserCount,
+    activeEmployeeCount,
+    openFeedbackCount,
+    openContactRequestCount,
+    activeEmployersWithTier,
     recentEmployers,
     recentEmployees,
-    recentRedemptions,
-    recentInquiries,
     recentContactRequests,
+    recentFeedback,
   ] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.userId } }),
-    prisma.region.count(),
-    prisma.partnerBusiness.count(),
-    prisma.partnerBusiness.count({ where: { createdAt: { gte: monthAgo } } }),
-    prisma.employer.findMany({ where: { subscriptionStatus: "aktiv" }, include: { pricingTier: true } }),
-    prisma.employer.count({ where: { createdAt: { gte: monthAgo } } }),
-    prisma.employee.count(),
-    prisma.employee.count({ where: { status: "ACTIVE" } }),
-    prisma.employee.count({ where: { createdAt: { gte: monthAgo } } }),
-    prisma.redemption.count(),
-    prisma.feedback.count({ where: { status: "OPEN" } }),
-    prisma.partnerInquiry.count({ where: { status: "OPEN" } }),
-    prisma.contactRequest.count({ where: { status: "OPEN" } }),
+    prisma.employer.count(),
+    prisma.employer.count({ where: { approved: true, subscriptionStatus: "aktiv" } }),
     prisma.employer.count({ where: { approved: false } }),
-    prisma.partnerBusiness.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.user.count({ where: { role: "EMPLOYER" } }),
+    prisma.employee.count({ where: { status: "ACTIVE" } }),
+    prisma.feedback.count({ where: { status: "OPEN" } }),
+    prisma.contactRequest.count({ where: { status: "OPEN" } }),
+    prisma.employer.findMany({
+      where: { approved: true, subscriptionStatus: "aktiv" },
+      include: { pricingTier: true },
+    }),
     prisma.employer.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
     prisma.employee.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { employer: true },
     }),
-    prisma.redemption.findMany({
+    prisma.contactRequest.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.feedback.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { partnerBusiness: true, employee: true },
+      include: { employer: true, employee: true },
     }),
-    prisma.partnerInquiry.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.contactRequest.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
   ]);
 
-  const totalEmployerCount = await prisma.employer.count();
-  const monthlyRevenueCents = employers.reduce((sum, e) => sum + e.pricingTier.monthlyPriceCents, 0);
-  const openTasksCount =
-    openFeedbackCount + openInquiryCount + openContactRequestCount + pendingApprovalCount;
-  const activationRate =
-    totalEmployeeCount > 0 ? Math.round((activeEmployeeCount / totalEmployeeCount) * 100) : 0;
+  // "Aktive Benutzer": alle Personen mit funktionierendem Login auf der
+  // Plattform - Arbeitgeber-Accounts (User) plus aktivierte Mitarbeiter-Zugaenge
+  // (Employee). Es gibt noch kein "zuletzt aktiv"-Tracking, daher zaehlt hier
+  // "aktiv" = hat einen nutzbaren Zugang, nicht "kuerzlich eingeloggt".
+  const activeUserCount = employerUserCount + activeEmployeeCount;
+
+  const monthlyRevenueCents = activeEmployersWithTier.reduce(
+    (sum, e) => sum + e.pricingTier.monthlyPriceCents,
+    0
+  );
+
+  // Diese vier Kennzahlen haben noch keine echte Datenquelle im Projekt
+  // (kein Datenimport-/Analyse-/Importfehler-Modell) - bewusst 0, keine
+  // erfundenen Werte. Siehe Abschlussbericht an den Nutzer.
+  const monthlyUploadsCount = 0;
+  const analysesCreatedCount = 0;
+  const importErrorsCount = 0;
+  const analysesPendingApprovalCount = 0;
 
   const adminLabel = admin ? admin.email.split("@")[0] : "Admin";
   const adminDisplayName = adminLabel.charAt(0).toUpperCase() + adminLabel.slice(1);
   const avatarInitial = adminDisplayName.charAt(0).toUpperCase();
-  const today = now.toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const today = now.toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const statTiles = [
+    { label: "Unternehmen", value: totalEmployerCount, icon: BriefcaseIcon, color: "violet" },
+    { label: "Aktive Benutzer", value: activeUserCount, icon: UsersIcon, color: "sky" },
+    { label: "Uploads im Monat", value: monthlyUploadsCount, icon: UploadIcon, color: "slate" },
+    { label: "Erstellte Analysen", value: analysesCreatedCount, icon: ActivityIcon, color: "emerald" },
+    { label: "Offene Importfehler", value: importErrorsCount, icon: AlertTriangleIcon, color: "amber" },
+    { label: "Supportfälle", value: openFeedbackCount, icon: ChatIcon, color: "rose" },
+    { label: "MRR", value: formatPrice(monthlyRevenueCents), icon: TrendingUpIcon, color: "emerald" },
+    { label: "Zur Freigabe", value: analysesPendingApprovalCount, icon: FileTextIcon, color: "sky" },
+  ];
+
+  const modules: ModuleCard[] = [
+    {
+      href: "/admin/arbeitgeber",
+      title: "Unternehmen",
+      description: "Kundenunternehmen, Status und Tarife verwalten.",
+      icon: BriefcaseIcon,
+      color: "violet",
+      badge: pendingApprovalCount > 0 ? `${pendingApprovalCount} wartet auf Freigabe` : undefined,
+    },
+    {
+      title: "Datenimporte",
+      description: "Hochgeladene Excel-Dateien prüfen und verarbeiten.",
+      icon: UploadIcon,
+      color: "slate",
+    },
+    {
+      title: "Analysen & Freigaben",
+      description: "Auswertungen prüfen, berechnen und freigeben.",
+      icon: ActivityIcon,
+      color: "emerald",
+    },
+    {
+      title: "Benutzer & Rollen",
+      description: "Zugänge und Berechtigungen verwalten.",
+      icon: UsersIcon,
+      color: "sky",
+    },
+    {
+      href: "/admin/kontaktanfragen",
+      title: "Pilotkunden",
+      description: "Anfragen über \"Jetzt Kontakt aufnehmen\" prüfen und Pilotstatus pflegen.",
+      icon: InboxIcon,
+      color: "amber",
+      badge: openContactRequestCount > 0 ? `${openContactRequestCount} offen` : undefined,
+    },
+    {
+      href: "/admin/feedback",
+      title: "Support & Feedback",
+      description: "Verbesserungswünsche, Fehlermeldungen und Fragen bearbeiten.",
+      icon: ChatIcon,
+      color: "rose",
+      badge: openFeedbackCount > 0 ? `${openFeedbackCount} offen` : undefined,
+    },
+    {
+      title: "Datenprüfung",
+      description: "Nicht erkannte Konten, doppelte Uploads und Zuordnungen prüfen.",
+      icon: CheckCircleIcon,
+      color: "slate",
+    },
+  ];
+
+  const actionItems = [
+    pendingApprovalCount > 0 && {
+      id: "approvals",
+      label: `${pendingApprovalCount} ${pendingApprovalCount === 1 ? "Unternehmen wartet" : "Unternehmen warten"} auf Freigabe`,
+      href: "/admin/arbeitgeber",
+      cta: "Prüfen",
+      icon: BriefcaseIcon,
+      color: "violet",
+    },
+    openContactRequestCount > 0 && {
+      id: "contact",
+      label: `${openContactRequestCount} ${openContactRequestCount === 1 ? "neue Pilotanfrage" : "neue Pilotanfragen"}`,
+      href: "/admin/kontaktanfragen",
+      cta: "Bearbeiten",
+      icon: InboxIcon,
+      color: "amber",
+    },
+    openFeedbackCount > 0 && {
+      id: "feedback",
+      label: `${openFeedbackCount} ${openFeedbackCount === 1 ? "offener Supportfall" : "offene Supportfälle"}`,
+      href: "/admin/feedback",
+      cta: "Ansehen",
+      icon: ChatIcon,
+      color: "rose",
+    },
+  ].filter(Boolean) as { id: string; label: string; href: string; cta: string; icon: typeof BriefcaseIcon; color: string }[];
 
   type ActivityItem = {
     id: string;
     label: string;
     detail: string;
     createdAt: Date;
-    icon: typeof StoreIcon;
+    icon: typeof BriefcaseIcon;
     color: string;
   };
   const activity: ActivityItem[] = [
-    ...recentPartners.map((p) => ({
-      id: `partner-${p.id}`,
-      label: "Neuer Partnerbetrieb hinzugefügt",
-      detail: p.name,
-      createdAt: p.createdAt,
-      icon: StoreIcon,
-      color: "emerald",
-    })),
     ...recentEmployers.map((e) => ({
       id: `employer-${e.id}`,
-      label: "Arbeitgeber registriert",
+      label: "Unternehmen registriert",
       detail: e.companyName,
       createdAt: e.createdAt,
       icon: BriefcaseIcon,
@@ -140,122 +230,31 @@ export default async function AdminDashboardPage() {
     })),
     ...recentEmployees.map((e) => ({
       id: `employee-${e.id}`,
-      label: "Mitarbeiter eingeladen",
+      label: "Benutzer eingeladen",
       detail: `${e.name} · ${e.employer.companyName}`,
       createdAt: e.createdAt,
       icon: UsersIcon,
       color: "sky",
-    })),
-    ...recentRedemptions.map((r) => ({
-      id: `redemption-${r.id}`,
-      label: "Vorteil eingelöst",
-      detail: r.partnerBusiness.name,
-      createdAt: r.createdAt,
-      icon: TagIcon,
-      color: "rose",
-    })),
-    ...recentInquiries.map((i) => ({
-      id: `inquiry-${i.id}`,
-      label: "Neue Partneranfrage",
-      detail: i.businessName,
-      createdAt: i.createdAt,
-      icon: InboxIcon,
-      color: "amber",
     })),
     ...recentContactRequests.map((c) => ({
       id: `contact-${c.id}`,
       label: "Neue Kontaktanfrage",
       detail: c.companyName,
       createdAt: c.createdAt,
+      icon: InboxIcon,
+      color: "amber",
+    })),
+    ...recentFeedback.map((f) => ({
+      id: `feedback-${f.id}`,
+      label: "Feedback eingegangen",
+      detail: f.employer?.companyName ?? f.employee?.name ?? "Anonym",
+      createdAt: f.createdAt,
       icon: ChatIcon,
-      color: "sky",
+      color: "rose",
     })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 6);
-
-  const modules = [
-    {
-      href: "/admin/regionen",
-      title: "Regionen",
-      description: `${regionCount} ${regionCount === 1 ? "Region" : "Regionen"} - Namen und PLZ-Gebiete pflegen.`,
-      icon: MapPinIcon,
-      color: "sky",
-    },
-    {
-      href: "/admin/partnerbetriebe",
-      title: "Partnerbetriebe",
-      description: "Partner anlegen, verwalten und Kooperationen pflegen.",
-      icon: StoreIcon,
-      color: "emerald",
-    },
-    {
-      href: "/admin/arbeitgeber",
-      title: "Arbeitgeber",
-      description: "Firmen-Accounts, Abo-Stufen und Freigaben verwalten.",
-      icon: BriefcaseIcon,
-      color: "violet",
-      badge: pendingApprovalCount > 0 ? `${pendingApprovalCount} wartet auf Freigabe` : undefined,
-    },
-    {
-      href: "/admin/partneranfragen",
-      title: "Partneranfragen",
-      description: "Anfragen von Betrieben prüfen und beantworten.",
-      icon: InboxIcon,
-      color: "amber",
-      badge: openInquiryCount > 0 ? `${openInquiryCount} offen` : undefined,
-    },
-    {
-      href: "/admin/kontaktanfragen",
-      title: "Kontaktanfragen",
-      description: "Anfragen über \"Jetzt Kontakt aufnehmen\" prüfen und bearbeiten.",
-      icon: ChatIcon,
-      color: "sky",
-      badge: openContactRequestCount > 0 ? `${openContactRequestCount} offen` : undefined,
-    },
-    {
-      href: "/admin/feedback",
-      title: "Feedback",
-      description: "Verbesserungswünsche und Fehlermeldungen bearbeiten.",
-      icon: ChatIcon,
-      color: "rose",
-      badge: openFeedbackCount > 0 ? `${openFeedbackCount} offen` : undefined,
-    },
-    {
-      href: "/admin/rechtliches",
-      title: "Rechtliches",
-      description: "Impressum und Datenschutz bearbeiten.",
-      icon: FileTextIcon,
-      color: "slate",
-    },
-  ];
-
-  const banner = [
-    {
-      count: openInquiryCount,
-      title: openInquiryCount === 1 ? "Neue Partneranfrage" : "Neue Partneranfragen",
-      subtitle: `${openInquiryCount} offene ${openInquiryCount === 1 ? "Anfrage wartet" : "Anfragen warten"} auf Prüfung.`,
-      href: "/admin/partneranfragen",
-      icon: InboxIcon,
-      color: "emerald",
-    },
-    {
-      count: openFeedbackCount,
-      title: openFeedbackCount === 1 ? "Neues Feedback" : "Neues Feedback",
-      subtitle: `${openFeedbackCount} offene ${openFeedbackCount === 1 ? "Meldung wartet" : "Meldungen warten"} auf Bearbeitung.`,
-      href: "/admin/feedback",
-      icon: ChatIcon,
-      color: "rose",
-    },
-    {
-      count: pendingApprovalCount,
-      title: pendingApprovalCount === 1 ? "Arbeitgeber wartet auf Freigabe" : "Arbeitgeber warten auf Freigabe",
-      subtitle: `${pendingApprovalCount} neue ${pendingApprovalCount === 1 ? "Registrierung" : "Registrierungen"} zu prüfen.`,
-      href: "/admin/arbeitgeber",
-      icon: BriefcaseIcon,
-      color: "violet",
-    },
-  ].find((b) => b.count > 0);
+    .slice(0, 8);
 
   return (
     <div className="flex flex-col min-[1800px]:h-[calc(100vh-7.5rem)]">
@@ -284,124 +283,45 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-5 text-center text-white shadow-warm-lg">
-            <p className="flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-white/60">
-              <UsersIcon className="h-3.5 w-3.5" />
-              Mitarbeitende insgesamt
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-ink-900 dark:bg-ink-800 p-5 text-white shadow-warm-lg">
+            <p className="flex items-center justify-between gap-1.5 text-xs uppercase tracking-wide text-white/60">
+              Plattformstatus
+              <ActivityIcon className="h-3.5 w-3.5" />
             </p>
-            <p className="mt-1.5 font-display text-4xl font-extrabold leading-none">{totalEmployeeCount}</p>
-            <p className="mt-2 text-xs text-white/60">
-              +{newEmployeeCount} seit letztem Monat · über {totalEmployerCount} Arbeitgeber
-            </p>
+            <p className="mt-1.5 font-display text-4xl font-extrabold leading-none">{activeEmployerCount}</p>
+            <p className="mt-2 text-xs text-white/60">Aktive Pilotunternehmen</p>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.violet}`}>
-                <BriefcaseIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{totalEmployerCount}</p>
-              <p className="text-sm text-sand-500">Arbeitgeber</p>
-              <p className="text-xs text-sand-400">+{newEmployerCount} seit letztem Monat</p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.emerald}`}>
-                <StoreIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{partnerCount}</p>
-              <p className="text-sm text-sand-500">Partnerbetriebe</p>
-              <p className="text-xs text-sand-400">+{newPartners} seit letztem Monat</p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <MapPinIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{regionCount}</p>
-              <p className="text-sm text-sand-500">{regionCount === 1 ? "Region" : "Regionen"}</p>
-              <p className="text-xs text-sand-400">aktiv</p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.amber}`}>
-                <TrendingUpIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">
-                {formatPrice(monthlyRevenueCents)}
-              </p>
-              <p className="text-sm text-sand-500">Umsatz / Monat</p>
-              <p className="text-xs text-sand-400">{employers.length} aktive Abos</p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.rose}`}>
-                <TagIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{redemptionCount}</p>
-              <p className="text-sm text-sand-500">Einlösungen</p>
-              <p className="text-xs text-sand-400">seit letztem Monat</p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.sky}`}>
-                <ActivityIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{activationRate}%</p>
-              <p className="text-sm text-sand-500">Aktivierung</p>
-              <p className="text-xs text-sand-400">
-                {activeEmployeeCount} von {totalEmployeeCount}
-              </p>
-            </div>
-            <div className="rounded-xl border border-card-border bg-card p-4 text-center">
-              <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES.slate}`}>
-                <BellIcon className="h-5 w-5" />
-              </span>
-              <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">{openTasksCount}</p>
-              <p className="text-sm text-sand-500">Offene Vorgänge</p>
-              <p className="text-xs text-sand-400">{openTasksCount === 0 ? "sehr gut!" : "zu prüfen"}</p>
-            </div>
+          <div className="grid shrink-0 grid-cols-2 gap-3">
+            {statTiles.map((tile) => (
+              <div key={tile.label} className="rounded-xl border border-card-border bg-card p-4 text-center">
+                <span
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${ACCENT_CLASSES[tile.color]}`}
+                >
+                  <tile.icon className="h-5 w-5" />
+                </span>
+                <p className="mt-2.5 font-display text-2xl font-semibold leading-tight text-sand-900">
+                  {tile.value}
+                </p>
+                <p className="text-sm text-sand-500">{tile.label}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-auto grid shrink-0 grid-cols-2 gap-3">
-            <Link href="/admin/partnerbetriebe/neu" className={secondaryButtonClass}>
-              + Partnerbetrieb
-            </Link>
-            <Link href="/admin/arbeitgeber" className={primaryButtonClass}>
-              Arbeitgeber ansehen
+          <div className="mt-auto grid shrink-0 grid-cols-1 gap-3">
+            <Link href="/admin/arbeitgeber" className="inline-flex items-center justify-center rounded-full bg-ink-600 px-5 py-2.5 text-sm font-semibold text-white shadow-warm hover:bg-ink-700 hover:shadow-warm-lg transition-all">
+              Unternehmen ansehen
             </Link>
           </div>
         </div>
 
-        {/* Mittlere Spalte: Hinweis-Banner + Module */}
+        {/* Mittlere Spalte: Module */}
         <div className="flex min-h-0 flex-col gap-4 min-[1800px]:w-[692px] min-[1800px]:shrink-0">
-          {banner && (
-            <Link
-              href={banner.href}
-              className={`shrink-0 flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors ${BANNER_WRAP_CLASSES[banner.color]}`}
-            >
-              <div className="flex min-w-0 items-center gap-4">
-                <span
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${ACCENT_CLASSES[banner.color]}`}
-                >
-                  <banner.icon className="h-6 w-6" />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="font-display text-base font-semibold text-sand-900">{banner.title}</h3>
-                  <p className="truncate text-sm text-sand-600">{banner.subtitle}</p>
-                </div>
-              </div>
-              <div className="shrink-0 rounded-xl border border-card-border bg-card px-4 py-2 text-center">
-                <p className="font-display text-2xl font-bold leading-none text-sand-900">{banner.count}</p>
-                <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-sand-500">Offen</p>
-              </div>
-            </Link>
-          )}
-
-          <div className="grid min-h-0 flex-1 content-start auto-rows-min gap-4 overflow-y-auto grid-cols-[repeat(auto-fill,minmax(150px,260px))]">
+          <div className="grid min-h-0 flex-1 content-start auto-rows-min gap-4 overflow-y-auto grid-cols-1 sm:grid-cols-2">
             {modules.map((m) => {
               const Icon = m.icon;
-              return (
-                <Link
-                  key={m.href}
-                  href={m.href}
-                  className={`${cardClass} group flex w-full max-w-[260px] flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
-                >
+              const content = (
+                <>
                   <div className="flex items-start justify-between">
                     <span
                       className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${ACCENT_CLASSES[m.color]}`}
@@ -413,11 +333,37 @@ export default async function AdminDashboardPage() {
                         {m.badge}
                       </span>
                     )}
+                    {!m.href && (
+                      <span className="rounded-full bg-sand-100 dark:bg-cockpit-icon-bg px-2 py-0.5 text-xs font-medium text-sand-500 dark:text-cockpit-text-weak">
+                        In Vorbereitung
+                      </span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-display text-base font-semibold text-sand-900">{m.title}</h3>
                     <p className="mt-1 text-sm text-sand-600">{m.description}</p>
                   </div>
+                </>
+              );
+
+              if (!m.href) {
+                return (
+                  <div
+                    key={m.title}
+                    className={`${cardClass} flex w-full flex-col gap-2.5 !p-5 opacity-70`}
+                  >
+                    {content}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={m.title}
+                  href={m.href}
+                  className={`${cardClass} group flex w-full flex-col gap-2.5 !p-5 hover:border-ink-300 transition-colors`}
+                >
+                  {content}
                   <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-sand-700 group-hover:text-ink-900">
                     Öffnen
                     <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -428,19 +374,51 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Rechte Spalte: Letzte Aktivitäten */}
-        <div className={`${cardClass} flex min-h-0 flex-col gap-3 overflow-hidden min-[1800px]:w-[440px] min-[1800px]:shrink-0`}>
-          <h3 className="shrink-0 font-display text-base font-semibold text-sand-900">Letzte Aktivitäten</h3>
-          <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-            {activity.length === 0 && <p className="text-sm text-sand-500">Noch keine Aktivitäten.</p>}
-            {activity.map((a) => {
-              const AIcon = a.icon;
-              return (
+        {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten */}
+        <div className="flex min-h-0 flex-col gap-4 min-[1800px]:flex-1">
+          <div className={`${cardClass} shrink-0`}>
+            <h3 className="font-display text-base font-semibold text-sand-900">Handlungsbedarf</h3>
+            {actionItems.length === 0 ? (
+              <p className="mt-3 text-sm text-sand-500">Aktuell besteht kein Handlungsbedarf.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {actionItems.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-card-border px-3 py-2.5"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${ACCENT_CLASSES[item.color]}`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                      </span>
+                      <p className="truncate text-sm text-sand-800">{item.label}</p>
+                    </div>
+                    <Link
+                      href={item.href}
+                      className="shrink-0 rounded-full border border-card-border px-3 py-1.5 text-xs font-semibold text-sand-800 hover:bg-sand-100 transition-colors"
+                    >
+                      {item.cta}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className={`${cardClass} flex min-h-0 flex-1 flex-col gap-3 overflow-hidden`}>
+            <h3 className="shrink-0 font-display text-base font-semibold text-sand-900">Letzte Aktivitäten</h3>
+            <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+              {activity.length === 0 && (
+                <p className="text-sm text-sand-500">Bisher sind keine Aktivitäten vorhanden.</p>
+              )}
+              {activity.map((a) => (
                 <li key={a.id} className="flex items-start gap-2.5 text-sm">
                   <span
                     className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[a.color]}`}
                   >
-                    <AIcon className="h-3.5 w-3.5" />
+                    <a.icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
@@ -450,9 +428,9 @@ export default async function AdminDashboardPage() {
                     <p className="truncate text-xs text-sand-500">{a.detail}</p>
                   </div>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
