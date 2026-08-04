@@ -3,7 +3,7 @@ import { BriefcaseIcon, StoreIcon, UsersIcon, TargetIcon } from "@/components/ic
 const GROUPS = [
   {
     icon: BriefcaseIcon,
-    text: "Geschäftsführer:innen kleiner und mittlerer Unternehmen ohne eigene Controlling-Abteilung",
+    text: "Geschäftsführer kleiner und mittlerer Unternehmen ohne eigene Controlling-Abteilung",
   },
   {
     icon: StoreIcon,
