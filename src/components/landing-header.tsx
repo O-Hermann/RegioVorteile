@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons";
 import { LandingThemeToggle } from "@/components/landing-theme-toggle";
-import { SITE_NAME, NAV_ITEMS } from "@/lib/site-config";
+import { LandingNav } from "@/components/landing-nav";
+import { SITE_NAME } from "@/lib/site-config";
 
 export function LandingHeader() {
   return (
@@ -11,15 +12,7 @@ export function LandingHeader() {
           {SITE_NAME}
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-cockpit-text-secondary">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="transition-colors hover:text-slate-900 dark:hover:text-cockpit-heading"
-            >
-              {item.label}
-            </Link>
-          ))}
+          <LandingNav />
         </nav>
         <div className="flex items-center gap-2">
           <LandingThemeToggle />

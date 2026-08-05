@@ -8,10 +8,12 @@ import { DisclaimerSection } from "@/components/landing/disclaimer-section";
 import { TargetGroupSection } from "@/components/landing/target-group-section";
 import { IntroSection } from "@/components/landing/intro-section";
 import { CtaSection } from "@/components/landing/cta-section";
+import { HashScrollHandler } from "@/components/landing/hash-scroll-handler";
 
 export default function LandingPage() {
   return (
     <>
+      <HashScrollHandler />
       <LandingHeader />
       <main className="flex-1">
         <Hero />

@@ -25,7 +25,7 @@ const STEPS = [
 
 export function ProcessSection() {
   return (
-    <section id="ablauf" className="py-16 border-y border-petrol-100 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-section-alt">
+    <section id="ablauf" className="scroll-mt-20 py-16 border-y border-petrol-100 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-section-alt">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
           So funktioniert es

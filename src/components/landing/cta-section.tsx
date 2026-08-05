@@ -4,7 +4,7 @@ import { SITE_NAME } from "@/lib/site-config";
 
 export function CtaSection() {
   return (
-    <section className="relative overflow-hidden py-11 border-t border-petrol-100 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-section-alt">
+    <section className="relative overflow-hidden py-10 border-t border-petrol-100 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-section-alt">
       <div
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent dark:bg-cockpit-accent/10 blur-3xl"

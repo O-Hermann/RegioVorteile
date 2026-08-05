@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionNavLink } from "@/components/landing/section-nav-link";
 import { SITE_NAME, SITE_TAGLINE, CONTACT_EMAIL, NAV_ITEMS, FOOTER_LINKS } from "@/lib/site-config";
 
 export function LandingFooter() {
@@ -14,9 +15,9 @@ export function LandingFooter() {
           <ul className="space-y-1 text-slate-600 dark:text-cockpit-text-secondary">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="hover:text-slate-900 dark:hover:text-cockpit-heading">
+                <SectionNavLink href={item.href} className="hover:text-slate-900 dark:hover:text-cockpit-heading">
                   {item.label}
-                </Link>
+                </SectionNavLink>
               </li>
             ))}
           </ul>

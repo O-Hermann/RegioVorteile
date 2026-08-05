@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/icons";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { SectionNavLink } from "@/components/landing/section-nav-link";
 import { SITE_NAME } from "@/lib/site-config";
 
 export function Hero() {
@@ -39,12 +40,12 @@ export function Hero() {
                 Kontakt aufnehmen
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <a
-                href="#funktionen"
+              <SectionNavLink
+                href="/#funktionen"
                 className="inline-flex items-center gap-2 rounded-full border border-petrol-200 bg-white px-6 py-3 text-sm font-semibold text-petrol-800 hover:bg-petrol-50 dark:border-cockpit-border dark:bg-transparent dark:text-cockpit-heading dark:hover:bg-cockpit-card transition-colors"
               >
                 Funktionen entdecken
-              </a>
+              </SectionNavLink>
             </div>
             <p className="mt-6 text-xs text-slate-500 dark:text-cockpit-text-weak">
               Beispieldarstellung mit Beispieldaten zur Veranschaulichung.

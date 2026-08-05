@@ -44,7 +44,7 @@ const CATEGORIES = [
 
 export function FeatureSection() {
   return (
-    <section id="funktionen" className="py-16 bg-white dark:bg-cockpit-section">
+    <section id="funktionen" className="scroll-mt-20 py-16 bg-white dark:bg-cockpit-section">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
           Alles Wichtige auf einer Seite
