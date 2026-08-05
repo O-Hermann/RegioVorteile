@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex-1 flex flex-col">
       <header className="sticky top-0 z-20 border-b border-card-border/70 dark:border-white/5 bg-card/90 dark:bg-cockpit-header/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-[1920px] px-8 h-[70px] flex items-center justify-between gap-6">
+        <div className="mx-auto max-w-[1920px] px-8 h-16 flex items-center justify-between gap-6">
           <Link href="/admin/dashboard" className="flex items-center gap-3 shrink-0">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-ink-500 to-ink-700 dark:from-cockpit-accent-light dark:to-cockpit-accent-dark font-display text-base font-bold text-white shadow-[0_0_16px_-3px_rgba(8,122,120,0.55)] dark:shadow-[0_0_18px_-3px_rgba(30,151,148,0.6)]">
               C
@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <AdminNav mobile />
         </nav>
       </header>
-      <main className="relative flex-1 w-full max-w-[1920px] mx-auto px-8 py-6">
+      <main className="relative flex-1 w-full max-w-[1920px] mx-auto px-8 py-4">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-0 dark:opacity-100 transition-opacity duration-500"

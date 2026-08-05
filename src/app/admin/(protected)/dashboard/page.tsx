@@ -323,18 +323,20 @@ export default async function AdminDashboardPage() {
     .slice(0, 4);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex items-baseline justify-between gap-3">
+    <div className="flex flex-col min-[1400px]:h-[calc(100dvh-9rem)]">
+      <div className="flex items-baseline justify-between gap-3 shrink-0">
         <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Admin-Übersicht</h1>
         <p className={`text-sm ${secondaryTextClass}`}>{today}</p>
       </div>
 
-      {/* Kein overflow-y-auto / keine feste Hoehe mehr auf dieser Ebene:
-          die Spalten wachsen mit ihrem Inhalt, die ganze Seite scrollt bei
-          Bedarf normal statt einzelner Spalten. */}
-      <div className="mt-2 grid grid-cols-1 gap-6 xl:grid-cols-[29fr_37fr_32fr] xl:items-stretch">
+      {/* Ab 1400px Breite fuellt das Grid exakt die verfuegbare Hoehe
+          (100dvh minus Header/Innenabstaende/Ueberschrift, siehe Wrapper
+          oben) - passt sich automatisch an jede Viewport-Hoehe an statt
+          auf einen festen Pixelwert getrimmt zu sein. Darunter waechst
+          alles natuerlich mit und die ganze Seite scrollt bei Bedarf. */}
+      <div className="mt-1.5 grid grid-cols-1 gap-6 min-[1400px]:min-h-0 min-[1400px]:flex-1 xl:grid-cols-[29fr_37fr_32fr] xl:items-stretch">
         {/* Linke Spalte: Kennzahlen */}
-        <div className={`${panelClass} flex min-w-0 flex-col gap-4 !p-5`}>
+        <div className={`${panelClass} flex min-w-0 flex-col gap-4 !p-5 min-[1400px]:min-h-0`}>
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:from-cockpit-accent dark:to-cockpit-accent-dark font-display text-lg font-bold text-white shadow-md shadow-ink-900/20">
               {avatarInitial}
@@ -353,7 +355,7 @@ export default async function AdminDashboardPage() {
           </div>
 
           {/* Plattformstatus - visuelles Highlight der linken Spalte */}
-          <div className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 dark:from-cockpit-accent-light dark:via-cockpit-accent-dark dark:to-cockpit-header p-5 py-6 text-white shadow-warm-lg ring-1 ring-inset ring-white/10">
+          <div className="relative shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 dark:from-cockpit-accent-light dark:via-cockpit-accent-dark dark:to-cockpit-header p-5 text-white shadow-warm-lg ring-1 ring-inset ring-white/10">
             <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-cockpit-accent-light/25 blur-3xl" />
             <div aria-hidden className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-32 rounded-full bg-cockpit-accent/25 blur-3xl" />
             <DecorativeTrendGraph />
@@ -367,37 +369,37 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="grid flex-1 grid-cols-2 grid-rows-4 gap-3">
+          <div className="grid flex-1 grid-cols-2 grid-rows-4 gap-2.5 min-[1400px]:min-h-0">
             {statTiles.map((tile) => (
               <div
                 key={tile.label}
-                className={`${panelClass} ${panelHoverClass} flex flex-col justify-center !p-4`}
+                className={`${panelClass} ${panelHoverClass} flex flex-col justify-center !p-3.5`}
               >
                 <span
-                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${ACCENT_CLASSES[tile.color]}`}
+                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${ACCENT_CLASSES[tile.color]}`}
                 >
-                  <tile.icon className="h-4 w-4" />
+                  <tile.icon className="h-3.5 w-3.5" />
                 </span>
-                <p className="mt-1.5 font-display text-[26px] font-extrabold leading-none tracking-tight text-sand-900">
+                <p className="mt-1 font-display text-[26px] font-extrabold leading-none tracking-tight text-sand-900">
                   {tile.value}
                 </p>
-                <p className={`mt-1 text-[13px] leading-tight ${secondaryTextClass}`}>{tile.label}</p>
+                <p className={`mt-0.5 text-[13px] leading-tight ${secondaryTextClass}`}>{tile.label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Mittlere Spalte: Module */}
-        <div className="grid min-w-0 auto-rows-min grid-cols-1 content-start gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 auto-rows-min grid-cols-1 content-between gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
           {modules.map((m) => {
             const Icon = m.icon;
             const content = (
               <>
                 <div className="flex items-start justify-between gap-2">
                   <span
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${ACCENT_CLASSES[m.color]}`}
+                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[m.color]}`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                   </span>
                   {m.badge && (
                     <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-xs font-semibold text-gold-700">
@@ -405,7 +407,7 @@ export default async function AdminDashboardPage() {
                     </span>
                   )}
                 </div>
-                <div className="mt-2.5">
+                <div className="mt-2">
                   <h3 className="font-display text-base font-semibold tracking-tight text-sand-900">{m.title}</h3>
                   <p className={`mt-1 text-sm ${secondaryTextClass}`}>{m.description}</p>
                 </div>
@@ -416,7 +418,7 @@ export default async function AdminDashboardPage() {
 
             if (!m.href) {
               return (
-                <div key={m.title} className={`${panelClass} flex flex-col !p-3.5 ${wideClass}`}>
+                <div key={m.title} className={`${panelClass} flex flex-col !p-3 ${wideClass}`}>
                   {content}
                 </div>
               );
@@ -426,10 +428,10 @@ export default async function AdminDashboardPage() {
               <Link
                 key={m.title}
                 href={m.href}
-                className={`${panelClass} ${panelHoverClass} group flex flex-col !p-3.5 ${wideClass}`}
+                className={`${panelClass} ${panelHoverClass} group flex flex-col !p-3 ${wideClass}`}
               >
                 {content}
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 dark:text-cockpit-accent-light">
+                <span className="mt-2.5 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 dark:text-cockpit-accent-light">
                   Öffnen
                   <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -439,8 +441,8 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className={`${panelClass} flex flex-1 basis-0 flex-col !p-5`}>
+        <div className="flex min-w-0 flex-col gap-4 min-[1400px]:min-h-0">
+          <div className={`${panelClass} flex flex-1 basis-0 flex-col !p-5 min-[1400px]:min-h-0`}>
             <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
             {actionItems.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-2.5 text-center">
@@ -476,7 +478,7 @@ export default async function AdminDashboardPage() {
             )}
           </div>
 
-          <div className={`${panelClass} flex flex-1 basis-0 flex-col gap-1 !p-5`}>
+          <div className={`${panelClass} flex flex-1 basis-0 flex-col gap-1 !p-5 min-[1400px]:min-h-0`}>
             <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Aktivitäten</h3>
             {activity.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
