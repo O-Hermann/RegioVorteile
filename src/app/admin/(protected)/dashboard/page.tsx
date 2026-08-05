@@ -390,7 +390,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Mittlere Spalte: Module */}
-        <div className="grid min-w-0 auto-rows-min grid-cols-1 content-between gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
+        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(3,minmax(0,1fr))_auto] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
           {modules.map((m) => {
             const Icon = m.icon;
             const content = (
