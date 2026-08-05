@@ -20,9 +20,9 @@ export function Hero() {
             <span className="inline-block rounded-full border border-petrol-200 dark:border-cockpit-border bg-petrol-50 dark:bg-cockpit-accent-subtle px-3 py-1 text-xs font-semibold tracking-wide uppercase text-petrol-800 dark:text-cockpit-accent-light">
               Das Dashboard für Geschäftsführer
             </span>
-            <h1 className="mt-6 font-display text-4xl sm:text-5xl font-extrabold leading-[1.08] tracking-tight text-slate-900 dark:text-cockpit-heading">
-              Ihr Unternehmen.{" "}
-              <span className="text-petrol-800 dark:text-cockpit-accent-light">
+            <h1 className="mt-6 font-display text-4xl sm:text-5xl font-extrabold leading-[1.15] tracking-tight text-slate-900 dark:text-cockpit-heading">
+              <span className="block">Ihr Unternehmen.</span>
+              <span className="block text-petrol-800 dark:text-cockpit-accent-light">
                 Auf einen Blick.
               </span>
             </h1>

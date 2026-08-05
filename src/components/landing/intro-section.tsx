@@ -19,21 +19,21 @@ export function IntroSection() {
             Zum Start individuell auf Ihr Unternehmen abgestimmt
           </h2>
           <p className="relative mt-4 text-slate-600 dark:text-cockpit-text-secondary max-w-xl mx-auto">
-            {SITE_NAME} befindet sich derzeit in einer begrenzten Pilotphase. Gemeinsam
-            prüfen wir Ihre vorhandene Datenlage und stimmen Einrichtung,
-            Funktionsumfang und Konditionen individuell auf Ihr Unternehmen ab.
+            {SITE_NAME} befindet sich in einer begrenzten Pilotphase. Gemeinsam stimmen
+            wir Einrichtung, Funktionsumfang und Konditionen individuell auf Ihr
+            Unternehmen ab.
           </p>
 
           <div className="relative mt-8 grid gap-4 sm:grid-cols-3">
             {STEPS.map(({ icon: Icon, text }) => (
               <div
                 key={text}
-                className="flex flex-col items-center gap-2.5 rounded-xl border border-petrol-100 dark:border-white/10 bg-white dark:bg-cockpit-card-dark/60 px-4 py-4"
+                className="flex flex-col items-center gap-3 rounded-xl border border-petrol-200 dark:border-white/10 bg-white dark:bg-cockpit-card-dark/60 px-4 py-5 shadow-sm dark:shadow-lg dark:shadow-black/20"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-petrol-400/25 to-petrol-500/10 dark:from-cockpit-accent-light/25 dark:to-cockpit-accent/10 text-petrol-700 dark:text-cockpit-accent-light border border-petrol-200/60 dark:border-cockpit-accent-light/25">
-                  <Icon className="h-4 w-4" />
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-petrol-400/30 to-petrol-500/10 dark:from-cockpit-accent-light/25 dark:to-cockpit-accent/10 text-petrol-700 dark:text-cockpit-accent-light border border-petrol-200/60 dark:border-cockpit-accent-light/25">
+                  <Icon className="h-5 w-5" />
                 </span>
-                <p className="text-sm text-slate-700 dark:text-cockpit-text-secondary">{text}</p>
+                <p className="text-[15px] font-medium text-slate-800 dark:text-cockpit-text">{text}</p>
               </div>
             ))}
           </div>

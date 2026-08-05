@@ -7,7 +7,7 @@ export function LandingHeader() {
   return (
     <header className="border-b border-petrol-100 dark:border-cockpit-border bg-white/85 dark:bg-cockpit-header/80 backdrop-blur sticky top-0 z-30">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-cockpit-heading">
+        <Link href="/" className="font-display text-2xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
           {SITE_NAME}
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-cockpit-text-secondary">

@@ -49,13 +49,13 @@ export function FeatureSection() {
         <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
           Alles Wichtige auf einer Seite
         </h2>
-        <p className="mt-3 text-center text-slate-600 dark:text-cockpit-text-secondary max-w-2xl mx-auto">
+        <p className="mt-3 text-center text-lg leading-relaxed text-slate-700 dark:text-cockpit-text max-w-2xl mx-auto">
           {SITE_NAME} führt Ihre wichtigsten Unternehmensbereiche zusammen und macht
           Veränderungen auf einen Blick sichtbar.
         </p>
-        <p className="mt-2 text-center text-sm text-slate-500 dark:text-cockpit-text-weak max-w-xl mx-auto">
+        <p className="mt-2.5 text-center text-base leading-relaxed text-slate-600 dark:text-cockpit-text-secondary max-w-xl mx-auto">
           Zum Start konzentriert sich {SITE_NAME} auf die wichtigsten Kennzahlen und
-          Monatsvergleiche. Weitere Unternehmensbereiche werden schrittweise ergänzt.
+          Monatsvergleiche – weitere Bereiche folgen schrittweise.
         </p>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -70,13 +70,13 @@ export function FeatureSection() {
                 </div>
                 <div>
                   <h3 className="font-display text-base font-bold text-slate-900 dark:text-cockpit-heading">{title}</h3>
-                  <p className="text-xs text-slate-500 dark:text-cockpit-text-secondary">{text}</p>
+                  <p className="text-sm text-slate-600 dark:text-cockpit-text-secondary">{text}</p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-petrol-100 dark:border-white/5 pt-3.5">
+              <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-petrol-100 dark:border-white/5 pt-3.5">
                 {items.map((item) => (
-                  <div key={item} className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-cockpit-text-secondary">
-                    <CheckCircleIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-petrol-500 dark:text-cockpit-accent-light" />
+                  <div key={item} className="flex items-start gap-2 text-sm text-slate-700 dark:text-cockpit-text">
+                    <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-petrol-500 dark:text-cockpit-accent-light" />
                     {item}
                   </div>
                 ))}

@@ -33,12 +33,12 @@ export function ProcessSection() {
         <div className="relative mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div
             aria-hidden
-            className="pointer-events-none absolute top-9 left-[12.5%] right-[12.5%] hidden h-px bg-gradient-to-r from-transparent via-petrol-200 dark:via-cockpit-border to-transparent lg:block"
+            className="pointer-events-none absolute top-10 left-[12.5%] right-[12.5%] hidden h-px bg-gradient-to-r from-transparent via-petrol-200 dark:via-cockpit-border to-transparent lg:block"
           />
           {STEPS.map(({ icon: Icon, title, text }, i) => (
             <div
               key={title}
-              className="relative rounded-2xl border border-petrol-100 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark p-5 shadow-sm dark:shadow-lg dark:shadow-black/20"
+              className="relative rounded-2xl border border-petrol-100 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark p-6 shadow-sm dark:shadow-lg dark:shadow-black/20"
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-petrol-800 dark:bg-cockpit-accent text-xs font-bold text-white ring-4 ring-petrol-50 dark:ring-cockpit-section-alt">
@@ -46,10 +46,10 @@ export function ProcessSection() {
                 </span>
                 <Icon className="h-5 w-5 text-petrol-700 dark:text-cockpit-accent-light" />
               </div>
-              <h3 className="mt-3.5 font-display text-base font-bold text-slate-900 dark:text-cockpit-heading">
+              <h3 className="mt-4 font-display text-lg font-bold text-slate-900 dark:text-cockpit-heading">
                 {title}
               </h3>
-              <p className="mt-1.5 text-sm text-slate-600 dark:text-cockpit-text-secondary">{text}</p>
+              <p className="mt-2 text-base leading-relaxed text-slate-600 dark:text-cockpit-text-secondary">{text}</p>
             </div>
           ))}
         </div>
