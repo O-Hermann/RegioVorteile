@@ -6,7 +6,7 @@ import { FeatureSection } from "@/components/landing/feature-section";
 import { ProcessSection } from "@/components/landing/process-section";
 import { DisclaimerSection } from "@/components/landing/disclaimer-section";
 import { TargetGroupSection } from "@/components/landing/target-group-section";
-import { PricingSection } from "@/components/landing/pricing-section";
+import { IntroSection } from "@/components/landing/intro-section";
 import { CtaSection } from "@/components/landing/cta-section";
 
 export default function LandingPage() {
@@ -20,7 +20,7 @@ export default function LandingPage() {
         <ProcessSection />
         <DisclaimerSection />
         <TargetGroupSection />
-        <PricingSection />
+        <IntroSection />
         <CtaSection />
       </main>
       <LandingFooter />

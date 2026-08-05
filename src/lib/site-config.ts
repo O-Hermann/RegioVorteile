@@ -1,12 +1,11 @@
-export const SITE_NAME = "UnternehmensCockpit";
+export const SITE_NAME = "Effivo";
 
 export const SITE_TAGLINE =
   "Die verständliche Unternehmensübersicht für kleine und mittlere Unternehmen.";
 
-export const SITE_DESCRIPTION =
-  "UnternehmensCockpit führt Ihre wichtigsten Unternehmenszahlen auf einer übersichtlichen Seite zusammen und zeigt verständlich, was sich seit dem letzten Monat verändert hat.";
+export const SITE_DESCRIPTION = `${SITE_NAME} führt Ihre wichtigsten Unternehmenszahlen auf einer übersichtlichen Seite zusammen und zeigt verständlich, was sich seit dem letzten Monat verändert hat.`;
 
-export const CONTACT_EMAIL = "kontakt@unternehmenscockpit.de";
+export const CONTACT_EMAIL = "kontakt@effivo.de";
 
 export type NavItem = {
   label: string;

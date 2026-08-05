@@ -24,7 +24,7 @@ export function LandingFooter() {
         <div>
           <p className="font-semibold text-slate-800 dark:text-cockpit-text mb-2">Kontakt</p>
           <p className="text-slate-600 dark:text-cockpit-text-secondary">
-            Fragen zur Pilotphase?{" "}
+            Fragen?{" "}
             <a href={`mailto:${CONTACT_EMAIL}`} className="text-petrol-800 dark:text-cockpit-accent-light hover:underline">
               {CONTACT_EMAIL}
             </a>

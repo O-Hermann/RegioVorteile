@@ -12,7 +12,11 @@ export function LandingHeader() {
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-cockpit-text-secondary">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-slate-900 dark:hover:text-cockpit-heading">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors hover:text-slate-900 dark:hover:text-cockpit-heading"
+            >
               {item.label}
             </Link>
           ))}
@@ -21,15 +25,15 @@ export function LandingHeader() {
           <LandingThemeToggle />
           <Link
             href="/login"
-            className="hidden sm:inline-flex text-sm font-medium text-slate-600 dark:text-cockpit-text-secondary hover:text-slate-900 dark:hover:text-cockpit-heading px-3 py-2"
+            className="hidden sm:inline-flex text-sm font-medium text-slate-600 dark:text-cockpit-text-secondary hover:text-slate-900 dark:hover:text-cockpit-heading px-3 py-2 transition-colors"
           >
             Login
           </Link>
           <Link
-            href="/#preise"
+            href="/kontakt"
             className="group inline-flex items-center gap-1.5 rounded-full bg-cockpit-accent hover:bg-cockpit-accent-hover px-4 py-2 text-sm font-semibold text-white transition-colors"
           >
-            Pilotphase anfragen
+            Kontakt aufnehmen
             <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
