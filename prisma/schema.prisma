@@ -15,6 +15,40 @@ enum UserRole {
   EMPLOYER
 }
 
+// Plattformweite Rolle (Effivo-interne Plattformverwaltung) - unabhaengig von
+// der Unternehmensrolle in CompanyMembership. Optional: die meisten Nutzer
+// haben keine Plattformrolle und sehen nur ihre Unternehmensbereiche.
+enum PlatformRole {
+  SUPERADMIN
+  PLATFORM_ADMIN
+  SUPPORT
+}
+
+// Rolle eines Nutzers innerhalb eines konkreten Unternehmens (CompanyMembership).
+enum CompanyRole {
+  OWNER
+  COMPANY_ADMIN
+  ACCOUNTING
+  MANAGEMENT
+  VIEWER
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum CompanyStatus {
+  ACTIVE
+  DISABLED
+}
+
 enum EmployeeStatus {
   INVITED
   ACTIVE
@@ -47,14 +81,61 @@ enum ContactRequestStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         UserRole
-  createdAt    DateTime @default(now())
+  id           String        @id @default(cuid())
+  email        String        @unique
+  // Optional seit Einfuehrung des Company/Membership-Modells: neu eingeladene
+  // Nutzer werden als Stub ohne Passwort angelegt (analog Employee.passwordHash)
+  // und setzen ihr Passwort erst beim Einloesen der Einladung.
+  passwordHash String?
+  // Legacy-Feld aus der Regiovorteile-Zeit (ADMIN/EMPLOYER) - wird von neuem
+  // Code nicht mehr gelesen, bleibt nur fuer die alten Login-Formulare bestehen.
+  role         UserRole?
+  firstName    String?
+  lastName     String?
+  platformRole PlatformRole?
+  status       UserStatus    @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime      @default(now())
 
   employer            Employer?
   passwordResetTokens PasswordResetToken[]
+  memberships         CompanyMembership[]  @relation("MemberUser")
+  sentInvitations     CompanyMembership[]  @relation("InvitedByUser")
+}
+
+model Company {
+  id        String        @id @default(cuid())
+  name      String
+  status    CompanyStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+
+  memberships CompanyMembership[]
+}
+
+// Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
+// Unternehmen sein, jeweils mit eigener Rolle. Ersetzt das alte 1:1-Muster
+// Employer.userId fuer alle neuen (nicht-Regiovorteile) Unternehmen.
+model CompanyMembership {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation("MemberUser", fields: [userId], references: [id])
+  companyId String
+  company   Company          @relation(fields: [companyId], references: [id])
+  role      CompanyRole
+  status    MembershipStatus @default(INVITED)
+
+  invitedAt   DateTime  @default(now())
+  activatedAt DateTime?
+
+  invitedById String?
+  invitedBy   User?   @relation("InvitedByUser", fields: [invitedById], references: [id])
+
+  // Einladungslink-Token, analog PasswordResetToken: kryptografisch zufaellig,
+  // einmalig verwendbar (wird beim Einloesen genullt), zeitlich begrenzt.
+  inviteToken          String?   @unique
+  inviteTokenExpiresAt DateTime?
+
+  @@unique([userId, companyId])
 }
 
 model Region {
@@ -69,35 +150,35 @@ model Region {
 }
 
 model PricingTier {
-  id               String @id @default(cuid())
-  label            String
-  minEmployees     Int
-  maxEmployees     Int? // null = unbegrenzt
+  id                String @id @default(cuid())
+  label             String
+  minEmployees      Int
+  maxEmployees      Int? // null = unbegrenzt
   monthlyPriceCents Int
 
   employers Employer[]
 }
 
 model Employer {
-  id                 String   @id @default(cuid())
+  id                 String      @id @default(cuid())
   companyName        String
-  userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id])
+  userId             String      @unique
+  user               User        @relation(fields: [userId], references: [id])
   employeeCount      Int
   regionId           String
-  region             Region   @relation(fields: [regionId], references: [id])
+  region             Region      @relation(fields: [regionId], references: [id])
   pricingTierId      String
   pricingTier        PricingTier @relation(fields: [pricingTierId], references: [id])
-  subscriptionStatus String   @default("ausstehend") // Platzhalter, spaeter durch echte Stripe-Subscription ersetzt
+  subscriptionStatus String      @default("ausstehend") // Platzhalter, spaeter durch echte Stripe-Subscription ersetzt
   contractEndDate    DateTime // Ende der aktuellen Vertragslaufzeit
-  approved           Boolean  @default(true) // neue Registrierungen starten explizit mit false, siehe registerEmployer
+  approved           Boolean     @default(true) // neue Registrierungen starten explizit mit false, siehe registerEmployer
   contactFirstName   String?
   contactLastName    String?
   phone              String?
   street             String?
   plz                String?
   city               String?
-  createdAt          DateTime @default(now())
+  createdAt          DateTime    @default(now())
 
   employees Employee[]
   feedback  Feedback[]
@@ -120,22 +201,22 @@ model Employee {
 }
 
 model PartnerBusiness {
-  id           String  @id @default(cuid())
-  name         String
-  category     String
-  description  String
-  discountText String
-  regionId     String
-  region       Region  @relation(fields: [regionId], references: [id])
-  street       String // Strasse und Hausnummer
-  plz          String
-  city         String
-  logoUrl      String?
-  active       Boolean  @default(true)
+  id              String   @id @default(cuid())
+  name            String
+  category        String
+  description     String
+  discountText    String
+  regionId        String
+  region          Region   @relation(fields: [regionId], references: [id])
+  street          String // Strasse und Hausnummer
+  plz             String
+  city            String
+  logoUrl         String?
+  active          Boolean  @default(true)
   contractEndDate DateTime // Ende der Vereinbarung mit dem Partnerbetrieb
 
   redemptions Redemption[]
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 model Redemption {

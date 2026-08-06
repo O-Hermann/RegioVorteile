@@ -116,36 +116,33 @@ export default async function AdminDashboardPage() {
 
   const [
     admin,
-    totalEmployerCount,
-    activeEmployerCount,
-    pendingApprovalCount,
-    employerUserCount,
-    activeEmployeeCount,
+    totalCompanyCount,
+    activeCompanyCount,
+    pendingInvitationCount,
+    activeUserCount,
     openFeedbackCount,
     openContactRequestCount,
-    activeEmployersWithTier,
-    recentEmployers,
-    recentEmployees,
+    recentCompanies,
+    recentMemberships,
     recentContactRequests,
     recentFeedback,
   ] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.userId } }),
-    prisma.employer.count(),
-    prisma.employer.count({ where: { approved: true, subscriptionStatus: "aktiv" } }),
-    prisma.employer.count({ where: { approved: false } }),
-    prisma.user.count({ where: { role: "EMPLOYER" } }),
-    prisma.employee.count({ where: { status: "ACTIVE" } }),
+    prisma.company.count(),
+    prisma.company.count({ where: { status: "ACTIVE" } }),
+    prisma.companyMembership.count({ where: { status: "INVITED" } }),
+    // Alle Personen mit funktionierendem Zugang zur Plattform - entweder ueber
+    // eine Plattformrolle oder mindestens eine aktive Unternehmensmitgliedschaft.
+    prisma.user.count({
+      where: { status: "ACTIVE", OR: [{ platformRole: { not: null } }, { memberships: { some: { status: "ACTIVE" } } }] },
+    }),
     prisma.feedback.count({ where: { status: "OPEN" } }),
     prisma.contactRequest.count({ where: { status: "OPEN" } }),
-    prisma.employer.findMany({
-      where: { approved: true, subscriptionStatus: "aktiv" },
-      include: { pricingTier: true },
-    }),
-    prisma.employer.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.employee.findMany({
-      orderBy: { createdAt: "desc" },
+    prisma.company.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.companyMembership.findMany({
+      orderBy: { invitedAt: "desc" },
       take: 5,
-      include: { employer: true },
+      include: { user: true, company: true },
     }),
     prisma.contactRequest.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
     prisma.feedback.findMany({
@@ -155,24 +152,15 @@ export default async function AdminDashboardPage() {
     }),
   ]);
 
-  // "Aktive Benutzer": alle Personen mit funktionierendem Login auf der
-  // Plattform - Arbeitgeber-Accounts (User) plus aktivierte Mitarbeiter-Zugaenge
-  // (Employee). Es gibt noch kein "zuletzt aktiv"-Tracking, daher zaehlt hier
-  // "aktiv" = hat einen nutzbaren Zugang, nicht "kuerzlich eingeloggt".
-  const activeUserCount = employerUserCount + activeEmployeeCount;
-
-  const monthlyRevenueCents = activeEmployersWithTier.reduce(
-    (sum, e) => sum + e.pricingTier.monthlyPriceCents,
-    0
-  );
-
-  // Diese vier Kennzahlen haben noch keine echte Datenquelle im Projekt
-  // (kein Datenimport-/Analyse-/Importfehler-Modell) - bewusst 0, keine
-  // erfundenen Werte. Siehe Abschlussbericht an den Nutzer.
+  // Diese Kennzahlen haben noch keine echte Datenquelle im Projekt (kein
+  // Datenimport-/Analyse-/Importfehler-/Abo-Modell fuer das neue
+  // Company-Modell) - bewusst 0, keine erfundenen Werte. Siehe Abschlussbericht
+  // an den Nutzer.
   const monthlyUploadsCount = 0;
   const analysesCreatedCount = 0;
   const importErrorsCount = 0;
   const analysesPendingApprovalCount = 0;
+  const monthlyRevenueCents = 0;
 
   const adminLabel = admin ? admin.email.split("@")[0] : "Admin";
   const adminDisplayName = adminLabel.charAt(0).toUpperCase() + adminLabel.slice(1);
@@ -185,7 +173,7 @@ export default async function AdminDashboardPage() {
   });
 
   const statTiles = [
-    { label: "Unternehmen", value: totalEmployerCount, icon: BriefcaseIcon, color: "violet" },
+    { label: "Unternehmen", value: totalCompanyCount, icon: BriefcaseIcon, color: "violet" },
     { label: "Aktive Benutzer", value: activeUserCount, icon: UsersIcon, color: "sky" },
     { label: "Uploads im Monat", value: monthlyUploadsCount, icon: UploadIcon, color: "slate" },
     { label: "Erstellte Analysen", value: analysesCreatedCount, icon: ActivityIcon, color: "emerald" },
@@ -197,12 +185,12 @@ export default async function AdminDashboardPage() {
 
   const modules: ModuleCard[] = [
     {
-      href: "/admin/arbeitgeber",
+      href: "/admin/unternehmen",
       title: "Unternehmen",
-      description: "Kundenunternehmen, Status und Tarife verwalten.",
+      description: "Kundenunternehmen, Status und Mitglieder verwalten.",
       icon: BriefcaseIcon,
       color: "violet",
-      badge: pendingApprovalCount > 0 ? `${pendingApprovalCount} wartet auf Freigabe` : undefined,
+      badge: pendingInvitationCount > 0 ? `${pendingInvitationCount} offene Einladung${pendingInvitationCount === 1 ? "" : "en"}` : undefined,
     },
     {
       title: "Datenimporte",
@@ -217,6 +205,7 @@ export default async function AdminDashboardPage() {
       color: "emerald",
     },
     {
+      href: "/admin/benutzer",
       title: "Benutzer & Rollen",
       description: "Zugänge und Berechtigungen verwalten.",
       icon: UsersIcon,
@@ -248,10 +237,10 @@ export default async function AdminDashboardPage() {
   ];
 
   const actionItems = [
-    pendingApprovalCount > 0 && {
-      id: "approvals",
-      label: `${pendingApprovalCount} ${pendingApprovalCount === 1 ? "Unternehmen wartet" : "Unternehmen warten"} auf Freigabe`,
-      href: "/admin/arbeitgeber",
+    pendingInvitationCount > 0 && {
+      id: "invitations",
+      label: `${pendingInvitationCount} offene ${pendingInvitationCount === 1 ? "Einladung" : "Einladungen"}`,
+      href: "/admin/benutzer",
       cta: "Prüfen",
       icon: BriefcaseIcon,
       color: "violet",
@@ -283,19 +272,19 @@ export default async function AdminDashboardPage() {
     color: string;
   };
   const activity: ActivityItem[] = [
-    ...recentEmployers.map((e) => ({
-      id: `employer-${e.id}`,
-      label: "Unternehmen registriert",
-      detail: e.companyName,
-      createdAt: e.createdAt,
+    ...recentCompanies.map((c) => ({
+      id: `company-${c.id}`,
+      label: "Unternehmen angelegt",
+      detail: c.name,
+      createdAt: c.createdAt,
       icon: BriefcaseIcon,
       color: "violet",
     })),
-    ...recentEmployees.map((e) => ({
-      id: `employee-${e.id}`,
+    ...recentMemberships.map((m) => ({
+      id: `membership-${m.id}`,
       label: "Benutzer eingeladen",
-      detail: `${e.name} · ${e.employer.companyName}`,
-      createdAt: e.createdAt,
+      detail: `${[m.user.firstName, m.user.lastName].filter(Boolean).join(" ") || m.user.email} · ${m.company.name}`,
+      createdAt: m.invitedAt,
       icon: UsersIcon,
       color: "sky",
     })),
@@ -364,7 +353,7 @@ export default async function AdminDashboardPage() {
             </span>
             <div className="relative flex flex-col items-center gap-1.5 text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">Plattformstatus</p>
-              <p className="font-display text-4xl font-extrabold leading-none">{activeEmployerCount}</p>
+              <p className="font-display text-4xl font-extrabold leading-none">{activeCompanyCount}</p>
               <p className="text-sm text-white/70">Aktive Pilotunternehmen</p>
             </div>
           </div>

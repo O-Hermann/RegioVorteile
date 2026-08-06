@@ -1,26 +1,37 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, getWorkspaces } from "@/lib/auth";
 import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AdminNav } from "@/components/admin-nav";
+import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { SITE_NAME } from "@/lib/site-config";
 import { LogOutIcon } from "@/components/icons";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const session = await requireAdmin();
+  const workspaces = await getWorkspaces(session.userId!);
 
   return (
     <div className="flex-1 flex flex-col">
       <header className="sticky top-0 z-20 border-b border-card-border/70 dark:border-white/5 bg-card/90 dark:bg-cockpit-header/80 backdrop-blur-xl">
         <div className="mx-auto max-w-[1920px] px-8 h-16 flex items-center justify-between gap-6">
-          <Link href="/admin/dashboard" className="flex items-center gap-3 shrink-0">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-ink-500 to-ink-700 dark:from-cockpit-accent-light dark:to-cockpit-accent-dark font-display text-base font-bold text-white shadow-[0_0_16px_-3px_rgba(8,122,120,0.55)] dark:shadow-[0_0_18px_-3px_rgba(30,151,148,0.6)]">
-              C
-            </span>
-            <span className="font-display text-lg font-semibold tracking-tight text-sand-900">
-              {SITE_NAME} <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
-            </span>
-          </Link>
+          <div className="flex items-center gap-4 min-w-0">
+            <Link href="/admin/dashboard" className="flex items-center gap-3 shrink-0">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-ink-500 to-ink-700 dark:from-cockpit-accent-light dark:to-cockpit-accent-dark font-display text-base font-bold text-white shadow-[0_0_16px_-3px_rgba(8,122,120,0.55)] dark:shadow-[0_0_18px_-3px_rgba(30,151,148,0.6)]">
+                C
+              </span>
+              <span className="font-display text-lg font-semibold tracking-tight text-sand-900">
+                {SITE_NAME} <span className="text-sand-500 font-sans text-sm font-normal">Admin</span>
+              </span>
+            </Link>
+            <div className="hidden md:block">
+              <WorkspaceSwitcher
+                companies={workspaces.companies}
+                hasPlatformAccess={!!workspaces.platformRole}
+                isAdminContext
+              />
+            </div>
+          </div>
           <nav className="hidden min-[1360px]:flex items-center gap-1.5 text-[15px] font-medium">
             <AdminNav />
           </nav>

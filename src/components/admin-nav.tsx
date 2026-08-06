@@ -10,10 +10,10 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { label: "Übersicht", href: "/admin/dashboard" },
-  { label: "Unternehmen", href: "/admin/arbeitgeber" },
+  { label: "Unternehmen", href: "/admin/unternehmen" },
   { label: "Datenimporte" },
   { label: "Analysen" },
-  { label: "Benutzer" },
+  { label: "Benutzer", href: "/admin/benutzer" },
   { label: "Pilotkunden", href: "/admin/kontaktanfragen" },
   { label: "Support", href: "/admin/feedback" },
   { label: "Einstellungen", href: "/admin/rechtliches" },

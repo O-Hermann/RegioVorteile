@@ -11,9 +11,9 @@ const labelClass = "block text-sm font-medium text-slate-700 dark:text-cockpit-t
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
 
   return (
     <>
@@ -42,6 +42,7 @@ export default async function LoginPage({
             )}
 
             <form action={login} className="mt-6 space-y-4">
+              {next && <input type="hidden" name="next" value={next} />}
               <div>
                 <label className={labelClass} htmlFor="email">
                   E-Mail

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireEmployer } from "@/lib/auth";
+import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
-import { CATEGORY_LABELS } from "@/lib/feedback";
+import { COMPANY_ROLE_LABELS } from "@/lib/company";
 import {
   TrendingUpIcon,
   TagIcon,
@@ -11,7 +12,6 @@ import {
   UsersIcon,
   UploadIcon,
   AlertTriangleIcon,
-  ChatIcon,
 } from "@/components/icons";
 
 // Gleiche hochwertige Karten-Basis wie im Admin-Dashboard, hier bewusst
@@ -111,27 +111,20 @@ function EmptyCardBody({ text }: { text: string }) {
 }
 
 export default async function ArbeitgeberDashboardPage() {
-  const { employer } = await requireEmployer();
+  const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const [user, recentEmployees, recentFeedback] = await Promise.all([
-    prisma.user.findUnique({ where: { id: employer.userId } }),
-    prisma.employee.findMany({
-      where: { employerId: employer.id },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    }),
-    prisma.feedback.findMany({
-      where: { employerId: employer.id },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    }),
-  ]);
+  const memberships = await prisma.companyMembership.findMany({
+    where: { companyId: company.id },
+    orderBy: { invitedAt: "desc" },
+    take: 10,
+    include: { user: true },
+  });
 
-  const emailLabel = user ? user.email.split("@")[0] : "Kunde";
-  const emailDisplayName = emailLabel.charAt(0).toUpperCase() + emailLabel.slice(1);
-  const displayName = employer.contactFirstName?.trim() || emailDisplayName;
-  const avatarInitial = displayName.charAt(0).toUpperCase();
+  const greetingName = user.firstName?.trim();
+  const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
+  const avatarInitial = (greetingName ?? user.email).charAt(0).toUpperCase();
+  const roleLabel = COMPANY_ROLE_LABELS[membership.role];
   const today = now.toLocaleDateString("de-DE", {
     weekday: "long",
     day: "numeric",
@@ -158,14 +151,15 @@ export default async function ArbeitgeberDashboardPage() {
 
   // Handlungsbedarf: In dieser Phase existiert noch kein Datenimport-Modell,
   // daher ist "noch kein Import vorhanden" die einzige Aussage, die sich
-  // sicher aus dem tatsaechlichen Datenstand ableiten laesst. Kein Link/CTA,
-  // da noch keine funktionierende Importseite existiert.
+  // sicher aus dem tatsaechlichen Datenstand ableiten laesst.
   const actionItems = [
     {
       id: "no-import",
       label: "Noch keine Unternehmensdaten importiert.",
       icon: UploadIcon,
       color: "amber",
+      href: "/arbeitgeber/dashboard/datenimporte",
+      cta: "Import starten",
     },
   ];
 
@@ -177,26 +171,29 @@ export default async function ArbeitgeberDashboardPage() {
     icon: typeof UsersIcon;
     color: string;
   };
-  const activity: ActivityItem[] = [
-    ...recentEmployees.map((e) => ({
-      id: `employee-${e.id}`,
+  const activity: ActivityItem[] = [];
+  for (const m of memberships) {
+    const name = [m.user.firstName, m.user.lastName].filter(Boolean).join(" ") || m.user.email;
+    activity.push({
+      id: `invited-${m.id}`,
       label: "Benutzer eingeladen",
-      detail: e.name,
-      createdAt: e.createdAt,
+      detail: name,
+      createdAt: m.invitedAt,
       icon: UsersIcon,
       color: "sky",
-    })),
-    ...recentFeedback.map((f) => ({
-      id: `feedback-${f.id}`,
-      label: "Feedback eingereicht",
-      detail: CATEGORY_LABELS[f.category],
-      createdAt: f.createdAt,
-      icon: ChatIcon,
-      color: "rose",
-    })),
-  ]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 4);
+    });
+    if (m.activatedAt) {
+      activity.push({
+        id: `activated-${m.id}`,
+        label: "Benutzer aktiviert",
+        detail: name,
+        createdAt: m.activatedAt,
+        icon: UsersIcon,
+        color: "emerald",
+      });
+    }
+  }
+  const recentActivity = activity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 4);
 
   return (
     <div className="flex flex-col min-[1400px]:h-[calc(100dvh-9rem)]">
@@ -213,14 +210,12 @@ export default async function ArbeitgeberDashboardPage() {
               {avatarInitial}
             </div>
             <div className="min-w-0">
-              <h2 className="truncate font-display text-base font-bold text-sand-900">
-                Guten Tag, {displayName}
-              </h2>
+              <h2 className="truncate font-display text-base font-bold text-sand-900">{greeting}</h2>
               <div className="mt-1 flex items-center gap-2">
                 <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
-                  Unternehmensadmin
+                  {roleLabel}
                 </span>
-                <span className={`truncate text-xs ${secondaryTextClass}`}>{employer.companyName}</span>
+                <span className={`truncate text-xs ${secondaryTextClass}`}>· {company.name}</span>
               </div>
             </div>
           </div>
@@ -237,6 +232,15 @@ export default async function ArbeitgeberDashboardPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">Datenstatus</p>
               <p className="font-display text-2xl font-extrabold leading-tight">Noch keine Daten</p>
               <p className="text-sm text-white/70">Es wurde noch kein Monatsimport verarbeitet.</p>
+              <Link
+                href="/arbeitgeber/dashboard/datenimporte"
+                className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink-800 hover:bg-white/90 transition-colors"
+              >
+                Ersten Datenimport starten
+              </Link>
+              <p className="text-[11px] text-white/60">
+                Excel- oder CSV-Datei für einen Monatszeitraum hochladen.
+              </p>
             </div>
           </div>
 
@@ -302,33 +306,41 @@ export default async function ArbeitgeberDashboardPage() {
           </div>
         </div>
 
-        {/* Rechte Spalte: Handlungsbedarf + Letzte Datenaktivitäten, fest 50/50 */}
+        {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
         <div className="flex min-w-0 flex-col gap-4 min-[1400px]:min-h-0">
           <div className={`${panelClass} flex flex-1 basis-0 flex-col !p-5 min-[1400px]:min-h-0`}>
             <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
             <ul className="mt-2 min-h-0 flex-1 divide-y divide-card-border/60 dark:divide-white/5">
               {actionItems.map((item) => (
-                <li key={item.id} className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3">
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[item.color]}`}
+                <li key={item.id} className="-mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES[item.color]}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                    </span>
+                    <p className="truncate text-sm text-sand-800 dark:text-cockpit-text">{item.label}</p>
+                  </div>
+                  <Link
+                    href={item.href}
+                    className="shrink-0 rounded-full border border-card-border dark:border-white/15 px-4 py-2 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light hover:bg-ink-50 dark:hover:bg-cockpit-accent-subtle/40 transition-colors"
                   >
-                    <item.icon className="h-4 w-4" />
-                  </span>
-                  <p className="truncate text-sm text-sand-800 dark:text-cockpit-text">{item.label}</p>
+                    {item.cta}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className={`${panelClass} flex flex-1 basis-0 flex-col gap-1 !p-5 min-[1400px]:min-h-0`}>
-            <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Datenaktivitäten</h3>
-            {activity.length === 0 ? (
+            <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Letzte Aktivitäten</h3>
+            {recentActivity.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
-                <p className={`text-sm ${secondaryTextClass}`}>Bisher sind keine Datenaktivitäten vorhanden.</p>
+                <p className={`text-sm ${secondaryTextClass}`}>Bisher sind keine Aktivitäten vorhanden.</p>
               </div>
             ) : (
               <ul className="mt-1">
-                {activity.map((a) => (
+                {recentActivity.map((a) => (
                   <li
                     key={a.id}
                     className="-mx-2 flex items-start gap-3 rounded-xl border-b border-card-border/60 px-2 py-2.5 text-sm last:border-0 dark:border-white/5"

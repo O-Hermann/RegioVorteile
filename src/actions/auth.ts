@@ -10,14 +10,20 @@ export async function loginAdmin(formData: FormData) {
   const password = String(formData.get("password") ?? "");
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || user.role !== "ADMIN" || !(await verifyPassword(password, user.passwordHash))) {
+  if (
+    !user ||
+    user.status !== "ACTIVE" ||
+    !user.platformRole ||
+    !user.passwordHash ||
+    !(await verifyPassword(password, user.passwordHash))
+  ) {
     redirect("/admin/login?error=1");
   }
 
   const session = await getSession();
   session.userId = user.id;
-  session.userRole = "ADMIN";
   await session.save();
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   redirect("/admin/dashboard");
 }
 
@@ -25,19 +31,24 @@ export async function loginEmployer(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  const user = await prisma.user.findUnique({ where: { email }, include: { employer: true } });
-  if (!user || user.role !== "EMPLOYER" || !(await verifyPassword(password, user.passwordHash))) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || user.status !== "ACTIVE" || !user.passwordHash || !(await verifyPassword(password, user.passwordHash))) {
     redirect("/arbeitgeber/login?error=1");
   }
 
-  if (!user.employer?.approved) {
+  const membership = await prisma.companyMembership.findFirst({
+    where: { userId: user.id, status: "ACTIVE", company: { status: "ACTIVE" } },
+    orderBy: { activatedAt: "asc" },
+  });
+  if (!membership) {
     redirect("/arbeitgeber/login?error=pending");
   }
 
   const session = await getSession();
   session.userId = user.id;
-  session.userRole = "EMPLOYER";
+  session.selectedCompanyId = membership.companyId;
   await session.save();
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   redirect("/arbeitgeber/dashboard");
 }
 
@@ -60,22 +71,40 @@ export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const remember = formData.get("remember") === "on";
+  const next = String(formData.get("next") ?? "");
+  // Nur interne Einladungslinks als Redirect-Ziel erlauben, kein offenes
+  // Redirect auf beliebige Pfade.
+  const safeNext = next.startsWith("/einladung/") ? next : null;
 
   if (!email || !password) {
     redirect("/login?error=1");
   }
 
-  const user = await prisma.user.findUnique({ where: { email }, include: { employer: true } });
-  if (user && (await verifyPassword(password, user.passwordHash))) {
-    if (user.role === "EMPLOYER" && !user.employer?.approved) {
-      redirect("/login?error=pending");
-    }
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user && user.status === "ACTIVE" && user.passwordHash && (await verifyPassword(password, user.passwordHash))) {
+    const membership = await prisma.companyMembership.findFirst({
+      where: { userId: user.id, status: "ACTIVE", company: { status: "ACTIVE" } },
+      orderBy: { activatedAt: "asc" },
+    });
 
     const session = await getSession({ persistent: remember });
     session.userId = user.id;
-    session.userRole = user.role;
+    if (membership) {
+      session.selectedCompanyId = membership.companyId;
+    }
     await session.save();
-    redirect(user.role === "ADMIN" ? "/admin/dashboard" : "/arbeitgeber/dashboard");
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
+    if (safeNext) {
+      redirect(safeNext);
+    }
+    if (membership) {
+      redirect("/arbeitgeber/dashboard");
+    }
+    if (user.platformRole) {
+      redirect("/admin/dashboard");
+    }
+    redirect("/login?error=1");
   }
 
   const employee = await prisma.employee.findUnique({ where: { email } });

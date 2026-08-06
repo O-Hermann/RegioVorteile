@@ -3,8 +3,14 @@ import { getIronSession, type IronSession, type SessionOptions } from "iron-sess
 
 export type SessionData = {
   userId?: string;
+  // Legacy-Feld aus der Regiovorteile-Zeit - wird nicht mehr geschrieben, nur
+  // der Typ bleibt bestehen, falls ein altes Cookie diesen Wert noch enthaelt.
   userRole?: "ADMIN" | "EMPLOYER";
   employeeId?: string;
+  // Zuletzt gewaehltes Unternehmen im Arbeitsbereich-Wechsler. Wird bei jedem
+  // requireCompanyMember()-Aufruf frisch gegen aktive Mitgliedschaften geprueft,
+  // ist also nie alleinige Berechtigungsquelle.
+  selectedCompanyId?: string;
 };
 
 const sessionOptions: SessionOptions = {
