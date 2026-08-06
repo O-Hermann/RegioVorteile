@@ -21,10 +21,7 @@ export default async function ArbeitgeberLayout({ children }: { children: React.
                 C
               </span>
               <span className="min-w-0 truncate font-display text-lg font-semibold tracking-tight text-sand-900">
-                {SITE_NAME}{" "}
-                <span className="hidden text-sand-500 font-sans text-sm font-normal sm:inline">
-                  · {company.name}
-                </span>
+                {SITE_NAME}
               </span>
             </Link>
             <div className="hidden md:block">
