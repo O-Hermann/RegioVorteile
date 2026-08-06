@@ -162,8 +162,9 @@ export default async function AdminDashboardPage() {
   const analysesPendingApprovalCount = 0;
   const monthlyRevenueCents = 0;
 
-  const adminLabel = admin ? admin.email.split("@")[0] : "Admin";
-  const adminDisplayName = adminLabel.charAt(0).toUpperCase() + adminLabel.slice(1);
+  const emailLabel = admin ? admin.email.split("@")[0] : "Admin";
+  const emailDisplayName = emailLabel.charAt(0).toUpperCase() + emailLabel.slice(1);
+  const adminDisplayName = admin?.firstName?.trim() || emailDisplayName;
   const avatarInitial = adminDisplayName.charAt(0).toUpperCase();
   const today = now.toLocaleDateString("de-DE", {
     weekday: "long",
@@ -338,7 +339,7 @@ export default async function AdminDashboardPage() {
                 <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
                   Administrator
                 </span>
-                <span className={`text-xs ${secondaryTextClass}`}>{SITE_NAME} Plattform</span>
+                <span className={`text-xs ${secondaryTextClass}`}>· {SITE_NAME}</span>
               </div>
             </div>
           </div>

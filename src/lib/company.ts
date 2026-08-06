@@ -8,8 +8,11 @@ export const COMPANY_ROLE_LABELS: Record<CompanyRole, string> = {
   VIEWER: "Betrachter",
 };
 
+// Sichtbare Bezeichnung fuer SUPERADMIN ist "Administrator" - der interne
+// Enum-Wert und alle Berechtigungsprüfungen bleiben unveraendert, nur diese
+// Anzeige-Map aendert sich.
 export const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
-  SUPERADMIN: "Superadmin",
+  SUPERADMIN: "Administrator",
   PLATFORM_ADMIN: "Plattformadmin",
   SUPPORT: "Support",
 };
@@ -36,5 +39,5 @@ export const INVITE_ERROR_MESSAGES: Record<string, string> = {
   "last-owner": "Der letzte Inhaber eines Unternehmens kann nicht entfernt oder herabgestuft werden. Legen Sie zuerst einen neuen Inhaber fest.",
   "not-found": "Eintrag wurde nicht gefunden.",
   forbidden: "Keine Berechtigung für diese Aktion.",
-  "last-superadmin": "Der letzte aktive Superadmin kann nicht deaktiviert oder herabgestuft werden.",
+  "last-superadmin": "Der letzte aktive Administrator kann nicht deaktiviert oder herabgestuft werden.",
 };

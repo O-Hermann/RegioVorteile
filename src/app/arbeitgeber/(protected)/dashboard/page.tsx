@@ -198,7 +198,7 @@ export default async function ArbeitgeberDashboardPage() {
   return (
     <div className="flex flex-col min-[1400px]:h-[calc(100dvh-9rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
-        <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Unternehmens-Übersicht</h1>
+        <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Übersicht</h1>
         <p className={`text-sm ${secondaryTextClass}`}>{today}</p>
       </div>
 

@@ -89,7 +89,7 @@ export default async function AdminBenutzerEinladenPage({
             {isSuperadmin && (
               <div>
                 <label className={labelClass} htmlFor="platformRole">
-                  Plattformrolle (optional, nur für Superadmins sichtbar)
+                  Plattformrolle (optional, nur für Administratoren sichtbar)
                 </label>
                 <select className={inputClass} name="platformRole" id="platformRole" defaultValue="">
                   <option value="">keine Plattformrolle</option>
