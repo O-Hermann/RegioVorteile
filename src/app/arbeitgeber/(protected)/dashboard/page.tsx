@@ -282,11 +282,9 @@ export default async function ArbeitgeberDashboardPage() {
             Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um).
             Zeilen sind bewusst content-groß (auto-rows-min) statt 1fr-gestreckt,
             damit die Karten wie normale Module wirken statt kuenstlich in die
-            Hoehe gezogen zu werden. Module bleiben oben, die Schnellaktion
-            wird per mt-auto ans untere Ende der Spalte geschoben - ueber-
-            schuessige Hoehe (falls linke/rechte Spalte hoeher sind) sammelt
-            sich als Abstand zwischen Modulen und Schnellaktion, ohne die
-            Karten selbst zu strecken oder das Raster zu zentrieren. */}
+            Hoehe gezogen zu werden. Die Schnellaktion steht in normalem
+            Fluss direkt unter dem Raster (fester Abstand, kein mt-auto/
+            Bottom-Pinning) - restlicher Platz danach bleibt bewusst leer. */}
         <div className="flex min-w-0 flex-col min-[1400px]:min-h-0">
           <div className="grid grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2">
             <Link
@@ -334,7 +332,7 @@ export default async function ArbeitgeberDashboardPage() {
             </Link>
           </div>
 
-          <div className="mt-auto flex justify-center pt-6">
+          <div className="mt-6 flex justify-center">
             <QuickActionButton />
           </div>
         </div>
