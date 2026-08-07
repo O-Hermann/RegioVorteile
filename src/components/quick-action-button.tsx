@@ -35,6 +35,10 @@ const ACTIONS = [
   },
 ];
 
+// Eigenstaendige, viewport-fixierte Schnellaktion fuer den Unternehmens-
+// bereich - bewusst kein Bestandteil des Dashboard-Grids mehr, damit sie
+// unabhaengig von Spalten-/Modulhoehen immer griffbereit am unteren
+// Bildschirmrand schwebt (wie eine echte SaaS-Quick-Action).
 export function QuickActionButton() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,49 +61,51 @@ export function QuickActionButton() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative z-10 inline-block">
-      {open && (
-        <div className="absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40">
-          <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sand-400 dark:text-cockpit-text-weak">
-            Schnellaktion
-          </p>
-          <div className="p-1.5">
-            {ACTIONS.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-sand-700 dark:text-cockpit-text-secondary hover:bg-sand-100 dark:hover:bg-white/5 transition-colors"
-              >
-                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${action.color}`}>
-                  <action.icon className="h-4 w-4" />
-                </span>
-                {action.label}
-              </Link>
-            ))}
+    <div className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4 sm:bottom-8">
+      <div ref={containerRef} className="pointer-events-auto relative">
+        {open && (
+          <div className="absolute bottom-full left-1/2 mb-4 w-64 max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40">
+            <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sand-400 dark:text-cockpit-text-weak">
+              Schnellaktion
+            </p>
+            <div className="p-1.5">
+              {ACTIONS.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-sand-700 dark:text-cockpit-text-secondary hover:bg-sand-100 dark:hover:bg-white/5 transition-colors"
+                >
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${action.color}`}>
+                    <action.icon className="h-4 w-4" />
+                  </span>
+                  {action.label}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label="Schnellaktion öffnen"
-        className="flex items-center gap-3 rounded-full border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card pl-2 pr-5 py-2 shadow-warm-lg dark:shadow-2xl dark:shadow-black/50 hover:-translate-y-0.5 transition-all duration-200"
-      >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-600 to-ink-800 dark:from-cockpit-accent dark:to-cockpit-accent-dark text-white shadow-md shadow-ink-900/20">
-          <PlusIcon className={`h-5 w-5 transition-transform duration-200 ${open ? "rotate-45" : ""}`} />
-        </span>
-        <span className="text-left">
-          <span className="block text-[10px] font-semibold uppercase tracking-wider text-sand-400 dark:text-cockpit-text-weak">
-            Schnellaktion
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label="Schnellaktion öffnen"
+          className="group flex items-center gap-3 rounded-full border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card py-2 pl-1.5 pr-5 shadow-warm-lg dark:shadow-2xl dark:shadow-black/50 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-300 dark:hover:border-cockpit-accent-light/40 sm:gap-5 sm:py-2 sm:pl-3 sm:pr-9"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-500 to-ink-700 dark:from-cockpit-accent-light dark:to-cockpit-accent-dark text-white shadow-[0_0_16px_-3px_rgba(8,122,120,0.55)] transition-shadow duration-200 group-hover:shadow-[0_0_22px_-2px_rgba(8,122,120,0.7)] dark:shadow-[0_0_18px_-3px_rgba(30,151,148,0.6)] dark:group-hover:shadow-[0_0_26px_-2px_rgba(30,151,148,0.75)] sm:h-12 sm:w-12">
+            <PlusIcon className={`h-5 w-5 transition-transform duration-200 sm:h-6 sm:w-6 ${open ? "rotate-45" : ""}`} />
           </span>
-          <span className="block text-sm font-semibold text-sand-900 dark:text-cockpit-heading">
-            Aktion wählen
+          <span className="text-left">
+            <span className="block text-[9px] font-semibold uppercase tracking-widest text-sand-400 dark:text-cockpit-text-weak sm:text-[10px]">
+              Schnellaktion
+            </span>
+            <span className="block text-sm font-bold text-sand-900 dark:text-cockpit-heading sm:text-base">
+              Aktion wählen
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+      </div>
     </div>
   );
 }

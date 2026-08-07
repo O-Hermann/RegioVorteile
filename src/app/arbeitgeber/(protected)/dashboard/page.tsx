@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
-import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
   TagIcon,
@@ -280,17 +279,19 @@ export default async function ArbeitgeberDashboardPage() {
         {/* Mittlere Spalte: Unternehmensentwicklung - alle Karten fuehren zu
             einer eigenen Zielseite mit Leerzustand, sobald noch keine echten
             Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um).
-            Gleiches 3-Zeilen-Raster wie zuvor mit der breiten "Veraenderungen
-            im Ueberblick"-Karte: zwei minmax(0,1fr)-Kartenzeilen + eine
-            auto-Zeile fuer den Slot darunter. Die fr-Zeilen fuellen dadurch
-            exakt die verfuegbare Spaltenhoehe (keine Leerflaeche, keine
-            kuenstliche Streckung ueber das noetige Mass hinaus), waehrend die
-            dritte Zeile jetzt statt der alten Karte die Schnellaktion traegt -
-            als echtes Grid-Element (kein fixed/absolute/Margin-Trick). */}
-        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(2,minmax(0,1fr))_auto] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
+            Kartenhoehe ist bewusst ueber ein explizites min-h auf jeder Karte
+            fixiert statt ueber minmax(0,1fr)-Zeilen, die den verfuegbaren
+            Spaltenrest fuellen wuerden - dadurch bleibt die Modulgroesse
+            stabil und unabhaengig davon, was sonst noch (oder nicht mehr) in
+            der Spalte steht. Die Schnellaktion ist kein Grid-Element dieser
+            Spalte mehr, sondern ein eigenstaendiger, viewport-fixierter
+            Floating-Button (siehe arbeitgeber/(protected)/layout.tsx). Freier
+            Raum unterhalb der Module ist bewusst normaler Dashboard-
+            Hintergrund, kein reservierter Platzhalter. */}
+        <div className="grid min-w-0 grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
           <Link
             href="/arbeitgeber/dashboard/monatsvergleich"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
           >
             <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
             <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
@@ -298,7 +299,7 @@ export default async function ArbeitgeberDashboardPage() {
 
           <Link
             href="/arbeitgeber/dashboard/entwicklung"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
           >
             <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
             <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
@@ -306,7 +307,7 @@ export default async function ArbeitgeberDashboardPage() {
 
           <Link
             href="/arbeitgeber/dashboard/finanzuebersicht"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
           >
             <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
             <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
@@ -326,15 +327,11 @@ export default async function ArbeitgeberDashboardPage() {
 
           <Link
             href="/arbeitgeber/dashboard/auftraegekunden"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
           >
             <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
             <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
           </Link>
-
-          <div className="flex items-center justify-center py-6 sm:col-span-2">
-            <QuickActionButton />
-          </div>
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
