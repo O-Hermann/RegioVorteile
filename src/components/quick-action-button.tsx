@@ -57,9 +57,9 @@ export function QuickActionButton() {
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed bottom-6 right-6 z-40">
+    <div ref={containerRef} className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
       {open && (
-        <div className="absolute bottom-full right-0 mb-3 w-64 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40">
+        <div className="absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40">
           <p className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-sand-400 dark:text-cockpit-text-weak">
             Schnellaktion
           </p>

@@ -278,8 +278,13 @@ export default async function ArbeitgeberDashboardPage() {
 
         {/* Mittlere Spalte: Unternehmensentwicklung - alle Karten fuehren zu
             einer eigenen Zielseite mit Leerzustand, sobald noch keine echten
-            Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um). */}
-        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(2,minmax(0,1fr))] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
+            Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um).
+            Zeilen sind bewusst content-groß (auto-rows-min) statt 1fr-gestreckt,
+            damit die Karten wie normale Module wirken statt kuenstlich auf die
+            volle Spaltenhoehe gezogen zu werden; ueberschuessige Hoehe (falls
+            linke/rechte Spalte hoeher sind) verteilt sich als Rand oben/unten
+            statt die Karten selbst zu strecken. */}
+        <div className="grid min-w-0 grid-cols-1 auto-rows-min content-center gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
           <Link
             href="/arbeitgeber/dashboard/monatsvergleich"
             className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}

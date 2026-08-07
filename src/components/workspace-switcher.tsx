@@ -72,7 +72,11 @@ export function WorkspaceSwitcher({
   if (totalWorkspaces <= 1) return null;
 
   const activeCompany = !isAdminContext ? companies.find((c) => c.id === activeCompanyId) : undefined;
-  const currentLabel = isAdminContext ? "Admin-Dashboard" : (activeCompany?.name ?? "Arbeitsbereich wählen");
+  const currentLabel = isAdminContext
+    ? "Admin-Dashboard"
+    : activeCompany
+      ? `${activeCompany.name}-Übersicht`
+      : "Arbeitsbereich wählen";
 
   const itemClass =
     "block w-full rounded-xl px-2.5 py-2 text-left text-sm text-sand-700 dark:text-cockpit-text-secondary hover:bg-sand-100 dark:hover:bg-white/5 transition-colors";
@@ -102,7 +106,7 @@ export function WorkspaceSwitcher({
               const row = (
                 <WorkspaceRow
                   icon={<BuildingIcon className="h-4 w-4" />}
-                  label={c.name}
+                  label={`${c.name}-Übersicht`}
                   sublabel="Unternehmen"
                   active={active}
                 />
