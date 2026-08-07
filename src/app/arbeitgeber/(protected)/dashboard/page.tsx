@@ -280,59 +280,59 @@ export default async function ArbeitgeberDashboardPage() {
         {/* Mittlere Spalte: Unternehmensentwicklung - alle Karten fuehren zu
             einer eigenen Zielseite mit Leerzustand, sobald noch keine echten
             Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um).
-            Zeilen sind bewusst content-groß (auto-rows-min) statt 1fr-gestreckt,
-            damit die Karten wie normale Module wirken statt kuenstlich in die
-            Hoehe gezogen zu werden. Die Schnellaktion steht in normalem
-            Fluss direkt unter dem Raster (fester Abstand, kein mt-auto/
-            Bottom-Pinning) - restlicher Platz danach bleibt bewusst leer. */}
-        <div className="flex min-w-0 flex-col min-[1400px]:min-h-0">
-          <div className="grid grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2">
-            <Link
-              href="/arbeitgeber/dashboard/monatsvergleich"
-              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-            >
-              <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
-              <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
-            </Link>
+            Gleiches 3-Zeilen-Raster wie zuvor mit der breiten "Veraenderungen
+            im Ueberblick"-Karte: zwei minmax(0,1fr)-Kartenzeilen + eine
+            auto-Zeile fuer den Slot darunter. Die fr-Zeilen fuellen dadurch
+            exakt die verfuegbare Spaltenhoehe (keine Leerflaeche, keine
+            kuenstliche Streckung ueber das noetige Mass hinaus), waehrend die
+            dritte Zeile jetzt statt der alten Karte die Schnellaktion traegt -
+            als echtes Grid-Element (kein fixed/absolute/Margin-Trick). */}
+        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(2,minmax(0,1fr))_auto] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
+          <Link
+            href="/arbeitgeber/dashboard/monatsvergleich"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
+            <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
+          </Link>
 
-            <Link
-              href="/arbeitgeber/dashboard/entwicklung"
-              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-            >
-              <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
-              <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
-            </Link>
+          <Link
+            href="/arbeitgeber/dashboard/entwicklung"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
+            <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
+          </Link>
 
-            <Link
-              href="/arbeitgeber/dashboard/finanzuebersicht"
-              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-            >
-              <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
-              <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
-                {[
-                  ["Umsatz", "—"],
-                  ["Kosten", "—"],
-                  ["Ergebnis", "—"],
-                  ["Offene Forderungen", "—"],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between text-sm">
-                    <span className={secondaryTextClass}>{label}</span>
-                    <span className="font-semibold text-sand-900">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </Link>
+          <Link
+            href="/arbeitgeber/dashboard/finanzuebersicht"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
+            <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
+              {[
+                ["Umsatz", "—"],
+                ["Kosten", "—"],
+                ["Ergebnis", "—"],
+                ["Offene Forderungen", "—"],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between text-sm">
+                  <span className={secondaryTextClass}>{label}</span>
+                  <span className="font-semibold text-sand-900">{value}</span>
+                </div>
+              ))}
+            </div>
+          </Link>
 
-            <Link
-              href="/arbeitgeber/dashboard/auftraegekunden"
-              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-            >
-              <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
-              <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
-            </Link>
-          </div>
+          <Link
+            href="/arbeitgeber/dashboard/auftraegekunden"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
+            <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
+          </Link>
 
-          <div className="mt-6 flex justify-center">
+          <div className="flex items-center justify-center py-6 sm:col-span-2">
             <QuickActionButton />
           </div>
         </div>
