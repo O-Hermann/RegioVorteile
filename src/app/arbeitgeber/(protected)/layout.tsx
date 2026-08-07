@@ -4,7 +4,6 @@ import { logout } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { EmployerNav } from "@/components/employer-nav";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
-import { QuickActionButton } from "@/components/quick-action-button";
 import { SITE_NAME } from "@/lib/site-config";
 import { LogOutIcon } from "@/components/icons";
 
@@ -61,7 +60,6 @@ export default async function ArbeitgeberLayout({ children }: { children: React.
         </div>
         {children}
       </main>
-      <QuickActionButton />
     </div>
   );
 }

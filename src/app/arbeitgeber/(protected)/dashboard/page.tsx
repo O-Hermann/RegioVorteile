@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
+import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
   TagIcon,
@@ -282,56 +283,63 @@ export default async function ArbeitgeberDashboardPage() {
             Kartenhoehe ist bewusst ueber ein explizites min-h auf jeder Karte
             fixiert statt ueber minmax(0,1fr)-Zeilen, die den verfuegbaren
             Spaltenrest fuellen wuerden - dadurch bleibt die Modulgroesse
-            stabil und unabhaengig davon, was sonst noch (oder nicht mehr) in
-            der Spalte steht. Die Schnellaktion ist kein Grid-Element dieser
-            Spalte mehr, sondern ein eigenstaendiger, viewport-fixierter
-            Floating-Button (siehe arbeitgeber/(protected)/layout.tsx). Freier
-            Raum unterhalb der Module ist bewusst normaler Dashboard-
-            Hintergrund, kein reservierter Platzhalter. */}
-        <div className="grid min-w-0 grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
-          <Link
-            href="/arbeitgeber/dashboard/monatsvergleich"
-            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
-            <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
-          </Link>
+            stabil und unabhaengig davon, was sonst noch in der Spalte steht.
+            Die Schnellaktion sitzt direkt unter dem 2x2-Raster als bewusster
+            Spaltenabschluss (kein Grid-Modul, kein viewportweites Floating-
+            Element) und wird ueber "flex justify-center" zur mittleren
+            Spalte zentriert, nicht zum gesamten Viewport. Freier Raum
+            darunter (falls die Spalte durch die anderen Spalten gestreckt
+            wird) bleibt bewusst normaler Dashboard-Hintergrund. */}
+        <div className="flex min-w-0 flex-col min-[1400px]:min-h-0">
+          <div className="grid grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2">
+            <Link
+              href="/arbeitgeber/dashboard/monatsvergleich"
+              className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
+              <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/entwicklung"
-            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
-            <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/entwicklung"
+              className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
+              <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/finanzuebersicht"
-            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
-            <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
-              {[
-                ["Umsatz", "—"],
-                ["Kosten", "—"],
-                ["Ergebnis", "—"],
-                ["Offene Forderungen", "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between text-sm">
-                  <span className={secondaryTextClass}>{label}</span>
-                  <span className="font-semibold text-sand-900">{value}</span>
-                </div>
-              ))}
-            </div>
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/finanzuebersicht"
+              className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
+              <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
+                {[
+                  ["Umsatz", "—"],
+                  ["Kosten", "—"],
+                  ["Ergebnis", "—"],
+                  ["Offene Forderungen", "—"],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <span className={secondaryTextClass}>{label}</span>
+                    <span className="font-semibold text-sand-900">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/auftraegekunden"
-            className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
-            <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/auftraegekunden"
+              className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
+              <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
+            </Link>
+          </div>
+
+          <div className="mt-7 flex justify-center">
+            <QuickActionButton />
+          </div>
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
