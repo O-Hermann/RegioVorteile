@@ -12,6 +12,7 @@ import {
   UsersIcon,
   UploadIcon,
   AlertTriangleIcon,
+  ArrowRightIcon,
 } from "@/components/icons";
 
 // Gleiche hochwertige Karten-Basis wie im Admin-Dashboard, hier bewusst
@@ -19,6 +20,9 @@ import {
 // bleibt (siehe dortiger Kommentar zum selben Muster).
 const panelClass =
   "rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark shadow-sm dark:shadow-xl dark:shadow-black/30 transition-all duration-300";
+
+const panelHoverClass =
+  "hover:-translate-y-0.5 hover:border-ink-300 dark:hover:border-cockpit-accent-light/40 hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-cockpit-accent/20";
 
 const secondaryTextClass = "text-sand-500 dark:text-cockpit-text-secondary";
 
@@ -79,15 +83,20 @@ function DecorativeTrendGraph() {
   );
 }
 
-// Kompakter Kartenkopf (Icon + Titel) fuer die mittlere Spalte.
+// Kompakter Kartenkopf (Icon + Titel) fuer die mittlere Spalte. Bei
+// verlinkten Karten erscheint rechts ein dezenter Pfeil, der beim Hover
+// der Karte (group-hover) nach rechts wandert - gleiches Affordance-Muster
+// wie die "Öffnen"-Module im Admin-Dashboard.
 function MiddleCardHeader({
   icon: Icon,
   title,
   color,
+  linked,
 }: {
   icon: typeof TrendingUpIcon;
   title: string;
   color: string;
+  linked?: boolean;
 }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -95,6 +104,9 @@ function MiddleCardHeader({
         <Icon className="h-4 w-4" />
       </span>
       <h3 className="font-display text-sm font-semibold tracking-tight text-sand-900">{title}</h3>
+      {linked && (
+        <ArrowRightIcon className="ml-auto h-3.5 w-3.5 shrink-0 text-sand-300 dark:text-cockpit-text-weak transition-transform group-hover:translate-x-1 group-hover:text-ink-600 dark:group-hover:text-cockpit-accent-light" />
+      )}
     </div>
   );
 }
@@ -198,7 +210,7 @@ export default async function ArbeitgeberDashboardPage() {
   return (
     <div className="flex flex-col min-[1400px]:h-[calc(100dvh-9rem)]">
       <div className="flex items-baseline justify-between gap-3 shrink-0">
-        <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Übersicht</h1>
+        <h1 className="font-display text-[28px] font-bold tracking-tight text-sand-900">Effivo-Übersicht</h1>
         <p className={`text-sm ${secondaryTextClass}`}>{today}</p>
       </div>
 
@@ -264,20 +276,31 @@ export default async function ArbeitgeberDashboardPage() {
           </div>
         </div>
 
-        {/* Mittlere Spalte: Unternehmensentwicklung */}
-        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(2,minmax(0,1fr))_auto] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
-          <div className={`${panelClass} flex flex-col !p-4`}>
-            <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" />
+        {/* Mittlere Spalte: Unternehmensentwicklung - alle Karten fuehren zu
+            einer eigenen Zielseite mit Leerzustand, sobald noch keine echten
+            Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um). */}
+        <div className="grid min-w-0 grid-cols-1 grid-rows-[repeat(2,minmax(0,1fr))] gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
+          <Link
+            href="/arbeitgeber/dashboard/monatsvergleich"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
             <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
-          </div>
+          </Link>
 
-          <div className={`${panelClass} flex flex-col !p-4`}>
-            <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" />
+          <Link
+            href="/arbeitgeber/dashboard/entwicklung"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
             <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
-          </div>
+          </Link>
 
-          <div className={`${panelClass} flex flex-col !p-4`}>
-            <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" />
+          <Link
+            href="/arbeitgeber/dashboard/finanzuebersicht"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
             <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
               {[
                 ["Umsatz", "—"],
@@ -291,19 +314,15 @@ export default async function ArbeitgeberDashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Link>
 
-          <div className={`${panelClass} flex flex-col !p-4`}>
-            <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" />
+          <Link
+            href="/arbeitgeber/dashboard/auftraegekunden"
+            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+          >
+            <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
             <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
-          </div>
-
-          <div className={`${panelClass} flex flex-col !p-4 sm:col-span-2`}>
-            <MiddleCardHeader icon={TrendingUpIcon} title="Veränderungen im Überblick" color="ink" />
-            <p className={`mt-1.5 text-[13px] leading-snug ${secondaryTextClass}`}>
-              Sobald mindestens zwei Monatsimporte vorliegen, werden hier Veränderungen verständlich zusammengefasst.
-            </p>
-          </div>
+          </Link>
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}

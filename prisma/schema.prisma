@@ -58,10 +58,12 @@ enum FeedbackCategory {
   SUGGESTION
   BUG
   OTHER
+  HELP
 }
 
 enum FeedbackStatus {
   OPEN
+  IN_PROGRESS
   DONE
 }
 
@@ -101,6 +103,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   memberships         CompanyMembership[]  @relation("MemberUser")
   sentInvitations     CompanyMembership[]  @relation("InvitedByUser")
+  submittedFeedback   Feedback[]           @relation("FeedbackSubmittedByUser")
 }
 
 model Company {
@@ -110,6 +113,7 @@ model Company {
   createdAt DateTime      @default(now())
 
   memberships CompanyMembership[]
+  feedback    Feedback[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -230,15 +234,21 @@ model Redemption {
 }
 
 model Feedback {
-  id         String           @id @default(cuid())
-  message    String
-  category   FeedbackCategory
-  status     FeedbackStatus   @default(OPEN)
-  employerId String?
-  employer   Employer?        @relation(fields: [employerId], references: [id])
-  employeeId String?
-  employee   Employee?        @relation(fields: [employeeId], references: [id])
-  createdAt  DateTime         @default(now())
+  id                String           @id @default(cuid())
+  subject           String? // Betreff - neu seit Company-Support, alte Zeilen bleiben null
+  message           String
+  category          FeedbackCategory
+  status            FeedbackStatus   @default(OPEN)
+  employerId        String?
+  employer          Employer?        @relation(fields: [employerId], references: [id])
+  employeeId        String?
+  employee          Employee?        @relation(fields: [employeeId], references: [id])
+  // Neues Company/User-Modell: Support-Anfragen aus dem Unternehmensbereich
+  companyId         String?
+  company           Company?         @relation(fields: [companyId], references: [id])
+  submittedByUserId String?
+  submittedByUser   User?            @relation("FeedbackSubmittedByUser", fields: [submittedByUserId], references: [id])
+  createdAt         DateTime         @default(now())
 }
 
 model LegalPage {
