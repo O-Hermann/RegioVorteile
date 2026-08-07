@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
+import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
   TagIcon,
@@ -280,54 +281,62 @@ export default async function ArbeitgeberDashboardPage() {
             einer eigenen Zielseite mit Leerzustand, sobald noch keine echten
             Daten vorhanden sind (kein Fake-Inhalt, nur die Erklaerung zieht um).
             Zeilen sind bewusst content-groß (auto-rows-min) statt 1fr-gestreckt,
-            damit die Karten wie normale Module wirken statt kuenstlich auf die
-            volle Spaltenhoehe gezogen zu werden; ueberschuessige Hoehe (falls
-            linke/rechte Spalte hoeher sind) verteilt sich als Rand oben/unten
-            statt die Karten selbst zu strecken. */}
-        <div className="grid min-w-0 grid-cols-1 auto-rows-min content-center gap-3 sm:grid-cols-2 min-[1400px]:min-h-0">
-          <Link
-            href="/arbeitgeber/dashboard/monatsvergleich"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
-            <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
-          </Link>
+            damit die Karten wie normale Module wirken statt kuenstlich in die
+            Hoehe gezogen zu werden. Module bleiben oben, die Schnellaktion
+            wird per mt-auto ans untere Ende der Spalte geschoben - ueber-
+            schuessige Hoehe (falls linke/rechte Spalte hoeher sind) sammelt
+            sich als Abstand zwischen Modulen und Schnellaktion, ohne die
+            Karten selbst zu strecken oder das Raster zu zentrieren. */}
+        <div className="flex min-w-0 flex-col min-[1400px]:min-h-0">
+          <div className="grid grid-cols-1 auto-rows-min gap-3 sm:grid-cols-2">
+            <Link
+              href="/arbeitgeber/dashboard/monatsvergleich"
+              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
+              <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/entwicklung"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
-            <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/entwicklung"
+              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
+              <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/finanzuebersicht"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
-            <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
-              {[
-                ["Umsatz", "—"],
-                ["Kosten", "—"],
-                ["Ergebnis", "—"],
-                ["Offene Forderungen", "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between text-sm">
-                  <span className={secondaryTextClass}>{label}</span>
-                  <span className="font-semibold text-sand-900">{value}</span>
-                </div>
-              ))}
-            </div>
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/finanzuebersicht"
+              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
+              <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
+                {[
+                  ["Umsatz", "—"],
+                  ["Kosten", "—"],
+                  ["Ergebnis", "—"],
+                  ["Offene Forderungen", "—"],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <span className={secondaryTextClass}>{label}</span>
+                    <span className="font-semibold text-sand-900">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </Link>
 
-          <Link
-            href="/arbeitgeber/dashboard/auftraegekunden"
-            className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
-          >
-            <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
-            <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
-          </Link>
+            <Link
+              href="/arbeitgeber/dashboard/auftraegekunden"
+              className={`${panelClass} ${panelHoverClass} group flex flex-col !p-4`}
+            >
+              <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
+              <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
+            </Link>
+          </div>
+
+          <div className="mt-auto flex justify-center pt-6">
+            <QuickActionButton />
+          </div>
         </div>
 
         {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50 */}
