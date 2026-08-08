@@ -66,11 +66,14 @@ export const SOURCE_SYSTEM_OPTIONS = [
 export const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export const MAX_IMPORT_FILE_SIZE_LABEL = "10 MB";
 
-export const ALLOWED_IMPORT_EXTENSIONS = [".xlsx", ".xls", ".csv"] as const;
+// .xls (das alte binaere BIFF-Format) wird bewusst NICHT unterstuetzt: die
+// sichere, aktiv gepflegte Excel-Bibliothek (exceljs) kann ausschliesslich
+// das moderne, ZIP/XML-basierte .xlsx lesen. Das war eine explizite
+// Sicherheits-vor-Legacy-Entscheidung in Phase 3.1 - siehe Abschlussbericht.
+export const ALLOWED_IMPORT_EXTENSIONS = [".xlsx", ".csv"] as const;
 
 export const ALLOWED_IMPORT_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
-  "application/vnd.ms-excel", // .xls (und teils .csv je nach Browser/OS)
   "text/csv",
   "application/csv",
   "text/plain", // manche Browser melden .csv als text/plain
@@ -82,12 +85,24 @@ export function extensionForFileName(fileName: string): string {
   return dot === -1 ? "" : fileName.slice(dot).toLowerCase();
 }
 
-export function fileTypeForExtension(ext: string): "xlsx" | "xls" | "csv" | null {
+export function fileTypeForExtension(ext: string): "xlsx" | "csv" | null {
   if (ext === ".xlsx") return "xlsx";
-  if (ext === ".xls") return "xls";
   if (ext === ".csv") return "csv";
   return null;
 }
+
+// Zentrale Parsing-Limits (Phase 3.1 Sicherheitshaertung): schuetzen vor
+// beschaedigten/manipulierten Dateien, die beim Entpacken oder Parsen
+// unverhaeltnismaessig viel Speicher/CPU beanspruchen wuerden - unabhaengig
+// vom 10-MB-Dateigroessenlimit, das eine komprimierte ZIP/XLSX-Datei allein
+// nicht zuverlaessig begrenzt (Stichwort Zip-Bomb-artige Auffaelligkeit).
+// Grosszuegig genug fuer normale KMU-Exporte, eng genug um absichtlich
+// extreme Dateien fruehzeitig abzulehnen.
+export const MAX_IMPORT_SHEETS = 25;
+export const MAX_IMPORT_ROWS = 50_000;
+export const MAX_IMPORT_COLUMNS = 200;
+export const MAX_IMPORT_CELLS = 300_000;
+export const MAX_IMPORT_CELL_TEXT_LENGTH = 2000;
 
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

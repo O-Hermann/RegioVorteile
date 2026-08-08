@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseSpreadsheetPreview } from "@/lib/import-parse";
+import { parseStoredImportPreview } from "@/lib/import-parse-excel";
 import {
   DATA_IMPORT_CATEGORY_LABELS,
   DATA_IMPORT_STATUS_LABELS,
@@ -10,7 +10,8 @@ import {
   periodLabel,
   formatFileSize,
 } from "@/lib/data-import";
-import { cardClass, secondaryButtonClass } from "@/lib/ui";
+import { importPanelClass, importSecondaryTextClass } from "@/lib/import-ui";
+import { secondaryButtonClass } from "@/lib/ui";
 import { ArrowLeftIcon } from "@/components/icons";
 
 export default async function AdminDatenimportDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,12 +31,7 @@ export default async function AdminDatenimportDetailPage({ params }: { params: P
   let preview: { rows: string[][]; rowCount: number; columnCount: number } | null = null;
   let previewError: string | null = null;
   try {
-    const fileType = dataImport.fileType as "xlsx" | "xls" | "csv";
-    preview = parseSpreadsheetPreview(
-      new Uint8Array(dataImport.fileContent),
-      fileType,
-      dataImport.selectedSheetName ?? undefined,
-    );
+    preview = await parseStoredImportPreview(dataImport.fileType, Buffer.from(dataImport.fileContent), dataImport.selectedSheetName);
   } catch {
     previewError = "Die Vorschau konnte nicht erneut geladen werden.";
   }
@@ -53,18 +49,18 @@ export default async function AdminDatenimportDetailPage({ params }: { params: P
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">{dataImport.fileName}</h1>
-          <p className="mt-1 text-sand-600 dark:text-cockpit-text-secondary">
+          <p className={`mt-1 ${importSecondaryTextClass}`}>
             {dataImport.company.name} · {periodLabel(dataImport.periodMonth, dataImport.periodYear)} ·{" "}
             {DATA_IMPORT_CATEGORY_LABELS[dataImport.category]}
           </p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-sm font-medium ${dataImportStatusBadgeClass(dataImport.status)}`}>
+        <span className={`rounded-full px-3 py-1.5 text-sm font-medium ${dataImportStatusBadgeClass(dataImport.status)}`}>
           {DATA_IMPORT_STATUS_LABELS[dataImport.status]}
         </span>
       </div>
 
-      <div className={`mt-6 ${cardClass}`}>
-        <dl className="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+      <div className={`mt-6 !p-6 ${importPanelClass}`}>
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-sand-500 dark:text-cockpit-text-weak">Unternehmen</dt>
             <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{dataImport.company.name}</dd>
@@ -115,17 +111,15 @@ export default async function AdminDatenimportDetailPage({ params }: { params: P
 
       <div className="mt-6">
         <h2 className="font-display text-lg font-semibold text-sand-900">Technische Vorschau</h2>
-        {previewError && (
-          <p className="mt-3 text-sm text-sand-500 dark:text-cockpit-text-secondary">{previewError}</p>
-        )}
+        {previewError && <p className={`mt-3 text-sm ${importSecondaryTextClass}`}>{previewError}</p>}
         {preview && (
-          <div className="mt-3 overflow-x-auto rounded-xl border border-card-border dark:border-white/10">
+          <div className={`mt-3 overflow-x-auto !p-0 ${importPanelClass}`}>
             <table className="w-full min-w-[480px] text-left text-sm">
               {preview.rows[0] && (
                 <thead className="bg-sand-50 dark:bg-white/5">
                   <tr>
                     {preview.rows[0].map((cell, i) => (
-                      <th key={i} className="whitespace-nowrap px-3 py-2 font-semibold text-sand-700 dark:text-cockpit-text">
+                      <th key={i} className="whitespace-nowrap px-3 py-2.5 font-semibold text-sand-700 dark:text-cockpit-text">
                         {cell || `Spalte ${i + 1}`}
                       </th>
                     ))}
@@ -136,7 +130,7 @@ export default async function AdminDatenimportDetailPage({ params }: { params: P
                 {preview.rows.slice(1).map((row, ri) => (
                   <tr key={ri} className="border-t border-card-border/70 dark:border-white/5">
                     {row.map((cell, ci) => (
-                      <td key={ci} className="whitespace-nowrap px-3 py-2 text-sand-600 dark:text-cockpit-text-secondary">
+                      <td key={ci} className={`whitespace-nowrap px-3 py-2.5 ${importSecondaryTextClass}`}>
                         {cell}
                       </td>
                     ))}

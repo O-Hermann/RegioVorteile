@@ -1,9 +1,11 @@
-import * as XLSX from "xlsx";
+import { MAX_IMPORT_ROWS, MAX_IMPORT_COLUMNS, MAX_IMPORT_CELL_TEXT_LENGTH } from "@/lib/data-import";
 
-// Wird sowohl vom Client-Wizard (sofortige Vorschau ohne Serverkontakt) als
-// auch von der Server Action (autoritative Neu-Pruefung vor dem Speichern)
-// genutzt - daher ausschliesslich Web-Standard-APIs (TextDecoder, Uint8Array)
-// und keine Node-Builtins wie node:crypto oder node:fs.
+// Browser-sicheres Modul (nur Web-Standard-APIs: TextDecoder, Uint8Array,
+// keine Node-Builtins) - wird sowohl vom Client-Wizard (sofortige CSV-
+// Vorschau ohne Serverkontakt) als auch von der Server Action genutzt.
+// Das Excel-Parsing (exceljs, node:stream) lebt bewusst in einer eigenen,
+// serverseitigen Datei (import-parse-excel.ts), damit es niemals in das
+// Client-Bundle gelangt - siehe dortiger Kommentar.
 
 export class ImportParseError extends Error {}
 
@@ -15,65 +17,18 @@ export type SpreadsheetPreview = {
   columnCount: number;
 };
 
-const PREVIEW_ROW_LIMIT = 10;
-const PREVIEW_COLUMN_LIMIT = 20;
+export const PREVIEW_ROW_LIMIT = 10;
+export const PREVIEW_COLUMN_LIMIT = 20;
 
-function stringifyCell(cell: unknown): string {
+export function stringifyCell(cell: unknown): string {
   if (cell === null || cell === undefined) return "";
   if (cell instanceof Date) return cell.toLocaleDateString("de-DE");
-  return String(cell);
+  const text = String(cell);
+  return text.length > MAX_IMPORT_CELL_TEXT_LENGTH ? text.slice(0, MAX_IMPORT_CELL_TEXT_LENGTH) + "…" : text;
 }
 
-function clampRow(row: unknown[]): string[] {
+export function clampRow(row: unknown[]): string[] {
   return row.slice(0, PREVIEW_COLUMN_LIMIT).map(stringifyCell);
-}
-
-// Excel (.xlsx/.xls): SheetJS liest ausschliesslich Zellwerte. Es werden
-// weder Makros (bookVBA bleibt false) noch Formeln ausgefuehrt - Formeln
-// liefern nur den zuletzt zwischengespeicherten Wert (cell.v), es findet
-// keine Neuberechnung statt. Keine externen Verbindungen werden aufgeloest.
-export function parseExcelPreview(data: Uint8Array, requestedSheetName?: string): SpreadsheetPreview {
-  let workbook: XLSX.WorkBook;
-  try {
-    workbook = XLSX.read(data, { type: "array", cellDates: true, cellFormula: false, bookVBA: false });
-  } catch {
-    throw new ImportParseError("Die Excel-Datei ist beschädigt oder konnte nicht gelesen werden.");
-  }
-
-  const sheetNames = workbook.SheetNames ?? [];
-  if (sheetNames.length === 0) {
-    throw new ImportParseError("Die Excel-Datei enthält kein lesbares Tabellenblatt.");
-  }
-
-  const selectedSheetName =
-    requestedSheetName && sheetNames.includes(requestedSheetName) ? requestedSheetName : sheetNames[0];
-  const sheet = workbook.Sheets[selectedSheetName];
-  if (!sheet) {
-    throw new ImportParseError("Das ausgewählte Tabellenblatt konnte nicht gelesen werden.");
-  }
-
-  const range = sheet["!ref"] ? XLSX.utils.decode_range(sheet["!ref"]) : null;
-  const rowCount = range ? range.e.r - range.s.r + 1 : 0;
-  const columnCount = range ? range.e.c - range.s.c + 1 : 0;
-
-  if (rowCount === 0) {
-    throw new ImportParseError("Das Tabellenblatt enthält keine Daten.");
-  }
-
-  let rawRows: unknown[][];
-  try {
-    rawRows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false });
-  } catch {
-    throw new ImportParseError("Die Excel-Datei ist beschädigt oder konnte nicht gelesen werden.");
-  }
-
-  return {
-    sheetNames,
-    selectedSheetName,
-    rows: rawRows.slice(0, PREVIEW_ROW_LIMIT).map(clampRow),
-    rowCount,
-    columnCount,
-  };
 }
 
 // Robuste, aber bewusst einfache CSV-Erkennung: UTF-8 zuerst, mit
@@ -101,6 +56,10 @@ function detectDelimiter(sample: string): string {
   return ",";
 }
 
+// Haertung (Phase 3.1): Zeilen- und Feldlaenge sind hart begrenzt, damit
+// eine absichtlich extreme CSV-Datei (z.B. eine einzige, mehrere MB lange
+// Zeile ohne Umbrueche) den Parser nicht in eine unverhaeltnismaessig
+// teure Verarbeitung zwingt - unabhaengig vom 10-MB-Dateigroessenlimit.
 function parseCsvRows(text: string, delimiter: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -108,6 +67,9 @@ function parseCsvRows(text: string, delimiter: string): string[][] {
   let inQuotes = false;
 
   for (let i = 0; i < text.length; i++) {
+    if (rows.length > MAX_IMPORT_ROWS) {
+      throw new ImportParseError(`Die CSV-Datei enthält zu viele Zeilen (maximal ${MAX_IMPORT_ROWS.toLocaleString("de-DE")}).`);
+    }
     const char = text[i];
     if (inQuotes) {
       if (char === '"') {
@@ -117,7 +79,7 @@ function parseCsvRows(text: string, delimiter: string): string[][] {
         } else {
           inQuotes = false;
         }
-      } else {
+      } else if (field.length < MAX_IMPORT_CELL_TEXT_LENGTH) {
         field += char;
       }
       continue;
@@ -127,22 +89,22 @@ function parseCsvRows(text: string, delimiter: string): string[][] {
       continue;
     }
     if (char === delimiter) {
-      row.push(field);
+      if (row.length < MAX_IMPORT_COLUMNS) row.push(field);
       field = "";
       continue;
     }
     if (char === "\n" || char === "\r") {
       if (char === "\r" && text[i + 1] === "\n") i++;
-      row.push(field);
+      if (row.length < MAX_IMPORT_COLUMNS) row.push(field);
       field = "";
       if (row.some((c) => c.trim() !== "")) rows.push(row);
       row = [];
       continue;
     }
-    field += char;
+    if (field.length < MAX_IMPORT_CELL_TEXT_LENGTH) field += char;
   }
   if (field !== "" || row.length > 0) {
-    row.push(field);
+    if (row.length < MAX_IMPORT_COLUMNS) row.push(field);
     if (row.some((c) => c.trim() !== "")) rows.push(row);
   }
   return rows;
@@ -163,10 +125,7 @@ export function parseCsvPreview(bytes: Uint8Array): SpreadsheetPreview {
     throw new ImportParseError("Die CSV-Datei konnte nicht gelesen werden.");
   }
 
-  const columnCount = Math.min(
-    Math.max(...allRows.map((r) => r.length)),
-    PREVIEW_COLUMN_LIMIT,
-  );
+  const columnCount = Math.min(Math.max(...allRows.map((r) => r.length)), PREVIEW_COLUMN_LIMIT);
 
   return {
     sheetNames: [],
@@ -175,13 +134,4 @@ export function parseCsvPreview(bytes: Uint8Array): SpreadsheetPreview {
     rowCount: allRows.length,
     columnCount,
   };
-}
-
-export function parseSpreadsheetPreview(
-  bytes: Uint8Array,
-  fileType: "xlsx" | "xls" | "csv",
-  requestedSheetName?: string,
-): SpreadsheetPreview {
-  if (fileType === "csv") return parseCsvPreview(bytes);
-  return parseExcelPreview(bytes, requestedSheetName);
 }

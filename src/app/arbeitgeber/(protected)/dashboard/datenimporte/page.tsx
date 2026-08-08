@@ -9,7 +9,8 @@ import {
   periodLabel,
   formatFileSize,
 } from "@/lib/data-import";
-import { cardClass, primaryButtonClass } from "@/lib/ui";
+import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
+import { primaryButtonClass } from "@/lib/ui";
 import { UploadIcon, EyeIcon } from "@/components/icons";
 
 export default async function DatenimportePage({
@@ -32,9 +33,8 @@ export default async function DatenimportePage({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Datenimporte</h1>
-          <p className="mt-2 max-w-xl text-sand-600 dark:text-cockpit-text-secondary">
-            Laden Sie vorhandene Excel- oder CSV-Dateien hoch und ordnen Sie diese einem Zeitraum und
-            Unternehmensbereich zu.
+          <p className={`mt-2 max-w-xl ${importSecondaryTextClass}`}>
+            Verwalten Sie Ihre hochgeladenen Unternehmensdaten und verfolgen Sie deren Verarbeitungsstatus.
           </p>
         </div>
         {canUpload && (
@@ -50,15 +50,32 @@ export default async function DatenimportePage({
         </p>
       )}
 
-      <div className="mt-8">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Importhistorie</h2>
-
-        {imports.length === 0 ? (
-          <p className={`mt-3 ${cardClass} text-sand-500 dark:text-cockpit-text-secondary`}>
-            Noch keine Datenimporte vorhanden.
+      {imports.length === 0 ? (
+        <div className={`relative mx-auto mt-10 max-w-[820px] overflow-hidden !p-10 text-center ${importPanelClass}`}>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-cockpit-accent-light/10 blur-3xl opacity-0 dark:opacity-100"
+          />
+          <span className={`relative mx-auto flex h-16 w-16 items-center justify-center rounded-full ${importIconGlowClass}`}>
+            <UploadIcon className="h-7 w-7" />
+          </span>
+          <h2 className="relative mt-5 font-display text-xl font-semibold text-sand-900">Noch keine Datenimporte</h2>
+          <p className={`relative mx-auto mt-2 max-w-md text-sm leading-relaxed ${importSecondaryTextClass}`}>
+            {canUpload
+              ? "Laden Sie Ihre erste Excel- oder CSV-Datei hoch. Effivo zeigt Ihnen zunächst eine Vorschau und bereitet die Daten anschließend für die Zuordnung vor."
+              : "Sobald ein Datenimport hochgeladen wurde, erscheint er hier mit Zeitraum, Kategorie und Status."}
           </p>
-        ) : (
-          <div className={`mt-3 overflow-x-auto ${cardClass} !p-0`}>
+          {canUpload && (
+            <Link href="/arbeitgeber/dashboard/datenimporte/neu" className={`relative mt-5 inline-flex ${primaryButtonClass}`}>
+              Ersten Datenimport starten
+            </Link>
+          )}
+          <p className={`relative mt-4 text-xs ${importSecondaryTextClass}`}>XLSX und CSV · maximal 10 MB</p>
+        </div>
+      ) : (
+        <div className="mt-8">
+          <h2 className="font-display text-lg font-semibold text-sand-900">Importhistorie</h2>
+          <div className={`mt-3 overflow-x-auto !p-0 ${importPanelClass}`}>
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead className="bg-sand-50 dark:bg-white/5">
                 <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
@@ -78,31 +95,31 @@ export default async function DatenimportePage({
                     [i.uploadedByUser.firstName, i.uploadedByUser.lastName].filter(Boolean).join(" ") ||
                     i.uploadedByUser.email;
                   return (
-                    <tr key={i.id} className="border-t border-card-border/70 dark:border-white/5">
-                      <td className="whitespace-nowrap px-4 py-3 font-medium text-sand-900 dark:text-cockpit-text">
+                    <tr
+                      key={i.id}
+                      className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
+                    >
+                      <td className="whitespace-nowrap px-4 py-3.5 font-medium text-sand-900 dark:text-cockpit-text">
                         {periodLabel(i.periodMonth, i.periodYear)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
+                      <td className={`whitespace-nowrap px-4 py-3.5 ${importSecondaryTextClass}`}>
                         {DATA_IMPORT_CATEGORY_LABELS[i.category]}
                       </td>
-                      <td className="max-w-[220px] truncate px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
-                        {i.fileName}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${dataImportStatusBadgeClass(i.status)}`}>
+                      <td className={`max-w-[220px] truncate px-4 py-3.5 ${importSecondaryTextClass}`}>{i.fileName}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${dataImportStatusBadgeClass(i.status)}`}>
                           {DATA_IMPORT_STATUS_LABELS[i.status]}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
-                        {uploaderName}
+                      <td className={`whitespace-nowrap px-4 py-3.5 ${importSecondaryTextClass}`}>{uploaderName}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">
+                        {i.createdAt.toLocaleDateString("de-DE")} ·{" "}
+                        {i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sand-500 dark:text-cockpit-text-weak">
-                        {i.createdAt.toLocaleDateString("de-DE")} · {i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sand-500 dark:text-cockpit-text-weak">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">
                         {formatFileSize(i.fileSize)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-right">
                         <Link
                           href={`/arbeitgeber/dashboard/datenimporte/${i.id}`}
                           className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
@@ -117,18 +134,6 @@ export default async function DatenimportePage({
               </tbody>
             </table>
           </div>
-        )}
-      </div>
-
-      {imports.length === 0 && canUpload && (
-        <div className={`mt-6 max-w-lg ${cardClass} text-center`}>
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-ink-400/30 to-ink-500/10 text-ink-700 dark:text-cockpit-accent-light border border-ink-400/30 dark:border-cockpit-accent-light/30">
-            <UploadIcon className="h-5 w-5" />
-          </span>
-          <p className="mt-3 text-sm text-sand-500 dark:text-cockpit-text-secondary">
-            Starten Sie Ihren ersten Datenimport, um Excel- oder CSV-Dateien für einen Monatszeitraum
-            hochzuladen.
-          </p>
         </div>
       )}
     </div>

@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireCompanyMember, assertCanUploadDataImport } from "@/lib/auth";
-import { parseSpreadsheetPreview, ImportParseError } from "@/lib/import-parse";
+import { parseCsvPreview, ImportParseError, type SpreadsheetPreview } from "@/lib/import-parse";
+import { parseExcelPreviewServer } from "@/lib/import-parse-excel";
 import {
   MAX_IMPORT_FILE_SIZE_BYTES,
   MAX_IMPORT_FILE_SIZE_LABEL,
@@ -14,6 +15,47 @@ import {
   type CreateDataImportState,
 } from "@/lib/data-import";
 import type { DataImportCategory } from "@/generated/prisma/client";
+
+export type PreviewExcelImportResult =
+  | { status: "ok"; preview: SpreadsheetPreview }
+  | { status: "error"; message: string };
+
+// Eigenstaendiger, rein lesender Server-Aufruf: XLSX-Dateien werden seit
+// Phase 3.1 ausschliesslich serverseitig geparst (exceljs/node:stream duerfen
+// nicht ins Client-Bundle) - der Wizard ruft dies direkt nach Dateiauswahl
+// bzw. bei Tabellenblatt-Wechsel auf, bevor ueberhaupt etwas gespeichert wird.
+export async function previewExcelImport(formData: FormData): Promise<PreviewExcelImportResult> {
+  const companyId = String(formData.get("companyId") ?? "");
+  const { company } = await requireCompanyMember(companyId || undefined);
+  await assertCanUploadDataImport(company.id);
+
+  const file = formData.get("file");
+  const requestedSheetName = String(formData.get("selectedSheetName") ?? "").trim() || undefined;
+
+  if (!(file instanceof File)) return { status: "error", message: "Bitte eine Datei auswählen." };
+  if (file.size === 0) return { status: "error", message: "Die Datei ist leer." };
+  if (file.size > MAX_IMPORT_FILE_SIZE_BYTES) {
+    return { status: "error", message: `Die Datei ist zu groß. Maximal ${MAX_IMPORT_FILE_SIZE_LABEL}.` };
+  }
+  if (extensionForFileName(file.name) !== ".xlsx") {
+    return { status: "error", message: "Dieser Vorschau-Endpunkt unterstützt nur XLSX-Dateien." };
+  }
+
+  let buffer: Buffer;
+  try {
+    buffer = Buffer.from(await file.arrayBuffer());
+  } catch {
+    return { status: "error", message: "Die Datei konnte nicht gelesen werden." };
+  }
+
+  try {
+    const preview = await parseExcelPreviewServer(buffer, requestedSheetName);
+    return { status: "ok", preview };
+  } catch (err) {
+    if (err instanceof ImportParseError) return { status: "error", message: err.message };
+    return { status: "error", message: "Die Datei konnte nicht gelesen werden." };
+  }
+}
 
 function parseCategory(value: FormDataEntryValue | null): DataImportCategory | null {
   const v = String(value ?? "");
@@ -68,7 +110,7 @@ export async function createDataImport(
   if (!fileType) {
     return {
       status: "error",
-      message: "Dateityp nicht unterstützt. Bitte eine XLSX-, XLS- oder CSV-Datei hochladen.",
+      message: "Dateityp nicht unterstützt. Bitte eine XLSX- oder CSV-Datei hochladen.",
     };
   }
 
@@ -93,9 +135,9 @@ export async function createDataImport(
     };
   }
 
-  let preview;
+  let preview: SpreadsheetPreview;
   try {
-    preview = parseSpreadsheetPreview(new Uint8Array(buffer), fileType, requestedSheetName);
+    preview = fileType === "csv" ? parseCsvPreview(new Uint8Array(buffer)) : await parseExcelPreviewServer(buffer, requestedSheetName);
   } catch (err) {
     if (err instanceof ImportParseError) {
       return { status: "error", message: err.message };
