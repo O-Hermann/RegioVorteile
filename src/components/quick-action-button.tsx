@@ -6,7 +6,7 @@ import { PlusIcon, UploadIcon, ChatIcon, AlertTriangleIcon, TrendingUpIcon } fro
 
 const ACTIONS = [
   {
-    href: "/arbeitgeber/dashboard/datenimporte",
+    href: "/arbeitgeber/dashboard/datenimporte/neu",
     label: "Datenimport starten",
     icon: UploadIcon,
     color:

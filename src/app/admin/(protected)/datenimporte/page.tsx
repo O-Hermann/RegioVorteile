@@ -1,74 +1,48 @@
 import Link from "next/link";
-import { requireCompanyMember } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
 import {
   DATA_IMPORT_CATEGORY_LABELS,
   DATA_IMPORT_STATUS_LABELS,
   dataImportStatusBadgeClass,
   periodLabel,
-  formatFileSize,
 } from "@/lib/data-import";
-import { cardClass, primaryButtonClass } from "@/lib/ui";
-import { UploadIcon, EyeIcon } from "@/components/icons";
+import { cardClass } from "@/lib/ui";
+import { EyeIcon } from "@/components/icons";
 
-export default async function DatenimportePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { company, membership } = await requireCompanyMember();
-  const { error } = await searchParams;
-  const canUpload = COMPANY_IMPORT_UPLOAD_ROLES.includes(membership.role);
+export default async function AdminDatenimportePage() {
+  await requireAdmin();
 
   const imports = await prisma.dataImport.findMany({
-    where: { companyId: company.id },
     orderBy: { createdAt: "desc" },
-    include: { uploadedByUser: true },
+    include: { company: true, uploadedByUser: true },
+    take: 200,
   });
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-semibold text-sand-900">Datenimporte</h1>
-          <p className="mt-2 max-w-xl text-sand-600 dark:text-cockpit-text-secondary">
-            Laden Sie vorhandene Excel- oder CSV-Dateien hoch und ordnen Sie diese einem Zeitraum und
-            Unternehmensbereich zu.
-          </p>
-        </div>
-        {canUpload && (
-          <Link href="/arbeitgeber/dashboard/datenimporte/neu" className={primaryButtonClass}>
-            + Neuer Datenimport
-          </Link>
-        )}
-      </div>
-
-      {error === "forbidden" && (
-        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
-          Für den Datenimport-Upload fehlt Ihnen die notwendige Berechtigung.
-        </p>
-      )}
+      <h1 className="font-display text-3xl font-semibold text-sand-900">Datenimporte</h1>
+      <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">
+        Alle von Unternehmen hochgeladenen Dateien, unternehmensübergreifend.
+      </p>
 
       <div className="mt-8">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Importhistorie</h2>
-
         {imports.length === 0 ? (
-          <p className={`mt-3 ${cardClass} text-sand-500 dark:text-cockpit-text-secondary`}>
+          <p className={`${cardClass} text-sand-500 dark:text-cockpit-text-secondary`}>
             Noch keine Datenimporte vorhanden.
           </p>
         ) : (
-          <div className={`mt-3 overflow-x-auto ${cardClass} !p-0`}>
-            <table className="w-full min-w-[880px] text-left text-sm">
+          <div className={`overflow-x-auto ${cardClass} !p-0`}>
+            <table className="w-full min-w-[960px] text-left text-sm">
               <thead className="bg-sand-50 dark:bg-white/5">
                 <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
+                  <th className="px-4 py-3 font-semibold">Unternehmen</th>
                   <th className="px-4 py-3 font-semibold">Zeitraum</th>
                   <th className="px-4 py-3 font-semibold">Kategorie</th>
                   <th className="px-4 py-3 font-semibold">Dateiname</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
                   <th className="px-4 py-3 font-semibold">Hochgeladen von</th>
                   <th className="px-4 py-3 font-semibold">Datum</th>
-                  <th className="px-4 py-3 font-semibold">Größe</th>
                   <th className="px-4 py-3 font-semibold" />
                 </tr>
               </thead>
@@ -80,12 +54,15 @@ export default async function DatenimportePage({
                   return (
                     <tr key={i.id} className="border-t border-card-border/70 dark:border-white/5">
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-sand-900 dark:text-cockpit-text">
+                        {i.company.name}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
                         {periodLabel(i.periodMonth, i.periodYear)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
                         {DATA_IMPORT_CATEGORY_LABELS[i.category]}
                       </td>
-                      <td className="max-w-[220px] truncate px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
+                      <td className="max-w-[200px] truncate px-4 py-3 text-sand-600 dark:text-cockpit-text-secondary">
                         {i.fileName}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
@@ -99,12 +76,9 @@ export default async function DatenimportePage({
                       <td className="whitespace-nowrap px-4 py-3 text-sand-500 dark:text-cockpit-text-weak">
                         {i.createdAt.toLocaleDateString("de-DE")} · {i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sand-500 dark:text-cockpit-text-weak">
-                        {formatFileSize(i.fileSize)}
-                      </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <Link
-                          href={`/arbeitgeber/dashboard/datenimporte/${i.id}`}
+                          href={`/admin/datenimporte/${i.id}`}
                           className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
                         >
                           <EyeIcon className="h-3.5 w-3.5" />
@@ -119,18 +93,6 @@ export default async function DatenimportePage({
           </div>
         )}
       </div>
-
-      {imports.length === 0 && canUpload && (
-        <div className={`mt-6 max-w-lg ${cardClass} text-center`}>
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-ink-400/30 to-ink-500/10 text-ink-700 dark:text-cockpit-accent-light border border-ink-400/30 dark:border-cockpit-accent-light/30">
-            <UploadIcon className="h-5 w-5" />
-          </span>
-          <p className="mt-3 text-sm text-sand-500 dark:text-cockpit-text-secondary">
-            Starten Sie Ihren ersten Datenimport, um Excel- oder CSV-Dateien für einen Monatszeitraum
-            hochzuladen.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

@@ -82,6 +82,27 @@ enum ContactRequestStatus {
   DONE
 }
 
+// Fachliche Kategorie eines Datenimports - dient in Phase 3 nur der
+// Strukturierung/spaeteren Verarbeitung, noch keiner fachlichen Auswertung.
+enum DataImportCategory {
+  FINANCE
+  ORDERS
+  CUSTOMERS
+}
+
+// READY_FOR_MAPPING ist der einzige Status, der in Phase 3 tatsaechlich
+// automatisch vergeben wird (nach erfolgreicher technischer Speicherung).
+// Die uebrigen Werte sind bewusst fuer Phase 4/5 vorbereitet, damit dafuer
+// keine erneute Migration noetig ist.
+enum DataImportStatus {
+  READY_FOR_MAPPING
+  VALIDATION_FAILED
+  READY_FOR_PROCESSING
+  PROCESSED
+  FAILED
+  CANCELED
+}
+
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
@@ -104,6 +125,7 @@ model User {
   memberships         CompanyMembership[]  @relation("MemberUser")
   sentInvitations     CompanyMembership[]  @relation("InvitedByUser")
   submittedFeedback   Feedback[]           @relation("FeedbackSubmittedByUser")
+  uploadedDataImports DataImport[]         @relation("DataImportUploadedByUser")
 }
 
 model Company {
@@ -114,6 +136,7 @@ model Company {
 
   memberships CompanyMembership[]
   feedback    Feedback[]
+  dataImports DataImport[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -281,6 +304,48 @@ model ContactRequest {
   message     String?
   status      ContactRequestStatus @default(OPEN)
   createdAt   DateTime             @default(now())
+}
+
+// Phase 3: technischer Datenimport (Datei-Upload, Vorschau, Speicherung).
+// Enthaelt bewusst noch keine fachliche Zuordnung/Auswertung - das ist
+// Phase 4/5. Kein persistenter Object Storage im Projekt vorhanden, daher
+// wird die Datei fuer dieses fruehe MVP direkt als Bytes in Postgres
+// gespeichert (siehe Abschlussbericht zur Speicherstrategie).
+model DataImport {
+  id               String @id @default(cuid())
+  companyId        String
+  company          Company @relation(fields: [companyId], references: [id])
+  uploadedByUserId String
+  uploadedByUser   User   @relation("DataImportUploadedByUser", fields: [uploadedByUserId], references: [id])
+
+  periodMonth Int // 1-12
+  periodYear  Int
+
+  category     DataImportCategory
+  sourceSystem String? // normalisierter Freitext (z.B. "DATEV"), bewusst kein Enum
+
+  fileName    String
+  fileType    String // "xlsx" | "xls" | "csv"
+  mimeType    String
+  fileSize    Int
+  fileContent Bytes
+
+  selectedSheetName String? // nur bei Excel mit mehreren Tabellenblaettern relevant
+  sheetNames        String[] // alle erkannten Tabellenblaetter (Excel), leer bei CSV
+
+  checksumSha256 String // fuer Duplikaterkennung je Unternehmen
+
+  rowCount    Int?
+  columnCount Int?
+
+  status       DataImportStatus @default(READY_FOR_MAPPING)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, checksumSha256])
 }
 
 model PasswordResetToken {

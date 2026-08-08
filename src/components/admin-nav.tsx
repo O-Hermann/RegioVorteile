@@ -11,7 +11,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { label: "Übersicht", href: "/admin/dashboard" },
   { label: "Unternehmen", href: "/admin/unternehmen" },
-  { label: "Datenimporte" },
+  { label: "Datenimporte", href: "/admin/datenimporte" },
   { label: "Analysen" },
   { label: "Benutzer", href: "/admin/benutzer" },
   { label: "Pilotkunden", href: "/admin/kontaktanfragen" },

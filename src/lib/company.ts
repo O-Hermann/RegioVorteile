@@ -21,6 +21,11 @@ export const PLATFORM_ROLE_LABELS: Record<PlatformRole, string> = {
 // Rollen aendern) - genutzt von assertCanManageCompany().
 export const COMPANY_MANAGER_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN"];
 
+// Rollen, die Datenimporte hochladen duerfen (Phase 3). Geschaeftsfuehrung und
+// Betrachter duerfen die Importhistorie einsehen, aber keine neuen Dateien
+// hochladen - siehe assertCanUploadDataImport() in lib/auth.ts.
+export const COMPANY_IMPORT_UPLOAD_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN", "ACCOUNTING"];
+
 export const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
   INVITED: "Eingeladen",
   ACTIVE: "Aktiv",

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { SITE_NAME } from "@/lib/site-config";
+import { periodLabel } from "@/lib/data-import";
 import {
   BriefcaseIcon,
   InboxIcon,
@@ -114,6 +115,8 @@ export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   const now = new Date();
 
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
   const [
     admin,
     totalCompanyCount,
@@ -122,10 +125,13 @@ export default async function AdminDashboardPage() {
     activeUserCount,
     openFeedbackCount,
     openContactRequestCount,
+    monthlyUploadsCount,
+    importErrorsCount,
     recentCompanies,
     recentMemberships,
     recentContactRequests,
     recentFeedback,
+    recentDataImports,
   ] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.userId } }),
     prisma.company.count(),
@@ -138,6 +144,8 @@ export default async function AdminDashboardPage() {
     }),
     prisma.feedback.count({ where: { status: "OPEN" } }),
     prisma.contactRequest.count({ where: { status: "OPEN" } }),
+    prisma.dataImport.count({ where: { createdAt: { gte: startOfMonth } } }),
+    prisma.dataImport.count({ where: { status: "FAILED" } }),
     prisma.company.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
     prisma.companyMembership.findMany({
       orderBy: { invitedAt: "desc" },
@@ -150,15 +158,17 @@ export default async function AdminDashboardPage() {
       take: 5,
       include: { employer: true, employee: true },
     }),
+    prisma.dataImport.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { company: true },
+    }),
   ]);
 
   // Diese Kennzahlen haben noch keine echte Datenquelle im Projekt (kein
-  // Datenimport-/Analyse-/Importfehler-/Abo-Modell fuer das neue
-  // Company-Modell) - bewusst 0, keine erfundenen Werte. Siehe Abschlussbericht
-  // an den Nutzer.
-  const monthlyUploadsCount = 0;
+  // Analyse-/Abo-Modell fuer das neue Company-Modell) - bewusst 0, keine
+  // erfundenen Werte. Siehe Abschlussbericht an den Nutzer.
   const analysesCreatedCount = 0;
-  const importErrorsCount = 0;
   const analysesPendingApprovalCount = 0;
   const monthlyRevenueCents = 0;
 
@@ -194,6 +204,7 @@ export default async function AdminDashboardPage() {
       badge: pendingInvitationCount > 0 ? `${pendingInvitationCount} offene Einladung${pendingInvitationCount === 1 ? "" : "en"}` : undefined,
     },
     {
+      href: "/admin/datenimporte",
       title: "Datenimporte",
       description: "Hochgeladene Excel-Dateien prüfen und verarbeiten.",
       icon: UploadIcon,
@@ -304,6 +315,14 @@ export default async function AdminDashboardPage() {
       createdAt: f.createdAt,
       icon: ChatIcon,
       color: "rose",
+    })),
+    ...recentDataImports.map((i) => ({
+      id: `import-${i.id}`,
+      label: "Datenimport hochgeladen",
+      detail: `${i.company.name} · ${periodLabel(i.periodMonth, i.periodYear)}`,
+      createdAt: i.createdAt,
+      icon: UploadIcon,
+      color: "slate",
     })),
   ]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())

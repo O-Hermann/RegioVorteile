@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { COMPANY_MANAGER_ROLES } from "@/lib/company";
+import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -118,6 +118,37 @@ export async function assertCanManageCompany(companyId: string) {
   });
   if (!membership) {
     redirect("/arbeitgeber/dashboard?error=forbidden");
+  }
+  return { session, user, membership };
+}
+
+// Autorisierungs-Check speziell fuer den Datenimport-Upload (Phase 3):
+// Geschaeftsfuehrung und Betrachter duerfen die Importhistorie sehen, aber
+// keine neuen Dateien hochladen. Wird von der Server Action UND von der
+// Wizard-Seite genutzt, damit ein direkter Aufruf der Upload-Route serverseitig
+// verweigert wird, nicht nur der Button in der UI versteckt ist.
+export async function assertCanUploadDataImport(companyId: string) {
+  const session = await getSession();
+  if (!session.userId) {
+    redirect("/arbeitgeber/login");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || user.status !== "ACTIVE") {
+    redirect("/arbeitgeber/login");
+  }
+
+  const membership = await prisma.companyMembership.findFirst({
+    where: {
+      userId: user.id,
+      companyId,
+      status: "ACTIVE",
+      company: { status: "ACTIVE" },
+      role: { in: COMPANY_IMPORT_UPLOAD_ROLES },
+    },
+  });
+  if (!membership) {
+    redirect("/arbeitgeber/dashboard/datenimporte?error=forbidden");
   }
   return { session, user, membership };
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
+import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
@@ -14,6 +15,7 @@ import {
   UploadIcon,
   AlertTriangleIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
 } from "@/components/icons";
 
 // Gleiche hochwertige Karten-Basis wie im Admin-Dashboard, hier bewusst
@@ -127,12 +129,21 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const memberships = await prisma.companyMembership.findMany({
-    where: { companyId: company.id },
-    orderBy: { invitedAt: "desc" },
-    take: 10,
-    include: { user: true },
-  });
+  const [memberships, dataImportCount, pendingMappingCount, recentDataImports] = await Promise.all([
+    prisma.companyMembership.findMany({
+      where: { companyId: company.id },
+      orderBy: { invitedAt: "desc" },
+      take: 10,
+      include: { user: true },
+    }),
+    prisma.dataImport.count({ where: { companyId: company.id } }),
+    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+    prisma.dataImport.findMany({
+      where: { companyId: company.id },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+  ]);
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
@@ -162,19 +173,34 @@ export default async function ArbeitgeberDashboardPage() {
     { label: "Offene Datenfehler", value: "—", icon: AlertTriangleIcon, color: "amber" },
   ];
 
-  // Handlungsbedarf: In dieser Phase existiert noch kein Datenimport-Modell,
-  // daher ist "noch kein Import vorhanden" die einzige Aussage, die sich
-  // sicher aus dem tatsaechlichen Datenstand ableiten laesst.
-  const actionItems = [
-    {
-      id: "no-import",
-      label: "Noch keine Unternehmensdaten importiert.",
-      icon: UploadIcon,
-      color: "amber",
-      href: "/arbeitgeber/dashboard/datenimporte",
-      cta: "Import starten",
-    },
-  ];
+  // Handlungsbedarf: solange kein Import existiert, auf den Upload
+  // hinweisen; sobald mindestens einer wartet, auf die noch ausstehende
+  // Spaltenzuordnung (Phase 4) - beides aus echten DataImport-Zahlen
+  // abgeleitet, keine erfundenen Werte.
+  const actionItems =
+    dataImportCount === 0
+      ? [
+          {
+            id: "no-import",
+            label: "Noch keine Unternehmensdaten importiert.",
+            icon: UploadIcon,
+            color: "amber",
+            href: "/arbeitgeber/dashboard/datenimporte/neu",
+            cta: "Import starten",
+          },
+        ]
+      : pendingMappingCount > 0
+        ? [
+            {
+              id: "pending-mapping",
+              label: `${pendingMappingCount} ${pendingMappingCount === 1 ? "Datenimport wartet" : "Datenimporte warten"} auf Zuordnung`,
+              icon: UploadIcon,
+              color: "amber",
+              href: "/arbeitgeber/dashboard/datenimporte",
+              cta: "Ansehen",
+            },
+          ]
+        : [];
 
   type ActivityItem = {
     id: string;
@@ -205,6 +231,16 @@ export default async function ArbeitgeberDashboardPage() {
         color: "emerald",
       });
     }
+  }
+  for (const i of recentDataImports) {
+    activity.push({
+      id: `import-${i.id}`,
+      label: "Datenimport hochgeladen",
+      detail: `${DATA_IMPORT_CATEGORY_LABELS[i.category]} · ${periodLabel(i.periodMonth, i.periodYear)}`,
+      createdAt: i.createdAt,
+      icon: UploadIcon,
+      color: "ink",
+    });
   }
   const recentActivity = activity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 4);
 
@@ -243,17 +279,37 @@ export default async function ArbeitgeberDashboardPage() {
             </span>
             <div className="relative flex flex-col items-center gap-1.5 text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">Datenstatus</p>
-              <p className="font-display text-2xl font-extrabold leading-tight">Noch keine Daten</p>
-              <p className="text-sm text-white/70">Es wurde noch kein Monatsimport verarbeitet.</p>
-              <Link
-                href="/arbeitgeber/dashboard/datenimporte"
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink-800 hover:bg-white/90 transition-colors"
-              >
-                Ersten Datenimport starten
-              </Link>
-              <p className="text-[11px] text-white/60">
-                Excel- oder CSV-Datei für einen Monatszeitraum hochladen.
-              </p>
+              {dataImportCount === 0 ? (
+                <>
+                  <p className="font-display text-2xl font-extrabold leading-tight">Noch keine Daten</p>
+                  <p className="text-sm text-white/70">Es wurde noch kein Monatsimport verarbeitet.</p>
+                  <Link
+                    href="/arbeitgeber/dashboard/datenimporte/neu"
+                    className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink-800 hover:bg-white/90 transition-colors"
+                  >
+                    Ersten Datenimport starten
+                  </Link>
+                  <p className="text-[11px] text-white/60">
+                    Excel- oder CSV-Datei für einen Monatszeitraum hochladen.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-display text-2xl font-extrabold leading-tight">
+                    {dataImportCount} {dataImportCount === 1 ? "Datei" : "Dateien"} hochgeladen
+                  </p>
+                  <p className="text-sm text-white/70">Spaltenzuordnung steht noch aus.</p>
+                  <Link
+                    href="/arbeitgeber/dashboard/datenimporte"
+                    className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink-800 hover:bg-white/90 transition-colors"
+                  >
+                    Datenimport ansehen
+                  </Link>
+                  <p className="text-[11px] text-white/60">
+                    Die Verarbeitung zu Kennzahlen folgt in einem späteren Schritt.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -346,6 +402,14 @@ export default async function ArbeitgeberDashboardPage() {
         <div className="flex min-w-0 flex-col gap-4 min-[1400px]:min-h-0">
           <div className={`${panelClass} flex flex-1 basis-0 flex-col !p-5 min-[1400px]:min-h-0`}>
             <h3 className="shrink-0 font-display text-lg font-semibold tracking-tight text-sand-900">Handlungsbedarf</h3>
+            {actionItems.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-2.5 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/30 to-emerald-500/10 text-emerald-600 dark:text-emerald-200 border border-emerald-400/30 dark:border-emerald-300/25 ring-1 ring-inset ring-white/10">
+                  <CheckCircleIcon className="h-5 w-5" />
+                </span>
+                <p className={`text-sm ${secondaryTextClass}`}>Aktuell besteht kein Handlungsbedarf.</p>
+              </div>
+            ) : (
             <ul className="mt-2 min-h-0 flex-1 divide-y divide-card-border/60 dark:divide-white/5">
               {actionItems.map((item) => (
                 <li key={item.id} className="-mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3">
@@ -366,6 +430,7 @@ export default async function ArbeitgeberDashboardPage() {
                 </li>
               ))}
             </ul>
+            )}
           </div>
 
           <div className={`${panelClass} flex flex-1 basis-0 flex-col gap-1 !p-5 min-[1400px]:min-h-0`}>
