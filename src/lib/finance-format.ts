@@ -75,3 +75,9 @@ export function shortMonthLabel(period: MonthPeriod): string {
   const month = MONTH_LABELS_DE[period.periodMonth - 1]?.slice(0, 3) ?? String(period.periodMonth);
   return `${month} ${String(period.periodYear).slice(-2)}`;
 }
+
+// "YYYY-MM" fuer den ?month=-Query-Parameter der Finanzübersicht - von der
+// Seite (Server) UND vom Monatswaehler (Client) genutzt, daher hier zentral.
+export function monthParamValue(p: MonthPeriod): string {
+  return `${p.periodYear}-${String(p.periodMonth).padStart(2, "0")}`;
+}

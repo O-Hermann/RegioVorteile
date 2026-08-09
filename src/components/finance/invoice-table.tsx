@@ -18,6 +18,10 @@ export type InvoiceRowView = {
   status: string | null;
   statusRaw: string | null;
   dueDate: Date | null;
+  // Serverseitig berechneter Anzeigestatus (Phase 5.2.1) - z.B. eine als
+  // OPEN importierte, inzwischen faellige Rechnung erscheint hier als
+  // OVERDUE. Fuer den Badge WIRD dieser Wert verwendet, nicht "status".
+  displayStatus: string | null;
 };
 
 const PAGE_SIZE = 10;
@@ -97,7 +101,7 @@ export function InvoiceTable({ invoices }: { invoices: InvoiceRowView[] }) {
                   {formatEuroDetailed(inv.grossAmount)}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <StatusBadge status={inv.status} statusRaw={inv.statusRaw} />
+                  <StatusBadge status={inv.displayStatus} statusRaw={inv.statusRaw} />
                 </td>
                 <td className={`whitespace-nowrap px-4 py-3 ${importSecondaryTextClass}`}>
                   {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString("de-DE") : "—"}

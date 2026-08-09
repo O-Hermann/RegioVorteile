@@ -18,6 +18,7 @@ import { ModulePlaceholder } from "@/components/module-placeholder";
 import { RevenueLineChart, type RevenueHistoryPoint } from "@/components/finance/revenue-line-chart";
 import { CustomerRevenueList, type CustomerRevenueView } from "@/components/finance/customer-revenue-list";
 import { InvoiceTable, type InvoiceRowView } from "@/components/finance/invoice-table";
+import { MonthSelect } from "@/components/finance/month-select";
 import { TrendingUpIcon, FileTextIcon, UsersIcon, ActivityIcon } from "@/components/icons";
 
 const CHANGE_TONE_CLASSES: Record<"positive" | "negative" | "neutral", string> = {
@@ -53,10 +54,6 @@ function parseMonthParam(value: string | undefined): MonthPeriod | null {
 
 function sameMonth(a: MonthPeriod, b: MonthPeriod): boolean {
   return a.periodMonth === b.periodMonth && a.periodYear === b.periodYear;
-}
-
-function monthParamValue(p: MonthPeriod): string {
-  return `${p.periodYear}-${String(p.periodMonth).padStart(2, "0")}`;
 }
 
 export default async function FinanzuebersichtPage({
@@ -113,6 +110,7 @@ export default async function FinanzuebersichtPage({
     status: i.status,
     statusRaw: i.statusRaw,
     dueDate: i.dueDate,
+    displayStatus: i.displayStatus,
   }));
 
   const kpis = [
@@ -163,29 +161,7 @@ export default async function FinanzuebersichtPage({
             Ihre wichtigsten Finanzkennzahlen und deren Entwicklung im Überblick.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className="font-display text-lg font-semibold text-sand-900 dark:text-cockpit-heading">
-            {periodLabel(selectedPeriod.periodMonth, selectedPeriod.periodYear)}
-          </span>
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {availableMonths.map((m) => {
-              const active = sameMonth(m, selectedPeriod);
-              return (
-                <Link
-                  key={monthParamValue(m)}
-                  href={`?month=${monthParamValue(m)}`}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                    active
-                      ? "bg-ink-600 text-white dark:bg-cockpit-accent dark:text-white"
-                      : "border border-card-border text-sand-700 hover:border-ink-300 hover:text-ink-700 dark:border-white/15 dark:text-cockpit-text dark:hover:border-cockpit-accent-light/50 dark:hover:text-cockpit-accent-light"
-                  }`}
-                >
-                  {periodLabel(m.periodMonth, m.periodYear)}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <MonthSelect availableMonths={availableMonths} selectedPeriod={selectedPeriod} />
       </div>
 
       {/* Oberste KPI-Zeile (Punkt 4) */}
@@ -244,10 +220,9 @@ export default async function FinanzuebersichtPage({
       {/* Forderungsübersicht (Punkt 7) */}
       <div className={`!p-5 ${importPanelClass}`}>
         <h2 className="font-display text-lg font-semibold text-sand-900 dark:text-cockpit-heading">Offene Forderungen</h2>
-        <p className={`mt-1 max-w-2xl text-sm ${importSecondaryTextClass}`}>
-          Grundlage sind ausschließlich Rechnungen mit dem beim Datenimport zugeordneten Zahlungsstatus &bdquo;Offen&ldquo;
-          oder &bdquo;Überfällig&ldquo;. Bezahlte, teilbezahlte und stornierte Rechnungen sind hier nicht enthalten. Der
-          Status wird unverändert aus dem Import übernommen, nicht anhand des Fälligkeitsdatums neu bewertet.
+        <p className={`mt-1 text-sm ${importSecondaryTextClass}`}>Noch nicht bezahlte Rechnungen des ausgewählten Monats.</p>
+        <p className="mt-0.5 text-xs text-sand-400 dark:text-cockpit-text-weak">
+          Überfällige Rechnungen werden anhand ihres Fälligkeitsdatums hervorgehoben.
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-card-border/70 p-4 dark:border-white/10">

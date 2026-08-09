@@ -91,6 +91,12 @@ export type InvoiceRow = {
   status: string | null;
   statusRaw: string | null;
   dueDate: Date | null;
+  // Phase 5.2.1: rein abgeleiteter Anzeigestatus (siehe
+  // getEffectiveReceivableStatus) - NIE der gespeicherte Wert selbst. Fuer
+  // die Statusspalte/Badge der Rechnungstabelle, damit dort dieselbe Regel
+  // gilt wie in der Offen/Ueberfaellig-Aufteilung, nicht eine zweite,
+  // unabhaengige Client-Logik.
+  displayStatus: string | null;
 };
 
 export type MonthFinanceDetail = {
@@ -166,12 +172,53 @@ function normalizeCustomerName(name: string): string {
   return name.trim().toLowerCase();
 }
 
+// Phase 5.2.1 (Punkt 1/2/3): abgeleiteter, NICHT gespeicherter Anzeigestatus
+// fuer Forderungen. Der importierte/gespeicherte Status (r.status) wird an
+// keiner Stelle veraendert - diese Funktion liest ihn nur und liefert
+// zusaetzlich einen Anzeigewert zurueck, der eine als OPEN importierte, aber
+// laengst faellige Rechnung als UEBERFAELLIG ausweist. PAID/CANCELED/
+// PARTIALLY_PAID/OVERDUE bleiben unangetastet - nur OPEN + verstrichenes
+// Faelligkeitsdatum wird zu OVERDUE hochgestuft.
+//
+// "Ueberfaellig" beschreibt bewusst den AKTUELLEN, heutigen Realzustand einer
+// noch offenen Rechnung, nicht eine rekonstruierte Momentaufnahme zum Ende
+// des betrachteten Monats. Beispiel: beim Betrachten von Juli 2026 am
+// 09.08.2026 zeigt eine am 04.08.2026 faellige Rechnung bewusst "Ueberfaellig",
+// obwohl das nach dem Juli-Zeitraum liegt - das ist eine aktuelle
+// Management-Sicht auf offene Forderungen, keine historische Stichtagsicht.
+//
+// Datumsvergleich erfolgt rein auf Kalendertag-Basis, ohne Uhrzeit-Effekte:
+// - dueDate wird beim Import als UTC-Mitternacht des gemeinten Kalendertags
+//   gespeichert (siehe normalizeDateFromString in import-fields.ts) - die
+//   UTC-Komponenten SIND bereits der korrekte Kalendertag.
+// - "Heute" wird bewusst als Kalendertag in der deutschen Zeitzone bestimmt
+//   (Zielgruppe der Anwendung), nicht als Server-UTC-Tag, damit der Tag nicht
+//   durch die Serverzeitzone verschoben wird.
+function dueDateCalendarKey(dueDate: Date): string {
+  return `${dueDate.getUTCFullYear()}-${String(dueDate.getUTCMonth() + 1).padStart(2, "0")}-${String(dueDate.getUTCDate()).padStart(2, "0")}`;
+}
+
+const APP_TIME_ZONE = "Europe/Berlin";
+
+function todayCalendarKey(now: Date): string {
+  // "en-CA" liefert direkt das Format YYYY-MM-DD, lexikographisch vergleichbar.
+  return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIME_ZONE }).format(now);
+}
+
+export function getEffectiveReceivableStatus(status: string | null, dueDate: Date | null, now: Date): string | null {
+  if (status !== "OPEN") return status;
+  if (!dueDate) return status;
+  return dueDateCalendarKey(dueDate) < todayCalendarKey(now) ? "OVERDUE" : status;
+}
+
 function sumDecimal(values: (Prisma.Decimal | null)[]): Prisma.Decimal {
   return values.reduce<Prisma.Decimal>((sum, v) => (v ? sum.plus(v) : sum), new Prisma.Decimal(0));
 }
 
+type FinanceRecordRowWithDisplayStatus = FinanceRecordRow & { displayStatus: string | null };
+
 type MonthAggregate = {
-  dedupedRows: FinanceRecordRow[];
+  dedupedRows: FinanceRecordRowWithDisplayStatus[];
   revenue: Prisma.Decimal;
   receivablesOpen: ReceivablesBucket;
   receivablesOverdue: ReceivablesBucket;
@@ -182,22 +229,27 @@ type MonthAggregate = {
 // Gemeinsame Aggregationsfunktion fuer genau EINEN Monat - wird sowohl von
 // getCompanyMetrics (Dashboard) als auch von getMonthFinanceDetail
 // (Finanzübersicht) verwendet, damit beide Seiten fuer denselben Monat immer
-// exakt dieselben Summen liefern (Punkt 15).
-function computeMonthAggregate(rows: FinanceRecordRow[]): MonthAggregate {
-  const dedupedRows = dedupeByReference(rows);
+// exakt dieselben Summen liefern (Punkt 15). "now" wird einmal pro Aufruf von
+// aussen hereingereicht (nicht pro Zeile neu bestimmt), damit alle Zeilen
+// einer Berechnung denselben Stichtag verwenden.
+function computeMonthAggregate(rows: FinanceRecordRow[], now: Date): MonthAggregate {
+  const dedupedRows: FinanceRecordRowWithDisplayStatus[] = dedupeByReference(rows).map((r) => ({
+    ...r,
+    displayStatus: getEffectiveReceivableStatus(r.status, r.dueDate, now),
+  }));
   // Punkt 3: stornierte Datensaetze zaehlen nicht zum Umsatz.
   const nonCanceled = dedupedRows.filter((r) => r.status !== "CANCELED");
   const revenue = sumDecimal(nonCanceled.map((r) => r.netAmount));
 
-  // Punkt 4/7: offene Forderungen = Bruttobetrag getrennt nach OPEN/OVERDUE.
-  // PARTIALLY_PAID wird bewusst NICHT als voller Bruttobetrag gezaehlt, da
-  // kein gemapptes Feld fuer den tatsaechlichen offenen Restbetrag existiert.
-  // Der vorhandene Status (aus der Phase-4-Normalisierung) wird hier nur
-  // gelesen, NIE anhand des Faelligkeitsdatums nachtraeglich umklassifiziert -
-  // ein als OPEN importierter, inzwischen ueberfaelliger Datensatz bleibt
-  // bewusst OPEN, damit die Datenquelle nachvollziehbar bleibt (Punkt 7).
-  const openRows = dedupedRows.filter((r) => r.status === "OPEN");
-  const overdueRows = dedupedRows.filter((r) => r.status === "OVERDUE");
+  // Punkt 4/7 (Phase 5.2.1 angepasst): offene Forderungen = Bruttobetrag,
+  // aufgeteilt nach dem ABGELEITETEN Anzeigestatus (displayStatus), nicht mehr
+  // nach dem reinen importierten Status. Die SUMME beider Buckets aendert
+  // sich dadurch nicht (jede OPEN/OVERDUE-Zeile faellt weiterhin in genau
+  // einen der beiden Buckets) - nur die Aufteilung wird faelligkeitsbewusst.
+  // PARTIALLY_PAID bleibt unveraendert aussen vor, da kein gemapptes Feld fuer
+  // den tatsaechlichen offenen Restbetrag existiert.
+  const openRows = dedupedRows.filter((r) => r.displayStatus === "OPEN");
+  const overdueRows = dedupedRows.filter((r) => r.displayStatus === "OVERDUE");
   const receivablesOpen = { count: openRows.length, amount: sumDecimal(openRows.map((r) => r.grossAmount)) };
   const receivablesOverdue = { count: overdueRows.length, amount: sumDecimal(overdueRows.map((r) => r.grossAmount)) };
 
@@ -218,8 +270,8 @@ function computeMonthAggregate(rows: FinanceRecordRow[]): MonthAggregate {
   return { dedupedRows, revenue, receivablesOpen, receivablesOverdue, customerRevenue, invoiceCount: nonCanceled.length };
 }
 
-function computeMonthMetrics(rows: FinanceRecordRow[]) {
-  const agg = computeMonthAggregate(rows);
+function computeMonthMetrics(rows: FinanceRecordRow[], now: Date) {
+  const agg = computeMonthAggregate(rows, now);
   return {
     revenue: agg.revenue,
     openReceivables: agg.receivablesOpen.amount.plus(agg.receivablesOverdue.amount),
@@ -228,6 +280,7 @@ function computeMonthMetrics(rows: FinanceRecordRow[]) {
 }
 
 export async function getCompanyMetrics(companyId: string): Promise<CompanyMetrics> {
+  const now = new Date();
   const [financeRecords, importedMonthGroups, openImportErrorCount] = await Promise.all([
     // Ausschliesslich Records aus PROCESSED FINANCE-Importen - nie aus der
     // Originaldatei/Vorschau, nie aus nicht abgeschlossenen Imports.
@@ -266,12 +319,12 @@ export async function getCompanyMetrics(companyId: string): Promise<CompanyMetri
 
   const currentPeriod = financePeriods[0]?.period ?? null;
   const previousPeriod = financePeriods[1]?.period ?? null;
-  const currentMetrics = financePeriods[0] ? computeMonthMetrics(financePeriods[0].rows) : null;
-  const previousMetrics = financePeriods[1] ? computeMonthMetrics(financePeriods[1].rows) : null;
+  const currentMetrics = financePeriods[0] ? computeMonthMetrics(financePeriods[0].rows, now) : null;
+  const previousMetrics = financePeriods[1] ? computeMonthMetrics(financePeriods[1].rows, now) : null;
 
   const revenueHistory = [...financePeriods]
     .sort((a, b) => comparePeriodsDesc(b.period, a.period)) // aufsteigend
-    .map(({ period, rows }) => ({ period, revenue: computeMonthMetrics(rows).revenue }));
+    .map(({ period, rows }) => ({ period, revenue: computeMonthMetrics(rows, now).revenue }));
 
   return {
     currentPeriod,
@@ -352,8 +405,9 @@ export async function getMonthFinanceDetail(companyId: string, period: MonthPeri
     ? records.filter((r) => r.dataImport.periodMonth === previousPeriod.periodMonth && r.dataImport.periodYear === previousPeriod.periodYear)
     : [];
 
-  const current = computeMonthAggregate(currentRows);
-  const previous = previousPeriod ? computeMonthAggregate(previousRows) : null;
+  const now = new Date();
+  const current = computeMonthAggregate(currentRows, now);
+  const previous = previousPeriod ? computeMonthAggregate(previousRows, now) : null;
 
   const receivablesTotal = current.receivablesOpen.amount.plus(current.receivablesOverdue.amount);
   const previousReceivablesTotal = previous ? previous.receivablesOpen.amount.plus(previous.receivablesOverdue.amount) : null;
@@ -377,6 +431,7 @@ export async function getMonthFinanceDetail(companyId: string, period: MonthPeri
       status: r.status,
       statusRaw: r.statusRaw,
       dueDate: r.dueDate,
+      displayStatus: r.displayStatus,
     }))
     .sort((a, b) => (b.invoiceDate?.getTime() ?? 0) - (a.invoiceDate?.getTime() ?? 0));
 
