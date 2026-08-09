@@ -1,17 +1,39 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import type { MonthPeriod, MetricChange } from "@/lib/finance-format";
 
-// Zentrale, serverseitige Aggregationsschicht fuer Phase 5.1 (Punkt 13):
+// Zentrale, serverseitige Aggregationsschicht fuer Phase 5.1/5.2 (Punkt 13):
 // UI-Komponenten stellen ausschliesslich die hier berechneten Werte dar,
 // keine Kennzahlenlogik direkt in Komponenten. Grundsatz: nur Werte, die sich
 // eindeutig und nachvollziehbar aus tatsaechlich PROCESSED-Importen und deren
 // strukturierten DataImportRecord-Zeilen ergeben - niemals aus der
 // Originaldatei/Vorschau, niemals geschaetzt.
+//
+// Reine Formatierungshilfen (formatEuro*, formatChange, ...) leben in
+// lib/finance-format.ts (kein "server-only", kein Prisma-Import), damit
+// Client-Komponenten (Chart, Rechnungstabelle) sie direkt importieren
+// koennen - ein Named-Import aus DIESEM Modul wuerde in einer Client-
+// Komponente immer am "server-only"-Guard scheitern, unabhaengig davon,
+// welcher konkrete Export genutzt wird. Hier werden sie fuer bestehende
+// serverseitige Importe (Dashboard) unveraendert weiter re-exportiert.
+// computeChange bleibt bewusst HIER (nicht in finance-format.ts): es
+// rechnet praezise mit Prisma.Decimal und wird ausschliesslich serverseitig
+// aufgerufen.
+export { formatEuroCompact, formatEuroDetailed, formatChange, changeTone, formatPercentShare, shortMonthLabel } from "@/lib/finance-format";
+export type { MonthPeriod, MetricChange } from "@/lib/finance-format";
 
-export type MonthPeriod = { periodMonth: number; periodYear: number };
-
-export type MetricChange = { kind: "value"; percent: number } | { kind: "new" } | { kind: "none" };
+// Punkt 9 (Phase 5.1): robuste Prozentberechnung ohne Division durch 0.
+// Vorheriger Wert 0 und aktueller Wert > 0 => "Neu". Beide 0 => "Kein
+// Vergleichswert".
+export function computeChange(current: Prisma.Decimal | number, previous: Prisma.Decimal | number): MetricChange {
+  const c = new Prisma.Decimal(current);
+  const p = new Prisma.Decimal(previous);
+  if (p.isZero()) {
+    return c.isZero() ? { kind: "none" } : { kind: "new" };
+  }
+  return { kind: "value", percent: c.minus(p).dividedBy(p).times(100).toNumber() };
+}
 
 export type CompanyMetrics = {
   currentPeriod: MonthPeriod | null;
@@ -37,12 +59,66 @@ export type CompanyMetrics = {
 };
 
 type FinanceRecordRow = {
+  id: string;
   referenceNumber: string | null;
   name: string | null;
   status: string | null;
+  statusRaw: string | null;
   netAmount: Prisma.Decimal | null;
   grossAmount: Prisma.Decimal | null;
+  primaryDate: Date | null;
+  dueDate: Date | null;
   dataImport: { periodMonth: number; periodYear: number; processedAt: Date | null };
+};
+
+// Phase 5.2: Detailwerte fuer einen einzelnen Finanzmonat (Finanzübersicht-
+// Seite). Nutzt bewusst dieselbe Zeilenbasis/Dedup-/Filterlogik wie
+// getCompanyMetrics (computeMonthAggregate), damit Dashboard und
+// Finanzübersicht fuer denselben Monat garantiert auf identische Summen
+// kommen (Punkt 15), statt eine zweite, parallele Berechnung zu pflegen.
+
+export type ReceivablesBucket = { count: number; amount: Prisma.Decimal };
+
+export type CustomerRevenue = { customer: string; revenue: Prisma.Decimal; sharePercent: number };
+
+export type InvoiceRow = {
+  id: string;
+  referenceNumber: string | null;
+  invoiceDate: Date | null;
+  customer: string | null;
+  netAmount: Prisma.Decimal | null;
+  grossAmount: Prisma.Decimal | null;
+  status: string | null;
+  statusRaw: string | null;
+  dueDate: Date | null;
+};
+
+export type MonthFinanceDetail = {
+  period: MonthPeriod;
+  previousPeriod: MonthPeriod | null;
+
+  revenue: Prisma.Decimal;
+  revenueChange: MetricChange | null;
+
+  receivablesOpen: ReceivablesBucket;
+  receivablesOverdue: ReceivablesBucket;
+  receivablesTotal: Prisma.Decimal;
+  receivablesChange: MetricChange | null;
+
+  customersWithRevenue: number;
+  customersWithRevenueChange: MetricChange | null;
+
+  invoiceCount: number;
+
+  // Alle Kunden mit Umsatz im Monat, absteigend sortiert - die UI zeigt
+  // standardmaessig nur die ersten 5 (Punkt 6), die vollstaendige Liste steht
+  // fuer "Alle anzeigen" bereit.
+  customerRevenue: CustomerRevenue[];
+
+  // Alle deduplizierten Datensaetze des Monats INKLUSIVE stornierter (fuer
+  // die Rechnungstabelle, Punkt 8 - "Storniert" ist dort ein regulaerer
+  // Badge-Zustand), absteigend nach Rechnungsdatum sortiert.
+  invoices: InvoiceRow[];
 };
 
 function periodKey(p: MonthPeriod): string {
@@ -94,39 +170,61 @@ function sumDecimal(values: (Prisma.Decimal | null)[]): Prisma.Decimal {
   return values.reduce<Prisma.Decimal>((sum, v) => (v ? sum.plus(v) : sum), new Prisma.Decimal(0));
 }
 
-// Punkt 9: robuste Prozentberechnung ohne Division durch 0. Vorheriger Wert
-// 0 und aktueller Wert > 0 => "Neu" (es gibt jetzt erstmals einen Wert, wo
-// vorher keiner war). Beide 0 => "Kein Vergleichswert" (nichts veraendert
-// sich, ein Prozentwert waere bedeutungslos).
-export function computeChange(current: Prisma.Decimal | number, previous: Prisma.Decimal | number): MetricChange {
-  const c = new Prisma.Decimal(current);
-  const p = new Prisma.Decimal(previous);
-  if (p.isZero()) {
-    return c.isZero() ? { kind: "none" } : { kind: "new" };
+type MonthAggregate = {
+  dedupedRows: FinanceRecordRow[];
+  revenue: Prisma.Decimal;
+  receivablesOpen: ReceivablesBucket;
+  receivablesOverdue: ReceivablesBucket;
+  customerRevenue: Map<string, { displayName: string; revenue: Prisma.Decimal }>;
+  invoiceCount: number;
+};
+
+// Gemeinsame Aggregationsfunktion fuer genau EINEN Monat - wird sowohl von
+// getCompanyMetrics (Dashboard) als auch von getMonthFinanceDetail
+// (Finanzübersicht) verwendet, damit beide Seiten fuer denselben Monat immer
+// exakt dieselben Summen liefern (Punkt 15).
+function computeMonthAggregate(rows: FinanceRecordRow[]): MonthAggregate {
+  const dedupedRows = dedupeByReference(rows);
+  // Punkt 3: stornierte Datensaetze zaehlen nicht zum Umsatz.
+  const nonCanceled = dedupedRows.filter((r) => r.status !== "CANCELED");
+  const revenue = sumDecimal(nonCanceled.map((r) => r.netAmount));
+
+  // Punkt 4/7: offene Forderungen = Bruttobetrag getrennt nach OPEN/OVERDUE.
+  // PARTIALLY_PAID wird bewusst NICHT als voller Bruttobetrag gezaehlt, da
+  // kein gemapptes Feld fuer den tatsaechlichen offenen Restbetrag existiert.
+  // Der vorhandene Status (aus der Phase-4-Normalisierung) wird hier nur
+  // gelesen, NIE anhand des Faelligkeitsdatums nachtraeglich umklassifiziert -
+  // ein als OPEN importierter, inzwischen ueberfaelliger Datensatz bleibt
+  // bewusst OPEN, damit die Datenquelle nachvollziehbar bleibt (Punkt 7).
+  const openRows = dedupedRows.filter((r) => r.status === "OPEN");
+  const overdueRows = dedupedRows.filter((r) => r.status === "OVERDUE");
+  const receivablesOpen = { count: openRows.length, amount: sumDecimal(openRows.map((r) => r.grossAmount)) };
+  const receivablesOverdue = { count: overdueRows.length, amount: sumDecimal(overdueRows.map((r) => r.grossAmount)) };
+
+  // Punkt 5/6: eindeutige, nicht stornierte Kunden - Normalisierung nur
+  // trim + Kleinschreibung, keine unsichere Fuzzy-Zusammenfuehrung. Gleich
+  // aggregiert nach Umsatz je Kunde fuer das "Umsatz nach Kunden"-Modul.
+  const customerRevenue = new Map<string, { displayName: string; revenue: Prisma.Decimal }>();
+  for (const r of nonCanceled) {
+    const raw = r.name?.trim();
+    if (!raw) continue;
+    const key = normalizeCustomerName(raw);
+    const amount = r.netAmount ?? new Prisma.Decimal(0);
+    const existing = customerRevenue.get(key);
+    if (existing) existing.revenue = existing.revenue.plus(amount);
+    else customerRevenue.set(key, { displayName: raw, revenue: amount });
   }
-  return { kind: "value", percent: c.minus(p).dividedBy(p).times(100).toNumber() };
+
+  return { dedupedRows, revenue, receivablesOpen, receivablesOverdue, customerRevenue, invoiceCount: nonCanceled.length };
 }
 
 function computeMonthMetrics(rows: FinanceRecordRow[]) {
-  const deduped = dedupeByReference(rows);
-  // Punkt 3: stornierte Datensaetze zaehlen nicht zum Umsatz.
-  const nonCanceled = deduped.filter((r) => r.status !== "CANCELED");
-  const revenue = sumDecimal(nonCanceled.map((r) => r.netAmount));
-  // Punkt 4: offene Forderungen = Bruttobetrag nur bei OPEN/OVERDUE.
-  // PARTIALLY_PAID wird bewusst NICHT als voller Bruttobetrag gezaehlt, da
-  // kein gemapptes Feld fuer den tatsaechlichen offenen Restbetrag existiert.
-  const openReceivables = sumDecimal(
-    deduped.filter((r) => r.status === "OPEN" || r.status === "OVERDUE").map((r) => r.grossAmount),
-  );
-  // Punkt 5: eindeutige, nicht stornierte Kunden - Normalisierung nur
-  // trim + Kleinschreibung, keine unsichere Fuzzy-Zusammenfuehrung.
-  const customers = new Set(
-    nonCanceled
-      .map((r) => r.name?.trim())
-      .filter((n): n is string => !!n)
-      .map(normalizeCustomerName),
-  );
-  return { revenue, openReceivables, customerCount: customers.size };
+  const agg = computeMonthAggregate(rows);
+  return {
+    revenue: agg.revenue,
+    openReceivables: agg.receivablesOpen.amount.plus(agg.receivablesOverdue.amount),
+    customerCount: agg.customerRevenue.size,
+  };
 }
 
 export async function getCompanyMetrics(companyId: string): Promise<CompanyMetrics> {
@@ -136,11 +234,15 @@ export async function getCompanyMetrics(companyId: string): Promise<CompanyMetri
     prisma.dataImportRecord.findMany({
       where: { companyId, dataImport: { status: "PROCESSED", category: "FINANCE" } },
       select: {
+        id: true,
         referenceNumber: true,
         name: true,
         status: true,
+        statusRaw: true,
         netAmount: true,
         grossAmount: true,
+        primaryDate: true,
+        dueDate: true,
         dataImport: { select: { periodMonth: true, periodYear: true, processedAt: true } },
       },
     }),
@@ -197,40 +299,101 @@ export async function getCompanyMetrics(companyId: string): Promise<CompanyMetri
   };
 }
 
-export function formatEuroCompact(value: Prisma.Decimal | null | undefined): string {
-  if (value === null || value === undefined) return "—";
-  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value.toNumber());
+// Alle tatsaechlich vorhandenen PROCESSED-FINANCE-Zeitraeume eines
+// Unternehmens, absteigend sortiert (neuester zuerst) - Grundlage fuer den
+// Monatswaehler der Finanzübersicht (Punkt 3). Nie Monate anbieten, fuer die
+// keine verarbeiteten Finanzdaten existieren.
+export async function getAvailableFinanceMonths(companyId: string): Promise<MonthPeriod[]> {
+  const groups = await prisma.dataImport.groupBy({
+    by: ["periodMonth", "periodYear"],
+    where: { companyId, status: "PROCESSED", category: "FINANCE" },
+  });
+  return groups.map((g) => ({ periodMonth: g.periodMonth, periodYear: g.periodYear })).sort(comparePeriodsDesc);
 }
 
-export function formatEuroDetailed(value: Prisma.Decimal | null | undefined): string {
-  if (value === null || value === undefined) return "—";
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value.toNumber());
+// Detailwerte fuer genau EINEN vom Benutzer gewaehlten Finanzmonat (Punkt 4-8
+// der Finanzübersicht). "period" muss ein tatsaechlich vorhandener PROCESSED-
+// FINANCE-Zeitraum sein (siehe getAvailableFinanceMonths) - fuer einen nicht
+// vorhandenen Zeitraum liefert diese Funktion einfach leere/Null-Werte
+// zurueck, nie Daten eines anderen Unternehmens (companyId filtert immer mit).
+export async function getMonthFinanceDetail(companyId: string, period: MonthPeriod): Promise<MonthFinanceDetail> {
+  const availableMonths = await getAvailableFinanceMonths(companyId);
+  const indexInAvailable = availableMonths.findIndex(
+    (m) => m.periodMonth === period.periodMonth && m.periodYear === period.periodYear,
+  );
+  const previousPeriod = indexInAvailable >= 0 ? (availableMonths[indexInAvailable + 1] ?? null) : null;
+
+  const periodFilters = [period, ...(previousPeriod ? [previousPeriod] : [])].map((p) => ({
+    periodMonth: p.periodMonth,
+    periodYear: p.periodYear,
+  }));
+
+  const records: FinanceRecordRow[] =
+    periodFilters.length === 0
+      ? []
+      : await prisma.dataImportRecord.findMany({
+          where: { companyId, dataImport: { status: "PROCESSED", category: "FINANCE", OR: periodFilters } },
+          select: {
+            id: true,
+            referenceNumber: true,
+            name: true,
+            status: true,
+            statusRaw: true,
+            netAmount: true,
+            grossAmount: true,
+            primaryDate: true,
+            dueDate: true,
+            dataImport: { select: { periodMonth: true, periodYear: true, processedAt: true } },
+          },
+        });
+
+  const currentRows = records.filter((r) => r.dataImport.periodMonth === period.periodMonth && r.dataImport.periodYear === period.periodYear);
+  const previousRows = previousPeriod
+    ? records.filter((r) => r.dataImport.periodMonth === previousPeriod.periodMonth && r.dataImport.periodYear === previousPeriod.periodYear)
+    : [];
+
+  const current = computeMonthAggregate(currentRows);
+  const previous = previousPeriod ? computeMonthAggregate(previousRows) : null;
+
+  const receivablesTotal = current.receivablesOpen.amount.plus(current.receivablesOverdue.amount);
+  const previousReceivablesTotal = previous ? previous.receivablesOpen.amount.plus(previous.receivablesOverdue.amount) : null;
+
+  const customerRevenue: CustomerRevenue[] = [...current.customerRevenue.values()]
+    .sort((a, b) => b.revenue.comparedTo(a.revenue))
+    .map((c) => ({
+      customer: c.displayName,
+      revenue: c.revenue,
+      sharePercent: current.revenue.isZero() ? 0 : c.revenue.dividedBy(current.revenue).times(100).toNumber(),
+    }));
+
+  const invoices: InvoiceRow[] = current.dedupedRows
+    .map((r) => ({
+      id: r.id,
+      referenceNumber: r.referenceNumber,
+      invoiceDate: r.primaryDate,
+      customer: r.name,
+      netAmount: r.netAmount,
+      grossAmount: r.grossAmount,
+      status: r.status,
+      statusRaw: r.statusRaw,
+      dueDate: r.dueDate,
+    }))
+    .sort((a, b) => (b.invoiceDate?.getTime() ?? 0) - (a.invoiceDate?.getTime() ?? 0));
+
+  return {
+    period,
+    previousPeriod,
+    revenue: current.revenue,
+    revenueChange: previous ? computeChange(current.revenue, previous.revenue) : null,
+    receivablesOpen: current.receivablesOpen,
+    receivablesOverdue: current.receivablesOverdue,
+    receivablesTotal,
+    receivablesChange: previous ? computeChange(receivablesTotal, previousReceivablesTotal!) : null,
+    customersWithRevenue: current.customerRevenue.size,
+    customersWithRevenueChange: previous ? computeChange(current.customerRevenue.size, previous.customerRevenue.size) : null,
+    invoiceCount: current.invoiceCount,
+    customerRevenue,
+    invoices,
+  };
 }
 
-export function formatChange(change: MetricChange | null | undefined): string {
-  if (!change) return "—";
-  if (change.kind === "none") return "Kein Vergleichswert";
-  if (change.kind === "new") return "Neu";
-  const formatted = new Intl.NumberFormat("de-DE", {
-    maximumFractionDigits: 1,
-    minimumFractionDigits: 1,
-    signDisplay: "exceptZero",
-  }).format(change.percent);
-  return `${formatted} %`;
-}
-
-// Nicht jede Erhoehung ist positiv (Punkt 8/9): bei offenen Forderungen ist
-// ein Rueckgang die gute Richtung, bei Umsatz/Kunden ein Anstieg.
-export function changeTone(change: MetricChange | null | undefined, direction: "up-good" | "down-good"): "positive" | "negative" | "neutral" {
-  if (!change || change.kind === "none") return "neutral";
-  if (change.kind === "new") return direction === "up-good" ? "positive" : "negative";
-  if (change.percent === 0) return "neutral";
-  const isIncrease = change.percent > 0;
-  const isGood = direction === "up-good" ? isIncrease : !isIncrease;
-  return isGood ? "positive" : "negative";
-}
