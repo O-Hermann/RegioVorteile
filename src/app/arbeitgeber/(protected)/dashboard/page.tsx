@@ -129,21 +129,40 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, recentDataImports] = await Promise.all([
-    prisma.companyMembership.findMany({
-      where: { companyId: company.id },
-      orderBy: { invitedAt: "desc" },
-      take: 10,
-      include: { user: true },
-    }),
-    prisma.dataImport.count({ where: { companyId: company.id } }),
-    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
-    prisma.dataImport.findMany({
-      where: { companyId: company.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-  ]);
+  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, processedMonthGroups, mostRecentProcessed, recentProcessedImports] =
+    await Promise.all([
+      prisma.companyMembership.findMany({
+        where: { companyId: company.id },
+        orderBy: { invitedAt: "desc" },
+        take: 10,
+        include: { user: true },
+      }),
+      prisma.dataImport.count({ where: { companyId: company.id } }),
+      prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      // Phase 4: "Importierte Monate" zaehlt nur tatsaechlich verarbeitete
+      // (PROCESSED) Zeitraeume, dedupliziert nach Monat/Jahr (ein erneut
+      // hochgeladener/verarbeiteter Import fuer denselben Monat zaehlt nicht
+      // doppelt) - siehe Punkt 43.
+      prisma.dataImport.groupBy({
+        by: ["periodMonth", "periodYear"],
+        where: { companyId: company.id, status: "PROCESSED" },
+      }),
+      prisma.dataImport.findFirst({
+        where: { companyId: company.id, status: "PROCESSED" },
+        orderBy: { processedAt: "desc" },
+      }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id, status: "PROCESSED" },
+        orderBy: { processedAt: "desc" },
+        take: 5,
+      }),
+    ]);
+  const processedMonthCount = processedMonthGroups.length;
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
@@ -169,7 +188,7 @@ export default async function ArbeitgeberDashboardPage() {
     { label: "Offene Forderungen", value: "—", icon: FileTextIcon, color: "rose" },
     { label: "Offene Aufträge", value: "—", icon: BriefcaseIcon, color: "slate" },
     { label: "Aktive Kunden", value: "—", icon: UsersIcon, color: "sky" },
-    { label: "Importierte Monate", value: "—", icon: UploadIcon, color: "ink" },
+    { label: "Importierte Monate", value: processedMonthCount > 0 ? String(processedMonthCount) : "—", icon: UploadIcon, color: "ink" },
     { label: "Offene Datenfehler", value: "—", icon: AlertTriangleIcon, color: "amber" },
   ];
 
@@ -242,6 +261,17 @@ export default async function ArbeitgeberDashboardPage() {
       color: "ink",
     });
   }
+  for (const i of recentProcessedImports) {
+    if (!i.processedAt) continue;
+    activity.push({
+      id: `processed-${i.id}`,
+      label: "Datenimport verarbeitet",
+      detail: `${DATA_IMPORT_CATEGORY_LABELS[i.category]} · ${periodLabel(i.periodMonth, i.periodYear)}`,
+      createdAt: i.processedAt,
+      icon: CheckCircleIcon,
+      color: "emerald",
+    });
+  }
   const recentActivity = activity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 4);
 
   return (
@@ -279,7 +309,23 @@ export default async function ArbeitgeberDashboardPage() {
             </span>
             <div className="relative flex flex-col items-center gap-1.5 text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">Datenstatus</p>
-              {dataImportCount === 0 ? (
+              {processedMonthCount > 0 ? (
+                <>
+                  <p className="font-display text-2xl font-extrabold leading-tight">
+                    {processedMonthCount} {processedMonthCount === 1 ? "Monat" : "Monate"} verarbeitet
+                  </p>
+                  <p className="text-sm text-white/70">
+                    {mostRecentProcessed ? periodLabel(mostRecentProcessed.periodMonth, mostRecentProcessed.periodYear) : ""}
+                  </p>
+                  <Link
+                    href="/arbeitgeber/dashboard/datenimporte"
+                    className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink-800 hover:bg-white/90 transition-colors"
+                  >
+                    Datenimport ansehen
+                  </Link>
+                  <p className="text-[11px] text-white/60">Weitere Kennzahlen folgen in einem späteren Schritt.</p>
+                </>
+              ) : dataImportCount === 0 ? (
                 <>
                   <p className="font-display text-2xl font-extrabold leading-tight">Noch keine Daten</p>
                   <p className="text-sm text-white/70">Es wurde noch kein Monatsimport verarbeitet.</p>

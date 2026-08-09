@@ -110,6 +110,32 @@ function parseCsvRows(text: string, delimiter: string): string[][] {
   return rows;
 }
 
+// Phase 4: vollstaendiger Parse fuer die eigentliche Verarbeitung (nicht nur
+// die auf PREVIEW_ROW_LIMIT begrenzte Vorschau) - liefert Kopfzeile getrennt
+// von allen Datenzeilen. Dieselben Haertungs-Limits wie parseCsvPreview
+// gelten unveraendert weiter (parseCsvRows), da beide dieselbe Funktion nutzen.
+export type SpreadsheetFullData = {
+  header: string[];
+  rows: string[][]; // ausschliesslich Datenzeilen, keine Kopfzeile
+};
+
+export function parseCsvFull(bytes: Uint8Array): SpreadsheetFullData {
+  if (bytes.length === 0) {
+    throw new ImportParseError("Die Datei ist leer.");
+  }
+  const text = decodeCsvBytes(bytes);
+  if (text.trim() === "") {
+    throw new ImportParseError("Die Datei enthält keine lesbaren Daten.");
+  }
+  const delimiter = detectDelimiter(text);
+  const allRows = parseCsvRows(text, delimiter);
+  if (allRows.length === 0) {
+    throw new ImportParseError("Die CSV-Datei konnte nicht gelesen werden.");
+  }
+  const [header, ...rows] = allRows;
+  return { header: clampRow(header), rows: rows.map(clampRow) };
+}
+
 export function parseCsvPreview(bytes: Uint8Array): SpreadsheetPreview {
   if (bytes.length === 0) {
     throw new ImportParseError("Die Datei ist leer.");

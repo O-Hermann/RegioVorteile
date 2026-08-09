@@ -101,6 +101,92 @@ export async function parseExcelPreviewServer(
   };
 }
 
+// Phase 4: Rohwert-Typ fuer die eigentliche Verarbeitung - anders als die
+// Vorschau (stringifyExcelCell) wird hier der native Zellwert erhalten, damit
+// Zahlen/Daten, die Excel bereits typisiert gespeichert hat, verlustfrei
+// normalisiert werden koennen statt sie erst in Text und zurueck zu wandeln.
+export type ExcelCellRaw = string | number | Date | null;
+
+export type SpreadsheetFullRawData = {
+  header: string[];
+  rows: ExcelCellRaw[][]; // ausschliesslich Datenzeilen, keine Kopfzeile
+};
+
+function extractExcelCellRaw(value: unknown): ExcelCellRaw {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === "number" || typeof value === "string") return value;
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    // Formel-Zelle: ausschliesslich der zuletzt von Excel gespeicherte
+    // Ergebniswert wird gelesen (obj.result) - obj.formula wird hier
+    // absichtlich nie gelesen oder ausgewertet.
+    if ("result" in obj) return extractExcelCellRaw(obj.result);
+    return stringifyExcelCell(value) || null;
+  }
+  return stringifyExcelCell(value) || null;
+}
+
+// Vollstaendiger, server-only Parse fuer die eigentliche Verarbeitung
+// (Punkt 28: die Originaldatei wird fuer die Verarbeitung erneut serverseitig
+// gelesen, nie die Browser-Vorschau uebernommen). Dieselben Limits
+// (MAX_IMPORT_SHEETS/ROWS/COLUMNS/CELLS) wie beim Vorschau-Parse gelten
+// unveraendert weiter.
+export async function parseExcelFullServer(buffer: Buffer, requestedSheetName?: string): Promise<SpreadsheetFullRawData> {
+  const workbook = new ExcelJS.Workbook();
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await workbook.xlsx.load(buffer as any);
+  } catch {
+    throw new ImportParseError("Die Excel-Datei ist beschädigt oder konnte nicht gelesen werden.");
+  }
+  const worksheets = workbook.worksheets;
+  if (worksheets.length === 0) {
+    throw new ImportParseError("Die Excel-Datei enthält kein lesbares Tabellenblatt.");
+  }
+  if (worksheets.length > MAX_IMPORT_SHEETS) {
+    throw new ImportParseError(`Die Excel-Datei enthält zu viele Tabellenblätter (maximal ${MAX_IMPORT_SHEETS}).`);
+  }
+
+  let totalCells = 0;
+  for (const ws of worksheets) {
+    if (ws.rowCount > MAX_IMPORT_ROWS) {
+      throw new ImportParseError(
+        `Das Tabellenblatt "${ws.name}" enthält zu viele Zeilen (maximal ${MAX_IMPORT_ROWS.toLocaleString("de-DE")}).`,
+      );
+    }
+    if (ws.columnCount > MAX_IMPORT_COLUMNS) {
+      throw new ImportParseError(`Das Tabellenblatt "${ws.name}" enthält zu viele Spalten (maximal ${MAX_IMPORT_COLUMNS}).`);
+    }
+    totalCells += ws.rowCount * ws.columnCount;
+    if (totalCells > MAX_IMPORT_CELLS) {
+      throw new ImportParseError("Die Datei enthält zu viele Zellen für die Verarbeitung.");
+    }
+  }
+
+  const sheet = requestedSheetName ? worksheets.find((w) => w.name === requestedSheetName) : worksheets[0];
+  if (!sheet) {
+    throw new ImportParseError("Das ausgewählte Tabellenblatt konnte nicht gelesen werden.");
+  }
+  if (sheet.rowCount === 0) {
+    throw new ImportParseError("Das Tabellenblatt enthält keine Daten.");
+  }
+
+  const readRow = (r: number): ExcelCellRaw[] => {
+    const values = sheet.getRow(r).values;
+    const cells = Array.isArray(values) ? values.slice(1) : [];
+    return cells.slice(0, MAX_IMPORT_COLUMNS).map(extractExcelCellRaw);
+  };
+
+  const header = readRow(1).map((c) => (c === null ? "" : String(c)));
+  const rows: ExcelCellRaw[][] = [];
+  for (let r = 2; r <= sheet.rowCount; r++) {
+    rows.push(readRow(r));
+  }
+
+  return { header, rows };
+}
+
 // Gemeinsamer Dispatch fuer die Detailseiten (Unternehmen + Admin): parst
 // bereits gespeicherte, beim Upload einmal erfolgreich validierte Bytes
 // erneut fuer die Anzeige - Limits gelten unveraendert weiter.

@@ -145,7 +145,7 @@ export default async function AdminDashboardPage() {
     prisma.feedback.count({ where: { status: "OPEN" } }),
     prisma.contactRequest.count({ where: { status: "OPEN" } }),
     prisma.dataImport.count({ where: { createdAt: { gte: startOfMonth } } }),
-    prisma.dataImport.count({ where: { status: "FAILED" } }),
+    prisma.dataImport.count({ where: { status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
     prisma.company.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
     prisma.companyMembership.findMany({
       orderBy: { invitedAt: "desc" },

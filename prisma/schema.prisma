@@ -120,12 +120,13 @@ model User {
   lastLoginAt  DateTime?
   createdAt    DateTime      @default(now())
 
-  employer            Employer?
-  passwordResetTokens PasswordResetToken[]
-  memberships         CompanyMembership[]  @relation("MemberUser")
-  sentInvitations     CompanyMembership[]  @relation("InvitedByUser")
-  submittedFeedback   Feedback[]           @relation("FeedbackSubmittedByUser")
-  uploadedDataImports DataImport[]         @relation("DataImportUploadedByUser")
+  employer             Employer?
+  passwordResetTokens  PasswordResetToken[]
+  memberships          CompanyMembership[]  @relation("MemberUser")
+  sentInvitations      CompanyMembership[]  @relation("InvitedByUser")
+  submittedFeedback    Feedback[]           @relation("FeedbackSubmittedByUser")
+  uploadedDataImports  DataImport[]         @relation("DataImportUploadedByUser")
+  processedDataImports DataImport[]         @relation("DataImportProcessedByUser")
 }
 
 model Company {
@@ -134,9 +135,12 @@ model Company {
   status    CompanyStatus @default(ACTIVE)
   createdAt DateTime      @default(now())
 
-  memberships CompanyMembership[]
-  feedback    Feedback[]
-  dataImports DataImport[]
+  memberships                CompanyMembership[]
+  feedback                   Feedback[]
+  dataImports                DataImport[]
+  dataImportMappings         DataImportMapping[]
+  dataImportRecords          DataImportRecord[]
+  dataImportMappingTemplates DataImportMappingTemplate[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -312,11 +316,11 @@ model ContactRequest {
 // wird die Datei fuer dieses fruehe MVP direkt als Bytes in Postgres
 // gespeichert (siehe Abschlussbericht zur Speicherstrategie).
 model DataImport {
-  id               String @id @default(cuid())
+  id               String  @id @default(cuid())
   companyId        String
   company          Company @relation(fields: [companyId], references: [id])
   uploadedByUserId String
-  uploadedByUser   User   @relation("DataImportUploadedByUser", fields: [uploadedByUserId], references: [id])
+  uploadedByUser   User    @relation("DataImportUploadedByUser", fields: [uploadedByUserId], references: [id])
 
   periodMonth Int // 1-12
   periodYear  Int
@@ -341,11 +345,121 @@ model DataImport {
   status       DataImportStatus @default(READY_FOR_MAPPING)
   errorMessage String?
 
+  // Phase 4: Verarbeitungsmetadaten. processedAt/processedByUser werden nur
+  // bei erfolgreichem Abschluss (Status PROCESSED) gesetzt.
+  processedAt       DateTime?
+  processedByUserId String?
+  processedByUser   User?     @relation("DataImportProcessedByUser", fields: [processedByUserId], references: [id])
+  processedRowCount Int?
+  mappedColumnCount Int?
+
+  mapping DataImportMapping?
+  records DataImportRecord[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([companyId, checksumSha256])
+}
+
+// Phase 4: Spaltenzuordnung eines konkreten Datenimports - immer eindeutig an
+// genau einen DataImport gebunden (1:1), zusaetzlich companyId denormalisiert
+// fuer direkte, redundante Mandanten-Filterung in jeder Abfrage (defense in
+// depth, auch wenn dataImportId allein bereits eindeutig ist). "columns" haelt
+// die vollstaendige Zuordnung als JSON-Array (siehe MappingColumnDef in
+// src/lib/import-fields.ts): { index, sourceName, targetField }, wobei
+// targetField entweder ein Feldschluessel, "__ignore__" (bewusst ignoriert)
+// oder null (noch nicht entschieden) ist. Ein Import kann so verlassen und
+// spaeter fortgesetzt werden, ohne dass eine unvollstaendige Zuordnung
+// verloren geht.
+model DataImportMapping {
+  id           String     @id @default(cuid())
+  dataImportId String     @unique
+  dataImport   DataImport @relation(fields: [dataImportId], references: [id], onDelete: Cascade)
+  companyId    String
+  company      Company    @relation(fields: [companyId], references: [id])
+
+  columns Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+// Phase 4: wiederverwendbare Mapping-Vorlage. Wird nach erfolgreicher
+// Verarbeitung automatisch aus der bestaetigten Zuordnung abgeleitet (siehe
+// actions/data-import-mapping.ts) und bei einem spaeteren Import gleicher
+// Kategorie anhand einer normalisierten, sortierten Spalten-Signatur wieder
+// vorgeschlagen - NICHT anhand des Dateinamens. sourceSystem wird nur
+// informativ mitgespeichert (kein hartes Kriterium), columnSignature ist das
+// eigentliche Wiedererkennungsmerkmal.
+model DataImportMappingTemplate {
+  id              String             @id @default(cuid())
+  companyId       String
+  company         Company            @relation(fields: [companyId], references: [id])
+  category        DataImportCategory
+  sourceSystem    String?
+  columnSignature String
+
+  columns Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, category, columnSignature])
+  @@index([companyId])
+}
+
+// Phase 4: normalisierte Zeilendaten nach erfolgreicher Verarbeitung -
+// bewusst EINE Zeile pro Datensatz der Quelldatei (nicht z.B. eine Zeile pro
+// Zelle), da Phase 5 zuverlaessig ueber Betraege/Status/Zeitraeume aggregieren
+// koennen muss. Die Zeilenzahl ist durch das bestehende MAX_IMPORT_ROWS-Limit
+// (50.000) ohnehin begrenzt und fuer typische KMU-Monatsimporte um
+// Groessenordnungen kleiner - siehe Abschlussbericht zur Begruendung dieser
+// Speicherstrategie. Generische Spaltennamen (statt z.B. "rechnungsnummer"),
+// da dieselbe Struktur fuer FINANCE/ORDERS/CUSTOMERS verwendet wird (siehe
+// storageColumn-Zuordnung in src/lib/import-fields.ts) - pro Kategorie bleibt
+// jede Spalte eindeutig einem Zielfeld zugeordnet, keine Kollisionen.
+model DataImportRecord {
+  id           String     @id @default(cuid())
+  dataImportId String
+  dataImport   DataImport @relation(fields: [dataImportId], references: [id], onDelete: Cascade)
+  companyId    String
+  company      Company    @relation(fields: [companyId], references: [id])
+  rowNumber    Int // 1-basierte Zeilennummer in der Quelldatei (ohne Kopfzeile), fuer Nachvollziehbarkeit
+
+  referenceNumber String?
+  primaryDate     DateTime?
+  name            String?
+  organization    String?
+  description     String?
+  dueDate         DateTime?
+  completionDate  DateTime?
+  bookingDate     DateTime?
+
+  status    String? // normalisierter interner Status (PAID/OPEN/PARTIALLY_PAID/OVERDUE/CANCELED)
+  statusRaw String? // unveraenderter Rohwert aus der Datei
+
+  netAmount   Decimal? @db.Decimal(14, 2)
+  taxAmount   Decimal? @db.Decimal(14, 2)
+  grossAmount Decimal? @db.Decimal(14, 2)
+  costAmount  Decimal? @db.Decimal(14, 2)
+  openAmount  Decimal? @db.Decimal(14, 2)
+  amount      Decimal? @db.Decimal(14, 2)
+
+  accountNumber String?
+  accountLabel  String?
+  metricLabel   String?
+  responsible   String?
+  email         String?
+  phone         String?
+
+  createdAt DateTime @default(now())
+
+  @@index([dataImportId])
+  @@index([companyId])
 }
 
 model PasswordResetToken {
