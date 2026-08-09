@@ -12,6 +12,7 @@ import {
   changeTone,
   type MonthPeriod,
 } from "@/lib/company-metrics";
+import { monthParamValue } from "@/lib/finance-format";
 import { importPanelClass, importSecondaryTextClass } from "@/lib/import-ui";
 import { primaryButtonClass } from "@/lib/ui";
 import { ModulePlaceholder } from "@/components/module-placeholder";
@@ -89,10 +90,20 @@ export default async function FinanzuebersichtPage({
     getCompanyMetrics(company.id),
   ]);
 
-  const revenueHistory: RevenueHistoryPoint[] = companyMetrics.revenueHistory.map((h) => ({
-    period: h.period,
-    revenue: h.revenue.toNumber(),
-  }));
+  // Phase 5.2.2: die Umsatzentwicklung zeigt die Historie NUR bis einschliesslich
+  // des ausgewaehlten Zeitraums - niemals spaeter verarbeitete Monate (Punkt
+  // "Keine zukuenftigen Monate"). "period <= selectedPeriod" wird als
+  // "YYYY-MM"-String verglichen (lexikographisch chronologisch korrekt, auch
+  // ueber Jahreswechsel hinweg, z.B. "2026-12" < "2027-01"). Der
+  // Monatsvergleich (KPI-Karten oben) bleibt davon unberuehrt - der basiert
+  // weiterhin auf detail.revenueChange/detail.previousPeriod aus
+  // getMonthFinanceDetail, nicht auf dieser History.
+  const revenueHistory: RevenueHistoryPoint[] = companyMetrics.revenueHistory
+    .filter((h) => monthParamValue(h.period) <= monthParamValue(selectedPeriod))
+    .map((h) => ({
+      period: h.period,
+      revenue: h.revenue.toNumber(),
+    }));
 
   const customerRevenueView: CustomerRevenueView[] = detail.customerRevenue.map((c) => ({
     customer: c.customer,
@@ -200,9 +211,14 @@ export default async function FinanzuebersichtPage({
               <RevenueLineChart history={revenueHistory} selectedPeriod={selectedPeriod} />
             </div>
           ) : (
-            <p className={`mt-6 text-sm ${importSecondaryTextClass}`}>
-              Sobald ein weiterer Monat verarbeitet wurde, wird hier die Umsatzentwicklung dargestellt.
-            </p>
+            <div className="mt-6">
+              <p className={`text-sm ${importSecondaryTextClass}`}>
+                Für die Umsatzentwicklung sind weitere verarbeitete Monate erforderlich.
+              </p>
+              <p className="mt-2 text-sm font-semibold text-sand-900 dark:text-cockpit-heading">
+                {periodLabel(selectedPeriod.periodMonth, selectedPeriod.periodYear)} · {formatEuroCompact(detail.revenue)}
+              </p>
+            </div>
           )}
         </div>
 
