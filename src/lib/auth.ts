@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
+import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES, CUSTOMER_MANAGE_ROLES } from "@/lib/company";
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -149,6 +149,39 @@ export async function assertCanUploadDataImport(companyId: string) {
   });
   if (!membership) {
     redirect("/arbeitgeber/dashboard/datenimporte?error=forbidden");
+  }
+  return { session, user, membership };
+}
+
+// Autorisierungs-Check fuer alle Kunden-/Ansprechpartner-Mutationen (Phase
+// 6.1, Punkt 7) - gleiches Muster wie assertCanUploadDataImport: companyId
+// kommt IMMER aus einem bereits serverseitig geladenen Customer-Datensatz,
+// nie direkt aus dem Formular vertraut, damit ein manipulierter Aufruf mit
+// fremder companyId keinen Zugriff erhaelt. Lesen duerfen alle aktiven
+// Mitglieder (siehe requireCompanyMember) - dieser Check gilt ausschliesslich
+// fuer Schreibzugriffe.
+export async function assertCanManageCustomers(companyId: string) {
+  const session = await getSession();
+  if (!session.userId) {
+    redirect("/arbeitgeber/login");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || user.status !== "ACTIVE") {
+    redirect("/arbeitgeber/login");
+  }
+
+  const membership = await prisma.companyMembership.findFirst({
+    where: {
+      userId: user.id,
+      companyId,
+      status: "ACTIVE",
+      company: { status: "ACTIVE" },
+      role: { in: CUSTOMER_MANAGE_ROLES },
+    },
+  });
+  if (!membership) {
+    redirect("/arbeitgeber/dashboard/kunden?error=forbidden");
   }
   return { session, user, membership };
 }

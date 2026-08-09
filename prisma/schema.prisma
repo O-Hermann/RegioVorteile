@@ -82,6 +82,14 @@ enum ContactRequestStatus {
   DONE
 }
 
+// Phase 6.1: Status eines Kunden-Grundsystem-Datensatzes - bewusst nur
+// ACTIVE/INACTIVE (kein Lead/Prospect/Won/Lost), da das zu einer spaeteren,
+// eigenstaendigen Vertriebs-/Pipeline-Systematik gehoert.
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // Fachliche Kategorie eines Datenimports - dient in Phase 3 nur der
 // Strukturierung/spaeteren Verarbeitung, noch keiner fachlichen Auswertung.
 enum DataImportCategory {
@@ -127,6 +135,7 @@ model User {
   submittedFeedback    Feedback[]           @relation("FeedbackSubmittedByUser")
   uploadedDataImports  DataImport[]         @relation("DataImportUploadedByUser")
   processedDataImports DataImport[]         @relation("DataImportProcessedByUser")
+  createdCustomers     Customer[]           @relation("CustomerCreatedByUser")
 }
 
 model Company {
@@ -141,6 +150,7 @@ model Company {
   dataImportMappings         DataImportMapping[]
   dataImportRecords          DataImportRecord[]
   dataImportMappingTemplates DataImportMappingTemplate[]
+  customers                  Customer[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -460,6 +470,69 @@ model DataImportRecord {
 
   @@index([dataImportId])
   @@index([companyId])
+}
+
+// Phase 6.1: mandantenfaehiges Kunden-Grundsystem - bewusst getrennt von
+// DataImportRecord (Kategorie CUSTOMERS): DataImportRecord bildet importierte
+// Rohzeilen einer Datei ab, Customer ist der eigentliche, dauerhaft gepflegte
+// Kundenstamm. Es gibt in Phase 6.1 bewusst NOCH KEINE automatische
+// Uebernahme/Verknuepfung zwischen beiden (kein Fuzzy-Matching, siehe
+// Abschlussbericht) - das ist eine spaetere, eigene Phase. companyId ist
+// direkt auf Customer (nicht nur ueber eine Relation erreichbar), damit jede
+// Abfrage unmittelbar mandantenscharf gefiltert werden kann (Punkt 6).
+model Customer {
+  id             String         @id @default(cuid())
+  companyId      String
+  company        Company        @relation(fields: [companyId], references: [id])
+  customerNumber String?
+  name           String
+  email          String?
+  phone          String?
+  website        String?
+  street         String?
+  postalCode     String?
+  city           String?
+  country        String?
+  notes          String?
+  status         CustomerStatus @default(ACTIVE)
+
+  createdByUserId String?
+  createdByUser   User?   @relation("CustomerCreatedByUser", fields: [createdByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts CustomerContact[]
+
+  // Kundennummer ist nur INNERHALB eines Unternehmens eindeutig (Punkt 24) -
+  // ein anderes Unternehmen darf dieselbe Nummer vergeben. Mehrere Kunden
+  // ohne Kundennummer (NULL) sind erlaubt, da Postgres NULL-Werte in einem
+  // UNIQUE-Index als paarweise verschieden behandelt.
+  @@unique([companyId, customerNumber])
+  @@index([companyId])
+}
+
+// Phase 6.1: eigenstaendiges Modell statt nur eines einzelnen
+// Ansprechpartner-Feldes auf Customer (Punkt 4) - ein Kunde kann mehrere
+// Ansprechpartner haben (z.B. Geschaeftsfuehrung + Buchhaltung). firstName/
+// lastName sind bewusst beide optional: bei der Kundenanlage genuegt bereits
+// EIN ausgefuellter Name, um einen ersten Hauptansprechpartner anzulegen.
+model CustomerContact {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  firstName String?
+  lastName  String?
+  position  String?
+  email     String?
+  phone     String?
+  isPrimary Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
 }
 
 model PasswordResetToken {

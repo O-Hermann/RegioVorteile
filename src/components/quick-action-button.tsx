@@ -2,9 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { PlusIcon, UploadIcon, ChatIcon, AlertTriangleIcon, TrendingUpIcon } from "@/components/icons";
+import { PlusIcon, UploadIcon, ChatIcon, AlertTriangleIcon, TrendingUpIcon, UsersIcon } from "@/components/icons";
 
 const ACTIONS = [
+  {
+    href: "/arbeitgeber/dashboard/kunden/neu",
+    label: "Kunde anlegen",
+    icon: UsersIcon,
+    color:
+      "bg-gradient-to-br from-violet-400/30 to-violet-500/10 text-violet-600 dark:text-violet-200 border border-violet-400/30 dark:border-violet-300/25",
+  },
   {
     href: "/arbeitgeber/dashboard/datenimporte/neu",
     label: "Datenimport starten",

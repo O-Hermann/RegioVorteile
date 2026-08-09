@@ -10,6 +10,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { label: "Übersicht", href: "/arbeitgeber/dashboard" },
+  { label: "Kunden", href: "/arbeitgeber/dashboard/kunden" },
   { label: "Datenimporte", href: "/arbeitgeber/dashboard/datenimporte" },
   { label: "Auswertungen" },
   { label: "Berichte" },

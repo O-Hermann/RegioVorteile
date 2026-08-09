@@ -26,6 +26,11 @@ export const COMPANY_MANAGER_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN"];
 // hochladen - siehe assertCanUploadDataImport() in lib/auth.ts.
 export const COMPANY_IMPORT_UPLOAD_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN", "ACCOUNTING"];
 
+// Rollen, die Kunden/Ansprechpartner anlegen, bearbeiten oder deaktivieren
+// duerfen (Phase 6.1, Punkt 7). ACCOUNTING und VIEWER duerfen den
+// Kundenbereich nur lesen - siehe assertCanManageCustomers() in lib/auth.ts.
+export const CUSTOMER_MANAGE_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN", "MANAGEMENT"];
+
 export const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
   INVITED: "Eingeladen",
   ACTIVE: "Aktiv",

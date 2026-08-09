@@ -14,6 +14,7 @@ import {
   type MetricChange,
 } from "@/lib/company-metrics";
 import type { Prisma } from "@/generated/prisma/client";
+import { getCustomerCounts } from "@/lib/customers";
 import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
@@ -230,7 +231,7 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics] = await Promise.all([
+  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics, customerCounts] = await Promise.all([
     prisma.companyMembership.findMany({
       where: { companyId: company.id },
       orderBy: { invitedAt: "desc" },
@@ -252,6 +253,10 @@ export default async function ArbeitgeberDashboardPage() {
     // Phase 5.1: zentrale, company-gescopte Kennzahlenaggregation (Punkt 13) -
     // "Importierte Monate" lebt jetzt hier (unveraendert gegenueber Phase 4).
     getCompanyMetrics(company.id),
+    // Phase 6.1: echte Customer-Zahlen fuer die "Aufträge und Kunden"-Karte
+    // (Punkt 32) - bewusst eine eigene, von den Finanzkennzahlen komplett
+    // getrennte Aggregation (siehe Kommentar an der Karte unten, Punkt 33).
+    getCustomerCounts(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
 
@@ -560,12 +565,40 @@ export default async function ArbeitgeberDashboardPage() {
               </div>
             </Link>
 
+            {/* Phase 6.1 (Punkt 32/33): der Kunden-Anteil dieser Karte zeigt
+                jetzt echte Customer-Zahlen aus dem neuen Kunden-Grundsystem -
+                bewusst STRIKT getrennt von der Finanzkennzahl "Kunden mit
+                Umsatz" (die aus importierten Rechnungsdaten stammt, siehe
+                metrics.customersWithRevenueCurrent weiter oben). Der
+                Aufträge-Anteil bleibt unveraendert leer, dafuer existiert
+                weiterhin keine Datenquelle. Ziel der Karte ist jetzt /kunden
+                statt der allgemeinen Placeholder-Seite, da dort der einzige
+                bereits befuellte Teilbereich liegt. */}
             <Link
-              href="/arbeitgeber/dashboard/auftraegekunden"
+              href="/arbeitgeber/dashboard/kunden"
               className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
             >
               <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
-              <EmptyCardBody text="Für diesen Bereich wurden noch keine Auftrags- oder Kundendaten importiert." />
+              <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
+                {customerCounts.total > 0 ? (
+                  <>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={secondaryTextClass}>Aktive Kunden</span>
+                      <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.active}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={secondaryTextClass}>Gesamt</span>
+                      <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.total}</span>
+                    </div>
+                    <p className="mt-1 text-xs font-semibold text-ink-600 dark:text-cockpit-accent-light">Kunden öffnen →</p>
+                  </>
+                ) : (
+                  <>
+                    <p className={`text-[13px] leading-snug ${secondaryTextClass}`}>Noch keine Kunden angelegt.</p>
+                    <p className="text-xs font-semibold text-ink-600 dark:text-cockpit-accent-light">Kunden anlegen →</p>
+                  </>
+                )}
+              </div>
             </Link>
           </div>
 
