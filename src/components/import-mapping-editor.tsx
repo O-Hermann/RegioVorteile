@@ -11,16 +11,22 @@ import { CheckCircleIcon, AlertTriangleIcon, ArrowLeftIcon, TargetIcon } from "@
 
 export type MappingFieldOption = { key: string; label: string; group: string };
 
+// Herkunft einer vorbelegten Zuordnung (Punkt 3 im Feinschliff-Auftrag):
+// "template" = aus einer gespeicherten DataImportMappingTemplate uebernommen,
+// "suggested" = von der Synonym-/Datentyp-Heuristik vorgeschlagen, null = keine
+// automatische Herkunft (manuell gewaehlt oder bereits gespeicherter Entwurf).
+export type MappingColumnOrigin = "template" | "suggested" | null;
+
 export type MappingColumnInitial = {
   index: number;
   header: string;
   samples: string[];
   detectedType: ImportFieldDataType;
   targetField: string | null;
-  suggested: boolean;
+  origin: MappingColumnOrigin;
 };
 
-type MappingState = Record<number, { targetField: string | null; suggested: boolean }>;
+type MappingState = Record<number, { targetField: string | null; origin: MappingColumnOrigin }>;
 
 export function ImportMappingEditor({
   dataImportId,
@@ -48,7 +54,7 @@ export function ImportMappingEditor({
   const router = useRouter();
   const [mapping, setMapping] = useState<MappingState>(() => {
     const initial: MappingState = {};
-    for (const c of columns) initial[c.index] = { targetField: c.targetField, suggested: c.suggested };
+    for (const c of columns) initial[c.index] = { targetField: c.targetField, origin: c.origin };
     return initial;
   });
   const [showSummary, setShowSummary] = useState(false);
@@ -72,7 +78,10 @@ export function ImportMappingEditor({
   const mappingValid = mappedCount > 0;
 
   function updateColumn(index: number, value: string) {
-    setMapping((prev) => ({ ...prev, [index]: { targetField: value === "" ? null : value, suggested: false } }));
+    // Sobald der Benutzer eine Auswahl manuell aendert, gilt sie nicht mehr
+    // als automatisch uebernommen - der Herkunftshinweis verschwindet
+    // (ruhigere Variante statt einer zusaetzlichen "Manuell gewaehlt"-Zeile).
+    setMapping((prev) => ({ ...prev, [index]: { targetField: value === "" ? null : value, origin: null } }));
     setShowSummary(false);
     setProcessError(null);
   }
@@ -170,7 +179,13 @@ export function ImportMappingEditor({
       <div className={`!p-0 ${importPanelClass}`}>
         {columns.map((col, i) => {
           const state = mapping[col.index];
-          const isSuggested = !!state?.suggested && !!state.targetField && state.targetField !== IGNORE_FIELD_KEY;
+          const hasActiveTarget = !!state?.targetField && state.targetField !== IGNORE_FIELD_KEY;
+          const originLabel =
+            hasActiveTarget && state?.origin === "template"
+              ? "Aus vorheriger Zuordnung übernommen"
+              : hasActiveTarget && state?.origin === "suggested"
+                ? "Automatisch vorgeschlagen"
+                : null;
           return (
             <div
               key={col.index}
@@ -210,7 +225,7 @@ export function ImportMappingEditor({
                   ))}
                   <option value={IGNORE_FIELD_KEY}>Spalte ignorieren</option>
                 </select>
-                {isSuggested && <p className="mt-1 text-xs font-medium text-ink-600 dark:text-cockpit-accent-light">Vorgeschlagen</p>}
+                {originLabel && <p className="mt-1 text-xs font-medium text-ink-600 dark:text-cockpit-accent-light">{originLabel}</p>}
               </div>
             </div>
           );
@@ -253,7 +268,7 @@ export function ImportMappingEditor({
               <dd className="font-medium text-sand-900 dark:text-cockpit-text">{ignoredCount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className={importSecondaryTextClass}>Datensätze werden geprüft</dt>
+              <dt className={importSecondaryTextClass}>Datensätze zur Verarbeitung</dt>
               <dd className="font-medium text-sand-900 dark:text-cockpit-text">{rowCount}</dd>
             </div>
           </dl>
@@ -287,7 +302,7 @@ export function ImportMappingEditor({
             className={`min-w-[240px] flex-1 !py-3 ${primaryButtonClass}`}
           >
             <TargetIcon className="mr-1.5 h-4 w-4" />
-            Zuordnung bestätigen und verarbeiten
+            Zuordnung prüfen
           </button>
         </div>
       )}

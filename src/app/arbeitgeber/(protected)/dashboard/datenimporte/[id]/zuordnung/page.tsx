@@ -7,7 +7,12 @@ import { parseFullSpreadsheetForProcessing, type MappingColumnDef } from "@/lib/
 import { ImportParseError, stringifyCell } from "@/lib/import-parse";
 import { IMPORT_FIELD_REGISTRY, computeColumnSignature, normalizeColumnName, detectColumnDataType } from "@/lib/import-fields";
 import { suggestColumnMapping } from "@/lib/import-mapping-suggest";
-import { ImportMappingEditor, type MappingColumnInitial, type MappingFieldOption } from "@/components/import-mapping-editor";
+import {
+  ImportMappingEditor,
+  type MappingColumnInitial,
+  type MappingFieldOption,
+  type MappingColumnOrigin,
+} from "@/components/import-mapping-editor";
 import { secondaryButtonClass } from "@/lib/ui";
 import Link from "next/link";
 
@@ -80,15 +85,18 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
 
   // Reihenfolge der Zuordnungsquelle (Punkt 12/19/22): eine bereits
   // gespeicherte Zuordnung geht vor einer Vorlage, eine Vorlage geht vor der
-  // automatischen Vorschlagserkennung.
+  // automatischen Vorschlagserkennung. Die Herkunft wird pro Spalte separat
+  // vermerkt (nicht pauschal fuer die ganze Datei), da eine Vorlage nur
+  // Spalten abdeckt, deren normalisierter Name tatsaechlich uebereinstimmt -
+  // fuer nicht abgedeckte Spalten waere "aus Vorlage uebernommen" falsch.
   let initialTargets: (string | null)[];
-  let suggestedFlags: boolean[];
+  let origins: MappingColumnOrigin[];
 
   if (dataImport.mapping) {
     const saved = dataImport.mapping.columns as unknown as MappingColumnDef[];
     const byIndex = new Map(saved.map((c) => [c.index, c.targetField]));
     initialTargets = header.map((_, i) => byIndex.get(i) ?? null);
-    suggestedFlags = header.map(() => false);
+    origins = header.map(() => null);
   } else {
     const signature = computeColumnSignature(header);
     const template = await prisma.dataImportMappingTemplate.findUnique({
@@ -98,11 +106,11 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
       const templateColumns = template.columns as unknown as { sourceName: string; targetField: string | null }[];
       const byNormalizedName = new Map(templateColumns.map((c) => [normalizeColumnName(c.sourceName), c.targetField]));
       initialTargets = header.map((h) => byNormalizedName.get(normalizeColumnName(h)) ?? null);
-      suggestedFlags = initialTargets.map((t) => !!t);
+      origins = initialTargets.map((t) => (t ? "template" : null));
     } else {
       const suggestions = suggestColumnMapping(dataImport.category, header, stringifiedColumns);
       initialTargets = suggestions.map((s) => s.suggestedFieldKey);
-      suggestedFlags = initialTargets.map((t) => !!t);
+      origins = initialTargets.map((t) => (t ? "suggested" : null));
     }
   }
 
@@ -112,7 +120,7 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
     samples: stringifiedColumns[i].slice(0, DISPLAY_SAMPLE_VALUES),
     detectedType: detectColumnDataType(stringifiedColumns[i]),
     targetField: initialTargets[i],
-    suggested: suggestedFlags[i],
+    origin: origins[i],
   }));
 
   const initialErrorMessage =
@@ -126,7 +134,12 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
       categoryLabel={DATA_IMPORT_CATEGORY_LABELS[dataImport.category]}
       columns={columns}
       fieldGroups={fieldGroupsOut}
-      rowCount={dataImport.rowCount ?? rows.length}
+      // dataImport.rowCount stammt aus Phase 3 (beim Upload gespeicherte
+      // Vorschau-Zeilenzahl) und zaehlte dort die Kopfzeile mit - fuer die
+      // Anzeige "Datensätze zur Verarbeitung" zaehlen ausschliesslich die
+      // hier frisch geparsten Datenzeilen (rows enthaelt die Kopfzeile
+      // bereits nicht, siehe parseFullSpreadsheetForProcessing).
+      rowCount={rows.length}
       canEdit={canEdit}
       initialErrorMessage={initialErrorMessage}
       detailHref={detailHref}
