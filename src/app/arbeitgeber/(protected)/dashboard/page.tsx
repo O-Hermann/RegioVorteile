@@ -4,6 +4,16 @@ import { requireCompanyMember } from "@/lib/auth";
 import { relativeTimeDe } from "@/lib/time";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
+import {
+  getCompanyMetrics,
+  formatEuroCompact,
+  formatEuroDetailed,
+  formatChange,
+  changeTone,
+  type MonthPeriod,
+  type MetricChange,
+} from "@/lib/company-metrics";
+import type { Prisma } from "@/generated/prisma/client";
 import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
@@ -125,44 +135,125 @@ function EmptyCardBody({ text }: { text: string }) {
   );
 }
 
+const CHANGE_TONE_CLASSES: Record<"positive" | "negative" | "neutral", string> = {
+  positive: "text-emerald-600 dark:text-emerald-300",
+  negative: "text-rose-600 dark:text-rose-300",
+  neutral: secondaryTextClass,
+};
+
+// Eine Vergleichszeile im Monatsvergleich-Modul (Punkt 8/9) - die Farbe der
+// Veraenderung haengt von "direction" ab: bei offenen Forderungen ist ein
+// Rueckgang positiv, bei Umsatz/Kunden ein Anstieg.
+function ComparisonRow({
+  label,
+  current,
+  previous,
+  change,
+  direction,
+}: {
+  label: string;
+  current: string;
+  previous: string;
+  change: MetricChange | null;
+  direction: "up-good" | "down-good";
+}) {
+  const tone = changeTone(change, direction);
+  return (
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span className={secondaryTextClass}>{label}</span>
+      <div className="text-right">
+        <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{current}</span>
+        <span className={`ml-2 text-xs font-medium ${CHANGE_TONE_CLASSES[tone]}`}>{formatChange(change)}</span>
+        <p className={`text-[11px] ${secondaryTextClass}`}>Vormonat: {previous}</p>
+      </div>
+    </div>
+  );
+}
+
+// Ruhige, hochwertige Mini-Sparkline fuer die Umsatzentwicklung (Punkt 10) -
+// bewusst als einfaches Inline-SVG statt einer externen Chartbibliothek,
+// gleiche Farbsprache wie die bestehende DecorativeTrendGraph oben.
+function RevenueSparkline({ history }: { history: { period: MonthPeriod; revenue: Prisma.Decimal }[] }) {
+  const values = history.map((h) => h.revenue.toNumber());
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const width = 220;
+  const height = 56;
+  const padY = 8;
+  const stepX = history.length > 1 ? width / (history.length - 1) : 0;
+  const points = values.map((v, i) => {
+    const x = i * stepX;
+    const y = height - padY - ((v - min) / range) * (height - padY * 2);
+    return [x, y] as [number, number];
+  });
+  const polylinePoints = points.map(([x, y]) => `${x},${y}`).join(" ");
+  const first = history[0];
+  const last = history[history.length - 1];
+
+  return (
+    <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-3">
+      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-14 w-full overflow-visible">
+        <defs>
+          <linearGradient id="revenueSparklineLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#5eead4" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#5eead4" stopOpacity="0.95" />
+          </linearGradient>
+        </defs>
+        <polyline
+          points={polylinePoints}
+          fill="none"
+          stroke="url(#revenueSparklineLine)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {points.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="2.5" fill="#99f6e4" fillOpacity="0.9" />
+        ))}
+      </svg>
+      <div className="flex items-center justify-between text-xs">
+        <div>
+          <p className={secondaryTextClass}>{periodLabel(first.period.periodMonth, first.period.periodYear)}</p>
+          <p className="font-semibold text-sand-900 dark:text-cockpit-heading">{formatEuroCompact(first.revenue)}</p>
+        </div>
+        <div className="text-right">
+          <p className={secondaryTextClass}>{periodLabel(last.period.periodMonth, last.period.periodYear)}</p>
+          <p className="font-semibold text-sand-900 dark:text-cockpit-heading">{formatEuroCompact(last.revenue)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function ArbeitgeberDashboardPage() {
   const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, processedMonthGroups, mostRecentProcessed, recentProcessedImports] =
-    await Promise.all([
-      prisma.companyMembership.findMany({
-        where: { companyId: company.id },
-        orderBy: { invitedAt: "desc" },
-        take: 10,
-        include: { user: true },
-      }),
-      prisma.dataImport.count({ where: { companyId: company.id } }),
-      prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
-      prisma.dataImport.findMany({
-        where: { companyId: company.id },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-      // Phase 4: "Importierte Monate" zaehlt nur tatsaechlich verarbeitete
-      // (PROCESSED) Zeitraeume, dedupliziert nach Monat/Jahr (ein erneut
-      // hochgeladener/verarbeiteter Import fuer denselben Monat zaehlt nicht
-      // doppelt) - siehe Punkt 43.
-      prisma.dataImport.groupBy({
-        by: ["periodMonth", "periodYear"],
-        where: { companyId: company.id, status: "PROCESSED" },
-      }),
-      prisma.dataImport.findFirst({
-        where: { companyId: company.id, status: "PROCESSED" },
-        orderBy: { processedAt: "desc" },
-      }),
-      prisma.dataImport.findMany({
-        where: { companyId: company.id, status: "PROCESSED" },
-        orderBy: { processedAt: "desc" },
-        take: 5,
-      }),
-    ]);
-  const processedMonthCount = processedMonthGroups.length;
+  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics] = await Promise.all([
+    prisma.companyMembership.findMany({
+      where: { companyId: company.id },
+      orderBy: { invitedAt: "desc" },
+      take: 10,
+      include: { user: true },
+    }),
+    prisma.dataImport.count({ where: { companyId: company.id } }),
+    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+    prisma.dataImport.findMany({
+      where: { companyId: company.id },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.dataImport.findMany({
+      where: { companyId: company.id, status: "PROCESSED" },
+      orderBy: { processedAt: "desc" },
+      take: 5,
+    }),
+    // Phase 5.1: zentrale, company-gescopte Kennzahlenaggregation (Punkt 13) -
+    // "Importierte Monate" lebt jetzt hier (unveraendert gegenueber Phase 4).
+    getCompanyMetrics(company.id),
+  ]);
+  const processedMonthCount = metrics.importedMonthCount;
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
@@ -175,21 +266,26 @@ export default async function ArbeitgeberDashboardPage() {
     year: "numeric",
   });
 
-  // Acht Unternehmenskennzahlen aus der Spezifikation. Fuer keine davon
-  // existiert aktuell eine echte Datenquelle (kein Datenimport-/Finanz-/
-  // Auftrags-/Kundenmodell im Schema) - daher bewusst "—" statt eines
-  // erfundenen oder faelschlich echten Nullwerts. Sobald in einer spaeteren
-  // Phase echte Werte verfuegbar sind, ersetzt hier jeweils ein echter Wert
-  // den Platzhalter.
+  // Phase 5.1: Umsatz, offene Forderungen, Kunden mit Umsatz, importierte
+  // Monate und offene Datenfehler kommen jetzt aus der zentralen Aggregation
+  // (getCompanyMetrics) und basieren ausschliesslich auf tatsaechlich
+  // PROCESSED-Finanzimporten. Kosten/Ergebnis/Offene Auftraege bleiben
+  // bewusst "—" - dafuer existiert weiterhin keine verlaessliche Datenquelle
+  // (Punkt 6): Ergebnis != Umsatz, offene Rechnungen != offene Auftraege.
   const statTiles = [
-    { label: "Umsatz", value: "—", icon: TrendingUpIcon, color: "emerald" },
+    { label: "Umsatz", value: formatEuroCompact(metrics.revenueCurrent), icon: TrendingUpIcon, color: "emerald" },
     { label: "Kosten", value: "—", icon: TagIcon, color: "amber" },
     { label: "Ergebnis", value: "—", icon: ActivityIcon, color: "violet" },
-    { label: "Offene Forderungen", value: "—", icon: FileTextIcon, color: "rose" },
+    { label: "Offene Forderungen", value: formatEuroCompact(metrics.openReceivablesCurrent), icon: FileTextIcon, color: "rose" },
     { label: "Offene Aufträge", value: "—", icon: BriefcaseIcon, color: "slate" },
-    { label: "Aktive Kunden", value: "—", icon: UsersIcon, color: "sky" },
+    {
+      label: "Kunden mit Umsatz",
+      value: metrics.customersWithRevenueCurrent === null ? "—" : String(metrics.customersWithRevenueCurrent),
+      icon: UsersIcon,
+      color: "sky",
+    },
     { label: "Importierte Monate", value: processedMonthCount > 0 ? String(processedMonthCount) : "—", icon: UploadIcon, color: "ink" },
-    { label: "Offene Datenfehler", value: "—", icon: AlertTriangleIcon, color: "amber" },
+    { label: "Offene Datenfehler", value: String(metrics.openImportErrorCount), icon: AlertTriangleIcon, color: "amber" },
   ];
 
   // Handlungsbedarf: solange kein Import existiert, auf den Upload
@@ -315,7 +411,7 @@ export default async function ArbeitgeberDashboardPage() {
                     {processedMonthCount} {processedMonthCount === 1 ? "Monat" : "Monate"} verarbeitet
                   </p>
                   <p className="text-sm text-white/70">
-                    {mostRecentProcessed ? periodLabel(mostRecentProcessed.periodMonth, mostRecentProcessed.periodYear) : ""}
+                    {metrics.currentPeriod ? periodLabel(metrics.currentPeriod.periodMonth, metrics.currentPeriod.periodYear) : ""}
                   </p>
                   <Link
                     href="/arbeitgeber/dashboard/datenimporte"
@@ -399,7 +495,37 @@ export default async function ArbeitgeberDashboardPage() {
               className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
             >
               <MiddleCardHeader icon={ActivityIcon} title="Monatsvergleich" color="sky" linked />
-              <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
+              {metrics.currentPeriod && metrics.previousPeriod ? (
+                <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-3">
+                  <p className={`text-[11px] ${secondaryTextClass}`}>
+                    {periodLabel(metrics.currentPeriod.periodMonth, metrics.currentPeriod.periodYear)} ggü.{" "}
+                    {periodLabel(metrics.previousPeriod.periodMonth, metrics.previousPeriod.periodYear)}
+                  </p>
+                  <ComparisonRow
+                    label="Umsatz"
+                    current={formatEuroDetailed(metrics.revenueCurrent)}
+                    previous={formatEuroDetailed(metrics.revenuePrevious)}
+                    change={metrics.revenueChange}
+                    direction="up-good"
+                  />
+                  <ComparisonRow
+                    label="Offene Forderungen"
+                    current={formatEuroDetailed(metrics.openReceivablesCurrent)}
+                    previous={formatEuroDetailed(metrics.openReceivablesPrevious)}
+                    change={metrics.openReceivablesChange}
+                    direction="down-good"
+                  />
+                  <ComparisonRow
+                    label="Kunden mit Umsatz"
+                    current={String(metrics.customersWithRevenueCurrent ?? "—")}
+                    previous={String(metrics.customersWithRevenuePrevious ?? "—")}
+                    change={metrics.customersWithRevenueChange}
+                    direction="up-good"
+                  />
+                </div>
+              ) : (
+                <EmptyCardBody text="Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt." />
+              )}
             </Link>
 
             <Link
@@ -407,7 +533,11 @@ export default async function ArbeitgeberDashboardPage() {
               className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
             >
               <MiddleCardHeader icon={TrendingUpIcon} title="Entwicklung" color="emerald" linked />
-              <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
+              {metrics.revenueHistory.length >= 2 ? (
+                <RevenueSparkline history={metrics.revenueHistory} />
+              ) : (
+                <EmptyCardBody text="Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt." />
+              )}
             </Link>
 
             <Link
@@ -417,10 +547,10 @@ export default async function ArbeitgeberDashboardPage() {
               <MiddleCardHeader icon={FileTextIcon} title="Finanzübersicht" color="violet" linked />
               <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
                 {[
-                  ["Umsatz", "—"],
+                  ["Umsatz", formatEuroCompact(metrics.revenueCurrent)],
                   ["Kosten", "—"],
                   ["Ergebnis", "—"],
-                  ["Offene Forderungen", "—"],
+                  ["Offene Forderungen", formatEuroCompact(metrics.openReceivablesCurrent)],
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-center justify-between text-sm">
                     <span className={secondaryTextClass}>{label}</span>
