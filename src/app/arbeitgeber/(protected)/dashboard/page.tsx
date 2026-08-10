@@ -15,6 +15,7 @@ import {
 } from "@/lib/company-metrics";
 import type { Prisma } from "@/generated/prisma/client";
 import { getCustomerCounts } from "@/lib/customers";
+import { getOrderCounts } from "@/lib/orders";
 import { QuickActionButton } from "@/components/quick-action-button";
 import {
   TrendingUpIcon,
@@ -237,7 +238,7 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company, membership } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics, customerCounts] = await Promise.all([
+  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics, customerCounts, orderCounts] = await Promise.all([
     prisma.companyMembership.findMany({
       where: { companyId: company.id },
       orderBy: { invitedAt: "desc" },
@@ -263,6 +264,8 @@ export default async function ArbeitgeberDashboardPage() {
     // (Punkt 32) - bewusst eine eigene, von den Finanzkennzahlen komplett
     // getrennte Aggregation (siehe Kommentar an der Karte unten, Punkt 33).
     getCustomerCounts(company.id),
+    // Phase 6.2.1: echte Order-Zahlen fuer dieselbe Karte (Punkt 17).
+    getOrderCounts(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
 
@@ -572,56 +575,57 @@ export default async function ArbeitgeberDashboardPage() {
             </Link>
 
             {/* Phase 6.1 (Punkt 32/33): der Kunden-Anteil dieser Karte zeigt
-                jetzt echte Customer-Zahlen aus dem neuen Kunden-Grundsystem -
-                bewusst STRIKT getrennt von der Finanzkennzahl "Kunden mit
-                Umsatz" (die aus importierten Rechnungsdaten stammt, siehe
-                metrics.customersWithRevenueCurrent weiter oben). Der
-                Aufträge-Anteil bleibt unveraendert leer, dafuer existiert
-                weiterhin keine Datenquelle. Ziel der Karte ist jetzt /kunden
-                statt der allgemeinen Placeholder-Seite, da dort der einzige
-                bereits befuellte Teilbereich liegt. */}
-            <Link
-              href="/arbeitgeber/dashboard/kunden"
-              className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}
-            >
-              <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
+                echte Customer-Zahlen aus dem Kunden-Grundsystem - bewusst
+                STRIKT getrennt von der Finanzkennzahl "Kunden mit Umsatz"
+                (die aus importierten Rechnungsdaten stammt, siehe
+                metrics.customersWithRevenueCurrent weiter oben).
+                Phase 6.2.1 (Punkt 17/18): die Karte zeigt nun zusaetzlich
+                echte Order-Zahlen und fuehrt zu ZWEI Zielen (Aufträge UND
+                Kunden) statt einem einzigen - deshalb ist die Karte selbst
+                bewusst kein grosser <Link> mehr (das wuerde zu ungueltig
+                verschachteltem <a>-Markup fuehren, sobald die beiden
+                Text-Links darunter eigene <Link>s sind), sondern ein
+                schlichtes <div> mit "group" fuer die Hover-Optik; nur der
+                Kartenkopf selbst ist ein eigener <Link> auf die
+                Auftragsuebersicht (der Pfeil oben rechts darf laut Vorgabe
+                dorthin fuehren). */}
+            <div className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}>
+              <Link
+                href="/arbeitgeber/dashboard/auftraege"
+                className="-m-1 flex shrink-0 rounded-lg p-1 transition-colors hover:bg-sand-100 dark:hover:bg-white/5"
+              >
+                <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
+              </Link>
               <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
-                {customerCounts.total > 0 ? (
-                  <>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className={secondaryTextClass}>Aktive Kunden</span>
-                      <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.active}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className={secondaryTextClass}>Gesamt</span>
-                      <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.total}</span>
-                    </div>
-                    {/* Feinschliff Teil E: als eigenstaendiger, klar auf
-                        Hover reagierender Text-Link gestaltet (Pfeil bewegt
-                        sich, Farbe vertieft sich) statt eines statischen
-                        "→"-Zeichens. flex-col mit gap-1 ist bewusst so
-                        angelegt, dass hier spaeter problemlos eine zweite
-                        Zeile "Aufträge öffnen →" ergaenzt werden kann. */}
-                    <div className="mt-1 flex flex-col gap-1">
-                      <span className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90">
-                        Kunden öffnen
-                        <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className={`text-[13px] leading-snug ${secondaryTextClass}`}>Noch keine Kunden angelegt.</p>
-                    <div className="mt-1 flex flex-col gap-1">
-                      <span className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90">
-                        Kunden anlegen
-                        <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </>
-                )}
+                <div className="flex items-center justify-between text-sm">
+                  <span className={secondaryTextClass}>Offene Aufträge</span>
+                  <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{orderCounts.open}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className={secondaryTextClass}>Aktive Kunden</span>
+                  <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.active}</span>
+                </div>
+                {/* Feinschliff Teil E: als eigenstaendiger, klar auf Hover
+                    reagierender Text-Link gestaltet (Pfeil bewegt sich, Farbe
+                    vertieft sich) statt eines statischen "→"-Zeichens. */}
+                <div className="mt-1 flex flex-col gap-1">
+                  <Link
+                    href="/arbeitgeber/dashboard/auftraege"
+                    className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90"
+                  >
+                    Aufträge öffnen
+                    <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                  <Link
+                    href="/arbeitgeber/dashboard/kunden"
+                    className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90"
+                  >
+                    Kunden öffnen
+                    <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                </div>
               </div>
-            </Link>
+            </div>
           </div>
 
           <div className="mt-7 flex justify-center">

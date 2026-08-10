@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES, CUSTOMER_MANAGE_ROLES } from "@/lib/company";
+import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES, CUSTOMER_MANAGE_ROLES, ORDER_MANAGE_ROLES } from "@/lib/company";
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -182,6 +182,38 @@ export async function assertCanManageCustomers(companyId: string) {
   });
   if (!membership) {
     redirect("/arbeitgeber/dashboard/kunden?error=forbidden");
+  }
+  return { session, user, membership };
+}
+
+// Autorisierungs-Check fuer alle Auftrags-Mutationen (Phase 6.2.1, Punkt 6) -
+// exakt gleiches Muster wie assertCanManageCustomers: companyId kommt immer
+// aus einem bereits serverseitig geladenen/ermittelten Datensatz, nie direkt
+// aus dem Formular vertraut. Lesen duerfen alle aktiven Mitglieder (siehe
+// requireCompanyMember) - dieser Check gilt ausschliesslich fuer
+// Schreibzugriffe (aktuell: Auftrag anlegen).
+export async function assertCanManageOrders(companyId: string) {
+  const session = await getSession();
+  if (!session.userId) {
+    redirect("/arbeitgeber/login");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || user.status !== "ACTIVE") {
+    redirect("/arbeitgeber/login");
+  }
+
+  const membership = await prisma.companyMembership.findFirst({
+    where: {
+      userId: user.id,
+      companyId,
+      status: "ACTIVE",
+      company: { status: "ACTIVE" },
+      role: { in: ORDER_MANAGE_ROLES },
+    },
+  });
+  if (!membership) {
+    redirect("/arbeitgeber/dashboard/auftraege?error=forbidden");
   }
   return { session, user, membership };
 }

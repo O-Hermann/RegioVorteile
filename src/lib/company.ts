@@ -31,6 +31,14 @@ export const COMPANY_IMPORT_UPLOAD_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADM
 // Kundenbereich nur lesen - siehe assertCanManageCustomers() in lib/auth.ts.
 export const CUSTOMER_MANAGE_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN", "MANAGEMENT"];
 
+// Rollen, die Auftraege anlegen duerfen (Phase 6.2.1, Punkt 6). ACCOUNTING und
+// VIEWER duerfen den Auftragsbereich nur lesen - siehe assertCanManageOrders()
+// in lib/auth.ts. Inhaltlich identisch zu CUSTOMER_MANAGE_ROLES, aber
+// bewusst als eigene, semantisch benannte Konstante gefuehrt (gleiches Muster
+// wie die anderen domain-eigenen ROLES-Konstanten hier), damit sich beide
+// Bereiche spaeter unabhaengig voneinander weiterentwickeln koennen.
+export const ORDER_MANAGE_ROLES: CompanyRole[] = ["OWNER", "COMPANY_ADMIN", "MANAGEMENT"];
+
 export const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
   INVITED: "Eingeladen",
   ACTIVE: "Aktiv",

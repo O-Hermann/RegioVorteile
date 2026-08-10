@@ -2,9 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { PlusIcon, UploadIcon, ChatIcon, AlertTriangleIcon, TrendingUpIcon, UsersIcon } from "@/components/icons";
+import { PlusIcon, UploadIcon, ChatIcon, AlertTriangleIcon, TrendingUpIcon, UsersIcon, BriefcaseIcon } from "@/components/icons";
 
 const ACTIONS = [
+  {
+    href: "/arbeitgeber/dashboard/auftraege/neu",
+    label: "Auftrag anlegen",
+    icon: BriefcaseIcon,
+    color:
+      "bg-gradient-to-br from-amber-400/35 to-amber-500/10 text-amber-600 dark:text-amber-200 border border-amber-400/35 dark:border-amber-300/30",
+  },
   {
     href: "/arbeitgeber/dashboard/kunden/neu",
     label: "Kunde anlegen",

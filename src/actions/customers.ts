@@ -212,19 +212,30 @@ export async function setCustomerStatus(formData: FormData) {
 // Formular vertraut, sondern erst nach dem Laden des Kunden aus der DB
 // ermittelt (gleiches Muster wie alle anderen Mutationen hier).
 //
-// Erweiterungspunkt fuer spaetere Phasen: sobald Kunden mit Auftraegen,
-// Rechnungen oder Vorgaengen verknuepft werden koennen, die nicht automatisch
-// mitgeloescht werden duerfen, muss HIER vor dem eigentlichen Loeschen eine
-// Pruefung ergaenzt werden (z.B. Anzahl verknuepfter Datensaetze), die den
-// Vorgang mit einer verstaendlichen Fehlermeldung blockiert, statt blind zu
-// kaskadieren. Aktuell existiert ausser CustomerContact (bewusst per
-// onDelete: Cascade im Schema geloescht) keine solche Relation.
+// Phase 6.2.1 (Punkt 5): sobald einem Kunden Auftraege zugeordnet sind, wird
+// das endgueltige Loeschen serverseitig blockiert, BEVOR ueberhaupt versucht
+// wird zu loeschen - der Nutzer sieht dadurch nie eine rohe Datenbank-
+// Fehlermeldung, sondern die verstaendliche Meldung unten. Das Schema
+// verwendet zusaetzlich "onDelete: Restrict" auf Order.customer (kein
+// Cascade), diese Pruefung hier ist die nutzerfreundliche erste Verteidigungs-
+// linie davor. Deaktivieren bleibt davon unberuehrt weiterhin moeglich.
+//
+// Erweiterungspunkt fuer spaetere Phasen: sobald weitere Datensaetze (z.B.
+// Rechnungen) an einen Kunden gebunden werden, die nicht automatisch
+// mitgeloescht werden duerfen, hier nach demselben Muster ergaenzen. Aktuell
+// existiert ausser CustomerContact (bewusst per onDelete: Cascade im Schema
+// geloescht) und Order (siehe oben) keine weitere Relation.
 export async function deleteCustomer(formData: FormData) {
   const customerId = trimmed(formData.get("customerId"));
   const existing = await prisma.customer.findUnique({ where: { id: customerId } });
   if (!existing) redirect("/arbeitgeber/dashboard/kunden?error=not-found");
 
   await assertCanManageCustomers(existing.companyId);
+
+  const orderCount = await prisma.order.count({ where: { customerId: existing.id } });
+  if (orderCount > 0) {
+    redirect(`/arbeitgeber/dashboard/kunden/${existing.id}?error=has-orders`);
+  }
 
   await prisma.customer.delete({ where: { id: existing.id } });
 

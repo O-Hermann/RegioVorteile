@@ -90,6 +90,18 @@ enum CustomerStatus {
   INACTIVE
 }
 
+// Phase 6.2.1: bewusst ein kleiner, fester Satz an Status ohne Zusatzgruende
+// (Punkt 3) - COMPLETED bekommt zusaetzlich ein eigenes completedAt-Feld auf
+// Order, da "erledigt diesen Monat" sonst faelschlich updatedAt (jede
+// Aenderung) statt des tatsaechlichen Abschlussdatums verwenden muesste.
+enum OrderStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  COMPLETED
+  CANCELED
+}
+
 // Fachliche Kategorie eines Datenimports - dient in Phase 3 nur der
 // Strukturierung/spaeteren Verarbeitung, noch keiner fachlichen Auswertung.
 enum DataImportCategory {
@@ -136,6 +148,7 @@ model User {
   uploadedDataImports  DataImport[]         @relation("DataImportUploadedByUser")
   processedDataImports DataImport[]         @relation("DataImportProcessedByUser")
   createdCustomers     Customer[]           @relation("CustomerCreatedByUser")
+  createdOrders        Order[]              @relation("OrderCreatedByUser")
 }
 
 model Company {
@@ -151,6 +164,7 @@ model Company {
   dataImportRecords          DataImportRecord[]
   dataImportMappingTemplates DataImportMappingTemplate[]
   customers                  Customer[]
+  orders                     Order[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -503,6 +517,7 @@ model Customer {
   updatedAt DateTime @updatedAt
 
   contacts CustomerContact[]
+  orders   Order[]
 
   // Kundennummer ist nur INNERHALB eines Unternehmens eindeutig (Punkt 24) -
   // ein anderes Unternehmen darf dieselbe Nummer vergeben. Mehrere Kunden
@@ -532,6 +547,46 @@ model CustomerContact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([customerId])
+}
+
+// Phase 6.2.1: Grundlage der Auftragsverwaltung (Punkt 2) - ein Auftrag
+// gehoert zwingend zu genau einem Unternehmen UND genau einem bereits
+// angelegten Kunden. Die Kundenbeziehung ist bewusst "onDelete: Restrict"
+// (kein Cascade, kein SetNull) statt des sonst ueblichen Prisma-Defaults fuer
+// Pflichtbeziehungen unveraendert zu lassen: ein Kunde mit vorhandenen
+// Auftraegen darf serverseitig nicht geloescht werden koennen (siehe
+// deleteCustomer() in actions/customers.ts, das dies zusaetzlich VOR dem
+// Loeschversuch aktiv prueft, damit der Nutzer nie eine rohe DB-Fehlermeldung
+// sieht). Bewusst KEINE Verknuepfung zu DataImportRecord/Finanzdaten -
+// Auftraege und importierte Finanzkennzahlen bleiben getrennte Datenquellen.
+model Order {
+  id          String      @id @default(cuid())
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id])
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  orderNumber String
+  title       String
+  description String?
+  status      OrderStatus @default(OPEN)
+  startDate   DateTime?
+  dueDate     DateTime?
+  // Nur bei Status COMPLETED gesetzt (Punkt 8.3) - bewusst ein eigenes Feld
+  // statt updatedAt zu missbrauchen, das sich bei JEDER Aenderung mitbewegt.
+  completedAt DateTime?
+
+  createdByUserId String
+  createdByUser   User   @relation("OrderCreatedByUser", fields: [createdByUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auftragsnummer ist nur INNERHALB eines Unternehmens eindeutig (Punkt 13),
+  // analog zu Customer.customerNumber - zwei Unternehmen duerfen dieselbe
+  // Nummer unabhaengig voneinander vergeben.
+  @@unique([companyId, orderNumber])
+  @@index([companyId])
   @@index([customerId])
 }
 

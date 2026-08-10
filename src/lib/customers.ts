@@ -194,4 +194,5 @@ export const CUSTOMER_ERROR_MESSAGES: Record<string, string> = {
   forbidden: "Keine Berechtigung für diese Aktion.",
   "not-found": "Eintrag wurde nicht gefunden.",
   "contact-name-missing": "Bitte Vor- oder Nachname des Ansprechpartners angeben.",
+  "has-orders": "Dieser Kunde kann nicht gelöscht werden, da ihm noch Aufträge zugeordnet sind.",
 };

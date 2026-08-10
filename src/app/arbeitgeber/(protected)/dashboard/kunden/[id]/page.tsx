@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireCompanyMember } from "@/lib/auth";
 import { CUSTOMER_MANAGE_ROLES } from "@/lib/company";
-import { getCustomer, CUSTOMER_STATUS_LABELS, customerStatusBadgeClass } from "@/lib/customers";
+import { getCustomer, CUSTOMER_STATUS_LABELS, CUSTOMER_ERROR_MESSAGES, customerStatusBadgeClass } from "@/lib/customers";
 import { setCustomerStatus, deleteCustomerContact, deleteCustomer } from "@/actions/customers";
 import { cardClass, secondaryButtonClass, dangerButtonClass } from "@/lib/ui";
 import { importSecondaryTextClass } from "@/lib/import-ui";
@@ -15,9 +15,16 @@ function isSafeHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
 }
 
-export default async function KundeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function KundeDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { company, membership } = await requireCompanyMember();
   const { id } = await params;
+  const { error } = await searchParams;
   const canManage = CUSTOMER_MANAGE_ROLES.includes(membership.role);
 
   const customer = await getCustomer(company.id, id);
@@ -28,6 +35,11 @@ export default async function KundeDetailPage({ params }: { params: Promise<{ id
   return (
     <div>
       <BackLink href="/arbeitgeber/dashboard/kunden" label="Zurück zu Kunden" />
+      {error && (
+        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+          {CUSTOMER_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}
+        </p>
+      )}
       <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
