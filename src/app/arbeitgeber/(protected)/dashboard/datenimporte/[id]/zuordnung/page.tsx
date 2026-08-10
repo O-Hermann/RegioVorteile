@@ -14,6 +14,7 @@ import {
   type MappingColumnOrigin,
 } from "@/components/import-mapping-editor";
 import { secondaryButtonClass } from "@/lib/ui";
+import { BackLink } from "@/components/back-link";
 import Link from "next/link";
 
 // Anzahl Datenzeilen, die fuer die Datentyp-Erkennung/Beispielwerte
@@ -53,11 +54,12 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
     const message = err instanceof ImportParseError ? err.message : "Die Datei konnte nicht gelesen werden.";
     return (
       <div className="mx-auto max-w-[720px]">
-        <p className={`flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300`}>
+        <BackLink href={detailHref} label="Zurück zum Datenimport" />
+        <p className={`mt-3 flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300`}>
           {message}
         </p>
         <Link href={detailHref} className={`mt-4 inline-flex ${secondaryButtonClass}`}>
-          Zurück zur Importübersicht
+          Zurück zum Datenimport
         </Link>
       </div>
     );

@@ -27,6 +27,7 @@ import {
   AlertTriangleIcon,
   ArrowLeftIcon,
 } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 import type { DataImportCategory } from "@/generated/prisma/client";
 
 const CATEGORY_OPTIONS = Object.entries(DATA_IMPORT_CATEGORY_LABELS) as [DataImportCategory, string][];
@@ -211,6 +212,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
   return (
     <div className="mx-auto max-w-[880px] space-y-6">
+      <BackLink href="/arbeitgeber/dashboard/datenimporte" label="Zurück zu Datenimporten" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Neuer Datenimport</h1>

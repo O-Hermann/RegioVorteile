@@ -16,6 +16,7 @@ import {
 import { importPanelClass, importSecondaryTextClass, importIconBadgeClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 import { ArrowLeftIcon, TargetIcon, CheckCircleIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 
 export default async function DatenimportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -63,15 +64,9 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
 
   return (
     <div>
-      <Link
-        href="/arbeitgeber/dashboard/datenimporte"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-sand-500 hover:text-sand-900 dark:text-cockpit-text-secondary dark:hover:text-cockpit-heading"
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        Zurück zur Importhistorie
-      </Link>
+      <BackLink href="/arbeitgeber/dashboard/datenimporte" label="Zurück zu Datenimporten" />
 
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">{dataImport.fileName}</h1>
           <p className={`mt-1 ${importSecondaryTextClass}`}>

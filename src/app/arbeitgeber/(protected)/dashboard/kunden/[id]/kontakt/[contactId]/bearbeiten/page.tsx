@@ -5,6 +5,7 @@ import { getCustomer, getCustomerContact, CUSTOMER_ERROR_MESSAGES } from "@/lib/
 import { updateCustomerContact } from "@/actions/customers";
 import { CustomerContactFormFields } from "@/components/customers/customer-contact-form-fields";
 import { cardClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+import { BackLink } from "@/components/back-link";
 
 export default async function AnsprechpartnerBearbeitenPage({
   params,
@@ -30,7 +31,8 @@ export default async function AnsprechpartnerBearbeitenPage({
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="font-display text-3xl font-semibold text-sand-900">Ansprechpartner bearbeiten</h1>
+      <BackLink href={`/arbeitgeber/dashboard/kunden/${customer.id}`} label="Zurück zum Kunden" />
+      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Ansprechpartner bearbeiten</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">{customer.name}</p>
 
       {error && (

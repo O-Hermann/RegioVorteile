@@ -4,6 +4,7 @@ import { CUSTOMER_ERROR_MESSAGES } from "@/lib/customers";
 import { createCustomer } from "@/actions/customers";
 import { CustomerFormFields } from "@/components/customers/customer-form-fields";
 import { cardClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+import { BackLink } from "@/components/back-link";
 
 export default async function NeuerKundePage({
   searchParams,
@@ -16,7 +17,8 @@ export default async function NeuerKundePage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="font-display text-3xl font-semibold text-sand-900">Neuer Kunde</h1>
+      <BackLink href="/arbeitgeber/dashboard/kunden" label="Zurück zu Kunden" />
+      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Neuer Kunde</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">
         Legen Sie einen neuen Kunden mit Stammdaten und optional einem ersten Ansprechpartner an.
       </p>
