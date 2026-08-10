@@ -207,6 +207,32 @@ export async function setCustomerStatus(formData: FormData) {
   redirect(`/arbeitgeber/dashboard/kunden/${customerId}`);
 }
 
+// Feinschliff Teil B: echtes, dauerhaftes Loeschen zusaetzlich zur bestehenden
+// Deaktivieren/Reaktivieren-Funktion. companyId wird bewusst NICHT aus dem
+// Formular vertraut, sondern erst nach dem Laden des Kunden aus der DB
+// ermittelt (gleiches Muster wie alle anderen Mutationen hier).
+//
+// Erweiterungspunkt fuer spaetere Phasen: sobald Kunden mit Auftraegen,
+// Rechnungen oder Vorgaengen verknuepft werden koennen, die nicht automatisch
+// mitgeloescht werden duerfen, muss HIER vor dem eigentlichen Loeschen eine
+// Pruefung ergaenzt werden (z.B. Anzahl verknuepfter Datensaetze), die den
+// Vorgang mit einer verstaendlichen Fehlermeldung blockiert, statt blind zu
+// kaskadieren. Aktuell existiert ausser CustomerContact (bewusst per
+// onDelete: Cascade im Schema geloescht) keine solche Relation.
+export async function deleteCustomer(formData: FormData) {
+  const customerId = trimmed(formData.get("customerId"));
+  const existing = await prisma.customer.findUnique({ where: { id: customerId } });
+  if (!existing) redirect("/arbeitgeber/dashboard/kunden?error=not-found");
+
+  await assertCanManageCustomers(existing.companyId);
+
+  await prisma.customer.delete({ where: { id: existing.id } });
+
+  revalidatePath("/arbeitgeber/dashboard/kunden");
+  revalidatePath("/arbeitgeber/dashboard");
+  redirect("/arbeitgeber/dashboard/kunden?deleted=1");
+}
+
 export async function createCustomerContact(formData: FormData) {
   const customerId = trimmed(formData.get("customerId"));
   const customer = await prisma.customer.findUnique({ where: { id: customerId } });

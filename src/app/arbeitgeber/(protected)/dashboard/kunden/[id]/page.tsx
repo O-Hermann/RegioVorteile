@@ -3,11 +3,13 @@ import { notFound } from "next/navigation";
 import { requireCompanyMember } from "@/lib/auth";
 import { CUSTOMER_MANAGE_ROLES } from "@/lib/company";
 import { getCustomer, CUSTOMER_STATUS_LABELS, customerStatusBadgeClass } from "@/lib/customers";
-import { setCustomerStatus, deleteCustomerContact } from "@/actions/customers";
+import { setCustomerStatus, deleteCustomerContact, deleteCustomer } from "@/actions/customers";
 import { cardClass, secondaryButtonClass, dangerButtonClass } from "@/lib/ui";
 import { importSecondaryTextClass } from "@/lib/import-ui";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
-import { PlusIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
+import { KebabMenu } from "@/components/kebab-menu";
+import { PlusIcon, MailIcon, PhoneIcon } from "@/components/icons";
 
 function isSafeHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
@@ -25,7 +27,8 @@ export default async function KundeDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <BackLink href="/arbeitgeber/dashboard/kunden" label="Zurück zu Kunden" />
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-3xl font-semibold text-sand-900">{customer.name}</h1>
@@ -62,6 +65,21 @@ export default async function KundeDetailPage({ params }: { params: Promise<{ id
                 </button>
               </form>
             )}
+            {/* Feinschliff Teil B: "Kunde löschen" bewusst NICHT als dritter
+                gleichwertiger Button, sondern in einem zurueckhaltenden
+                "Weitere Aktionen"-Menue, um Fehlklicks auf eine destruktive
+                Aktion zu vermeiden. */}
+            <KebabMenu>
+              <form action={deleteCustomer}>
+                <input type="hidden" name="customerId" value={customer.id} />
+                <ConfirmSubmitButton
+                  confirmMessage={`${customer.name} wird dauerhaft aus Effivo entfernt. Diese Aktion kann nicht rückgängig gemacht werden. Wirklich endgültig löschen?`}
+                  className="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10 transition-colors"
+                >
+                  Kunde löschen
+                </ConfirmSubmitButton>
+              </form>
+            </KebabMenu>
           </div>
         )}
       </div>
@@ -158,7 +176,7 @@ export default async function KundeDetailPage({ params }: { params: Promise<{ id
               {customer.contacts.map((contact) => {
                 const contactName = [contact.firstName, contact.lastName].filter(Boolean).join(" ") || "—";
                 return (
-                  <li key={contact.id} className="py-2.5">
+                  <li key={contact.id} className="py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium text-sand-900 dark:text-cockpit-text">{contactName}</p>
                       {contact.isPrimary && (
@@ -168,9 +186,31 @@ export default async function KundeDetailPage({ params }: { params: Promise<{ id
                       )}
                     </div>
                     {contact.position && <p className={`text-sm ${importSecondaryTextClass}`}>{contact.position}</p>}
-                    <p className={`text-sm ${importSecondaryTextClass}`}>
-                      {[contact.email, contact.phone].filter(Boolean).join(" · ") || "—"}
-                    </p>
+                    {/* Feinschliff Teil J: E-Mail/Telefon eigene Zeilen mit
+                        Icon statt " · "-verkettet, jeweils als mailto:/tel:-
+                        Link anklickbar. */}
+                    {(contact.email || contact.phone) && (
+                      <div className="mt-1 space-y-0.5">
+                        {contact.email && (
+                          <a
+                            href={`mailto:${contact.email}`}
+                            className={`flex items-center gap-1.5 text-sm ${importSecondaryTextClass} hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors`}
+                          >
+                            <MailIcon className="h-3.5 w-3.5 shrink-0" />
+                            {contact.email}
+                          </a>
+                        )}
+                        {contact.phone && (
+                          <a
+                            href={`tel:${contact.phone}`}
+                            className={`flex items-center gap-1.5 text-sm ${importSecondaryTextClass} hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors`}
+                          >
+                            <PhoneIcon className="h-3.5 w-3.5 shrink-0" />
+                            {contact.phone}
+                          </a>
+                        )}
+                      </div>
+                    )}
                     {canManage && (
                       <div className="mt-1.5 flex items-center gap-3 text-xs">
                         <Link

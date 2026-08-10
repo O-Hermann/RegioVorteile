@@ -11,11 +11,54 @@ export const CUSTOMERS_PAGE_SIZE = 25;
 
 export type CustomerStatusFilter = "all" | "active" | "inactive";
 
+// Feinschliff Teil H: einfache, feste Sortieroptionen statt eines komplexen
+// Filterbaukastens. "numberAsc"/"numberDesc" sortieren Kunden ohne
+// Kundennummer (NULL) bewusst immer ans Ende, unabhaengig von der Richtung.
+export type CustomerSortOption = "nameAsc" | "nameDesc" | "numberAsc" | "numberDesc" | "newestFirst" | "oldestFirst";
+
+export const CUSTOMER_SORT_OPTIONS: { value: CustomerSortOption; label: string }[] = [
+  { value: "nameAsc", label: "Name A–Z" },
+  { value: "nameDesc", label: "Name Z–A" },
+  { value: "numberAsc", label: "Kundennummer aufsteigend" },
+  { value: "numberDesc", label: "Kundennummer absteigend" },
+  { value: "newestFirst", label: "Neueste zuerst" },
+  { value: "oldestFirst", label: "Älteste zuerst" },
+];
+
 export type CustomerListFilter = {
   search?: string;
   status?: CustomerStatusFilter;
+  sort?: CustomerSortOption;
+  // Feinschliff Teil I: macht die KPI "Neu diesen Monat" nutzbar - filtert
+  // auf createdAt innerhalb des aktuellen Kalendermonats.
+  newOnly?: boolean;
   page?: number;
 };
+
+function startOfCurrentMonth(): Date {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function resolveOrderBy(sort: CustomerSortOption | undefined) {
+  switch (sort) {
+    case "nameDesc":
+      return { name: "desc" as const };
+    case "numberAsc":
+      return { customerNumber: { sort: "asc" as const, nulls: "last" as const } };
+    case "numberDesc":
+      return { customerNumber: { sort: "desc" as const, nulls: "last" as const } };
+    case "newestFirst":
+      return { createdAt: "desc" as const };
+    case "oldestFirst":
+      return { createdAt: "asc" as const };
+    case "nameAsc":
+    default:
+      return { name: "asc" as const };
+  }
+}
 
 export type CustomerListItem = {
   id: string;
@@ -62,13 +105,15 @@ export async function getCustomers(companyId: string, filter: CustomerListFilter
       }
     : {};
 
-  const where = { companyId, ...statusWhere, ...searchWhere };
+  const newOnlyWhere = filter.newOnly ? { createdAt: { gte: startOfCurrentMonth() } } : {};
+
+  const where = { companyId, ...statusWhere, ...searchWhere, ...newOnlyWhere };
 
   const [total, customers] = await Promise.all([
     prisma.customer.count({ where }),
     prisma.customer.findMany({
       where,
-      orderBy: { name: "asc" },
+      orderBy: resolveOrderBy(filter.sort),
       skip: (page - 1) * CUSTOMERS_PAGE_SIZE,
       take: CUSTOMERS_PAGE_SIZE,
       include: { contacts: { where: { isPrimary: true }, take: 1 } },
@@ -97,9 +142,7 @@ export async function getCustomers(companyId: string, filter: CustomerListFilter
 // "Aufträge und Kunden" (Punkt 10/32) - bewusst eine gemeinsame Funktion,
 // damit beide Oberflaechen garantiert dieselben Zahlen zeigen.
 export async function getCustomerCounts(companyId: string) {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = startOfCurrentMonth();
 
   const [active, total, newThisMonth] = await Promise.all([
     prisma.customer.count({ where: { companyId, status: "ACTIVE" } }),

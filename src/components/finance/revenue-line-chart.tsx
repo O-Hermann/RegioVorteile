@@ -44,13 +44,17 @@ export function RevenueLineChart({
     <div className="relative">
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-auto w-full" role="img" aria-label="Umsatzentwicklung">
         <defs>
+          {/* Feinschliff Teil D: Farben ueber CSS-Variablen (globals.css),
+              die je Theme unter :root bzw. :root[data-theme="dark"] flippen -
+              im Light Mode deutlich dunklere/gesaettigtere Toene fuer
+              ausreichend Kontrast auf weissem Kartenhintergrund. */}
           <linearGradient id="financeRevenueLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#5eead4" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#5eead4" stopOpacity="0.95" />
+            <stop offset="0%" stopColor="var(--chart-line-color)" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="var(--chart-line-color)" stopOpacity="0.95" />
           </linearGradient>
           <linearGradient id="financeRevenueFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1e9794" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#1e9794" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--chart-fill-color)" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="var(--chart-fill-color)" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -61,7 +65,7 @@ export function RevenueLineChart({
             x2={WIDTH - PAD_X}
             y1={y}
             y2={y}
-            className="stroke-card-border dark:stroke-white/10"
+            style={{ stroke: "var(--chart-grid-color)" }}
             strokeWidth="1"
             strokeDasharray="3 4"
           />
@@ -92,9 +96,11 @@ export function RevenueLineChart({
                 cx={p.x}
                 cy={p.y}
                 r={isActive ? 6 : isSelected ? 5 : 3.5}
-                fill={isSelected ? "#99f6e4" : "#5eead4"}
+                style={{
+                  fill: isSelected ? "var(--chart-point-active)" : "var(--chart-point-color)",
+                  stroke: isSelected ? "var(--chart-point-ring)" : "none",
+                }}
                 fillOpacity={isActive ? 1 : 0.85}
-                stroke={isSelected ? "#087a78" : "none"}
                 strokeWidth={isSelected ? 2 : 0}
                 className="transition-all duration-150"
               />

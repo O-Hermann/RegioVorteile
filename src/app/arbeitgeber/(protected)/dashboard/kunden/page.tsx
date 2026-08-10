@@ -6,8 +6,10 @@ import {
   getCustomerCounts,
   CUSTOMER_STATUS_LABELS,
   CUSTOMER_ERROR_MESSAGES,
+  CUSTOMER_SORT_OPTIONS,
   customerStatusBadgeClass,
   type CustomerStatusFilter,
+  type CustomerSortOption,
 } from "@/lib/customers";
 import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass, inputClass } from "@/lib/ui";
@@ -18,6 +20,12 @@ const STATUS_TABS: { value: CustomerStatusFilter; label: string }[] = [
   { value: "active", label: "Aktiv" },
   { value: "inactive", label: "Inaktiv" },
 ];
+
+const SORT_VALUES = CUSTOMER_SORT_OPTIONS.map((o) => o.value);
+
+function isCustomerSortOption(value: string | undefined): value is CustomerSortOption {
+  return !!value && (SORT_VALUES as string[]).includes(value);
+}
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
@@ -32,18 +40,20 @@ function buildQuery(params: Record<string, string | number | undefined>): string
 export default async function KundenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; page?: string; error?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; sort?: string; new?: string; page?: string; error?: string; deleted?: string }>;
 }) {
   const { company, membership } = await requireCompanyMember();
-  const { q, status, page, error } = await searchParams;
+  const { q, status, sort, new: newOnlyParam, page, error, deleted } = await searchParams;
   const canManage = CUSTOMER_MANAGE_ROLES.includes(membership.role);
 
   const statusFilter: CustomerStatusFilter = status === "active" || status === "inactive" ? status : "all";
+  const sortOption: CustomerSortOption = isCustomerSortOption(sort) ? sort : "nameAsc";
+  const newOnly = newOnlyParam === "1";
   const pageNum = Number(page) > 0 ? Number(page) : 1;
 
   const [counts, result] = await Promise.all([
     getCustomerCounts(company.id),
-    getCustomers(company.id, { search: q, status: statusFilter, page: pageNum }),
+    getCustomers(company.id, { search: q, status: statusFilter, sort: sortOption, newOnly, page: pageNum }),
   ]);
 
   const kpis = [
@@ -71,6 +81,11 @@ export default async function KundenPage({
       {error && (
         <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
           {CUSTOMER_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}
+        </p>
+      )}
+      {deleted === "1" && (
+        <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          Kunde wurde dauerhaft gelöscht.
         </p>
       )}
 
@@ -134,6 +149,27 @@ export default async function KundenPage({
                 ))}
               </select>
             </div>
+            <div>
+              <label htmlFor="new" className="mb-1 block text-sm font-medium text-sand-800 dark:text-cockpit-text">
+                Zeitraum
+              </label>
+              <select id="new" name="new" defaultValue={newOnly ? "1" : "0"} className={`${inputClass} !w-auto`}>
+                <option value="0">Alle Kunden</option>
+                <option value="1">Neu diesen Monat</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="sort" className="mb-1 block text-sm font-medium text-sand-800 dark:text-cockpit-text">
+                Sortierung
+              </label>
+              <select id="sort" name="sort" defaultValue={sortOption} className={`${inputClass} !w-auto`}>
+                {CUSTOMER_SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button type="submit" className={primaryButtonClass}>
               Suchen
             </button>
@@ -161,10 +197,22 @@ export default async function KundenPage({
                     {result.items.map((c) => (
                       <tr
                         key={c.id}
-                        className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
+                        className="relative cursor-pointer border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
                       >
+                        {/* Feinschliff Teil G: gesamte Zeile klickbar via
+                            "Stretched Link"-Muster (eine unsichtbare
+                            Verlinkung, absolut positioniert relativ zur
+                            <tr> - NICHT zur eigenen <td>, sonst wuerde der
+                            Link nur die erste Zelle fuellen) statt eines
+                            Client-Components mit onClick - reines CSS, kein
+                            JS noetig. Da "Ansehen" auf dasselbe Ziel
+                            verlinkt, gibt es keinen Konflikt bei
+                            ueberlappenden Klicks. */}
                         <td className="max-w-[260px] truncate px-4 py-3.5 font-medium text-sand-900 dark:text-cockpit-text">
-                          {c.name}
+                          <Link href={`/arbeitgeber/dashboard/kunden/${c.id}`} className="absolute inset-0 z-0">
+                            <span className="sr-only">{c.name} ansehen</span>
+                          </Link>
+                          <span className="relative">{c.name}</span>
                         </td>
                         <td className={`whitespace-nowrap px-4 py-3.5 ${importSecondaryTextClass}`}>
                           {c.customerNumber ?? "—"}
@@ -181,7 +229,7 @@ export default async function KundenPage({
                         <td className="whitespace-nowrap px-4 py-3.5 text-right">
                           <Link
                             href={`/arbeitgeber/dashboard/kunden/${c.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
+                            className="relative z-10 inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
                           >
                             <EyeIcon className="h-3.5 w-3.5" />
                             Ansehen
@@ -197,7 +245,7 @@ export default async function KundenPage({
             {result.pageCount > 1 && (
               <div className="mt-4 flex items-center justify-center gap-3">
                 <Link
-                  href={`/arbeitgeber/dashboard/kunden${buildQuery({ q, status: statusFilter, page: result.page - 1 })}`}
+                  href={`/arbeitgeber/dashboard/kunden${buildQuery({ q, status: statusFilter, sort: sortOption, new: newOnly ? 1 : undefined, page: result.page - 1 })}`}
                   aria-disabled={result.page <= 1}
                   className={`rounded-full border border-card-border px-4 py-2 text-xs font-semibold text-sand-800 dark:border-white/15 dark:text-cockpit-text transition-colors ${
                     result.page <= 1
@@ -211,7 +259,7 @@ export default async function KundenPage({
                   Seite {result.page} von {result.pageCount}
                 </span>
                 <Link
-                  href={`/arbeitgeber/dashboard/kunden${buildQuery({ q, status: statusFilter, page: result.page + 1 })}`}
+                  href={`/arbeitgeber/dashboard/kunden${buildQuery({ q, status: statusFilter, sort: sortOption, new: newOnly ? 1 : undefined, page: result.page + 1 })}`}
                   aria-disabled={result.page >= result.pageCount}
                   className={`rounded-full border border-card-border px-4 py-2 text-xs font-semibold text-sand-800 dark:border-white/15 dark:text-cockpit-text transition-colors ${
                     result.page >= result.pageCount

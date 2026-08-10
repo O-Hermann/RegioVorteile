@@ -11,6 +11,17 @@
   --card: #ffffff;
   --card-border: #d7e6e1;
   --shadow-color: 195 25% 15%;
+
+  /* Feinschliff Teil D: Umsatzentwicklung-Graph (RevenueLineChart +
+     RevenueSparkline) - im Light Mode deutlich dunklere/gesaettigtere Teal-
+     Toene, da die im Dark Mode genutzten hellen Toene (#5eead4 etc.) auf
+     weissem Kartenhintergrund zu blass wirken. */
+  --chart-line-color: #0f766e;
+  --chart-point-color: #0d9488;
+  --chart-point-active: #0f766e;
+  --chart-point-ring: #065f56;
+  --chart-fill-color: #0f766e;
+  --chart-grid-color: #cbd5e1;
 }
 
 /* Dunkelmodus: nur die neutrale Sand-Skala und die semantischen Oberflaechen
@@ -22,6 +33,15 @@
   --card: #101f32;
   --card-border: #233449;
   --shadow-color: 0 0% 0%;
+
+  /* Feinschliff Teil D: unveraendert gegenueber dem bisherigen Aussehen im
+     Dark Mode - dieselben hellen Teal-Toene wie zuvor direkt im SVG. */
+  --chart-line-color: #5eead4;
+  --chart-point-color: #5eead4;
+  --chart-point-active: #99f6e4;
+  --chart-point-ring: #087a78;
+  --chart-fill-color: #1e9794;
+  --chart-grid-color: rgba(255, 255, 255, 0.1);
 
   --color-sand-50: #091522;
   --color-sand-100: #0d1b2d;

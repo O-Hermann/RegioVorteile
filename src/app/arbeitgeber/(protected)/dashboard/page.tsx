@@ -32,13 +32,16 @@ import {
 // Gleiche hochwertige Karten-Basis wie im Admin-Dashboard, hier bewusst
 // lokal dupliziert statt importiert, damit das Admin-Dashboard unveraendert
 // bleibt (siehe dortiger Kommentar zum selben Muster).
+// Feinschliff Teil C/E: siehe identischer Kommentar in lib/import-ui.ts -
+// hier bewusst lokal dupliziert, damit die Werte konsistent bleiben, ohne
+// dass die Dashboard-Seite lib/import-ui.ts importieren muss.
 const panelClass =
-  "rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark shadow-sm dark:shadow-xl dark:shadow-black/30 transition-all duration-300";
+  "rounded-2xl border border-card-border dark:border-white/10 bg-card dark:bg-gradient-to-b dark:from-cockpit-card dark:to-cockpit-card-dark shadow-warm-sm dark:shadow-xl dark:shadow-black/30 transition-all duration-300";
 
 const panelHoverClass =
-  "hover:-translate-y-0.5 hover:border-ink-300 dark:hover:border-cockpit-accent-light/40 hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-cockpit-accent/20";
+  "hover:-translate-y-1 hover:border-ink-400 dark:hover:border-cockpit-accent-light/40 hover:shadow-xl hover:shadow-ink-500/10 dark:hover:shadow-2xl dark:hover:shadow-cockpit-accent/20";
 
-const secondaryTextClass = "text-sand-500 dark:text-cockpit-text-secondary";
+const secondaryTextClass = "text-sand-600 dark:text-cockpit-text-secondary";
 
 const ACCENT_CLASSES: Record<string, string> = {
   sky: "bg-gradient-to-br from-sky-400/30 to-sky-500/10 text-sky-600 dark:text-sky-200 border border-sky-400/30 dark:border-sky-300/25 ring-1 ring-inset ring-white/10 shadow-md shadow-sky-500/10 dark:shadow-sky-400/20",
@@ -195,10 +198,13 @@ function RevenueSparkline({ history }: { history: { period: MonthPeriod; revenue
   return (
     <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-3">
       <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-14 w-full overflow-visible">
+        {/* Feinschliff Teil D: gleiches Prinzip wie RevenueLineChart -
+            Theme-abhaengige CSS-Variablen statt fest verdrahteter, im Light
+            Mode zu blasser Hex-Farben. */}
         <defs>
           <linearGradient id="revenueSparklineLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#5eead4" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#5eead4" stopOpacity="0.95" />
+            <stop offset="0%" stopColor="var(--chart-line-color)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="var(--chart-line-color)" stopOpacity="0.95" />
           </linearGradient>
         </defs>
         <polyline
@@ -210,7 +216,7 @@ function RevenueSparkline({ history }: { history: { period: MonthPeriod; revenue
           strokeLinejoin="round"
         />
         {points.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="2.5" fill="#99f6e4" fillOpacity="0.9" />
+          <circle key={i} cx={x} cy={y} r="2.5" style={{ fill: "var(--chart-point-color)" }} fillOpacity="0.9" />
         ))}
       </svg>
       <div className="flex items-center justify-between text-xs">
@@ -590,12 +596,28 @@ export default async function ArbeitgeberDashboardPage() {
                       <span className={secondaryTextClass}>Gesamt</span>
                       <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.total}</span>
                     </div>
-                    <p className="mt-1 text-xs font-semibold text-ink-600 dark:text-cockpit-accent-light">Kunden öffnen →</p>
+                    {/* Feinschliff Teil E: als eigenstaendiger, klar auf
+                        Hover reagierender Text-Link gestaltet (Pfeil bewegt
+                        sich, Farbe vertieft sich) statt eines statischen
+                        "→"-Zeichens. flex-col mit gap-1 ist bewusst so
+                        angelegt, dass hier spaeter problemlos eine zweite
+                        Zeile "Aufträge öffnen →" ergaenzt werden kann. */}
+                    <div className="mt-1 flex flex-col gap-1">
+                      <span className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90">
+                        Kunden öffnen
+                        <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
                   </>
                 ) : (
                   <>
                     <p className={`text-[13px] leading-snug ${secondaryTextClass}`}>Noch keine Kunden angelegt.</p>
-                    <p className="text-xs font-semibold text-ink-600 dark:text-cockpit-accent-light">Kunden anlegen →</p>
+                    <div className="mt-1 flex flex-col gap-1">
+                      <span className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90">
+                        Kunden anlegen
+                        <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
                   </>
                 )}
               </div>

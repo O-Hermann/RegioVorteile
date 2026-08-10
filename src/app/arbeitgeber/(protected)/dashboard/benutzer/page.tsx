@@ -90,7 +90,7 @@ export default async function UnternehmensBenutzerPage({
                     <form action={changeMembershipRole} className="flex items-center gap-2">
                       <input type="hidden" name="membershipId" value={m.id} />
                       <input type="hidden" name="successPath" value={successPath} />
-                      <select name="role" defaultValue={m.role} className={`${inputClass} !w-auto py-1.5 text-xs`}>
+                      <select name="role" defaultValue={m.role} className={`${inputClass} !w-auto py-2 text-sm`}>
                         {roleOptions.map(([value, label]) => (
                           <option key={value} value={value}>
                             {label}
