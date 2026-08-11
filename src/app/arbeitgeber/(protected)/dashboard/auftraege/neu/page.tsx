@@ -28,9 +28,23 @@ export default async function NeuerAuftragPage({
   // createOrder() (Kunde wird dort erneut gegen die aktive Company geladen).
   const preselectedCustomerId = customerParam && customers.some((c) => c.id === customerParam) ? customerParam : "";
 
+  // Feinschliff Navigation: der Zurueck-Kontext wird ausschliesslich anhand
+  // der bereits validierten Vorauswahl bestimmt (nie anhand von
+  // router.back()/Browser-History) - ein Aufruf mit gueltiger, zur aktiven
+  // Company gehoerender Kunden-ID fuehrt zurueck zur Kundendetailseite,
+  // jeder andere Aufruf (kein Parameter oder ein fremder/ungueltiger
+  // Parameter) faellt konsistent auf die Auftragsuebersicht zurueck - exakt
+  // dieselbe Unterscheidung, die preselectedCustomerId bereits fuer die
+  // Formular-Vorauswahl trifft, damit kein zusaetzlicher Oracle fuer fremde
+  // IDs entsteht.
+  const backHref = preselectedCustomerId
+    ? `/arbeitgeber/dashboard/kunden/${preselectedCustomerId}`
+    : "/arbeitgeber/dashboard/auftraege";
+  const backLabel = preselectedCustomerId ? "Zurück zum Kunden" : "Zurück zu Aufträgen";
+
   return (
     <div className="mx-auto max-w-2xl">
-      <PageNav backHref="/arbeitgeber/dashboard/auftraege" backLabel="Zurück zu Aufträgen" />
+      <PageNav backHref={backHref} backLabel={backLabel} />
       <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Neuer Auftrag</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">
         Legen Sie einen neuen Auftrag an und ordnen Sie ihn einem Kunden zu.
