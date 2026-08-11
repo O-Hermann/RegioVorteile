@@ -218,6 +218,19 @@ export async function getCustomersForOrderSelect(companyId: string) {
   });
 }
 
+// Aufträge eines einzelnen Kunden fuer den neuen "Aufträge"-Bereich der
+// Kundendetailseite (Phase 6.2.2, Punkt 9) - bewusst ungepaginiert (typische
+// Auftragsmenge je Kunde ist klein), aber mit "take" als stille
+// Sicherheitsgrenze nach oben abgesichert.
+export async function getOrdersForCustomer(companyId: string, customerId: string) {
+  return prisma.order.findMany({
+    where: { companyId, customerId },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: { id: true, orderNumber: true, title: true, status: true, dueDate: true },
+  });
+}
+
 export const ORDER_ERROR_MESSAGES: Record<string, string> = {
   "title-missing": "Bitte einen Auftragstitel angeben.",
   "title-too-long": "Der Auftragstitel ist zu lang (max. 200 Zeichen).",

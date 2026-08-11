@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireCompanyMember } from "@/lib/auth";
-import { CUSTOMER_MANAGE_ROLES } from "@/lib/company";
+import { CUSTOMER_MANAGE_ROLES, ORDER_MANAGE_ROLES } from "@/lib/company";
 import { getCustomer, CUSTOMER_STATUS_LABELS, CUSTOMER_ERROR_MESSAGES, customerStatusBadgeClass } from "@/lib/customers";
+import { getOrdersForCustomer, ORDER_STATUS_LABELS, orderStatusBadgeClass } from "@/lib/orders";
 import { setCustomerStatus, deleteCustomerContact, deleteCustomer } from "@/actions/customers";
 import { cardClass, secondaryButtonClass, dangerButtonClass } from "@/lib/ui";
 import { importSecondaryTextClass } from "@/lib/import-ui";
@@ -29,6 +30,11 @@ export default async function KundeDetailPage({
 
   const customer = await getCustomer(company.id, id);
   if (!customer) notFound();
+
+  // Phase 6.2.2, Punkt 9: Auftraege dieses Kunden - bereits company- UND
+  // customer-gescopt geladen (kein separater Client-Filter noetig).
+  const orders = await getOrdersForCustomer(company.id, customer.id);
+  const canManageOrders = ORDER_MANAGE_ROLES.includes(membership.role);
 
   const addressLine = [customer.postalCode, customer.city].filter(Boolean).join(" ");
 
@@ -255,6 +261,54 @@ export default async function KundeDetailPage({
             <p className="mt-3 whitespace-pre-wrap text-sm text-sand-800 dark:text-cockpit-text">{customer.notes}</p>
           </div>
         )}
+
+        <div className={`lg:col-span-2 ${cardClass}`}>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-semibold text-sand-900">Aufträge</h2>
+            {canManageOrders && (
+              <Link
+                href={`/arbeitgeber/dashboard/auftraege/neu?customer=${customer.id}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                Neuer Auftrag
+              </Link>
+            )}
+          </div>
+          {orders.length === 0 ? (
+            <div className="mt-3">
+              <p className={`text-sm ${importSecondaryTextClass}`}>Für diesen Kunden wurden noch keine Aufträge angelegt.</p>
+              {canManageOrders && (
+                <Link
+                  href={`/arbeitgeber/dashboard/auftraege/neu?customer=${customer.id}`}
+                  className="mt-2 inline-block text-sm font-semibold text-ink-600 hover:underline dark:text-cockpit-accent-light"
+                >
+                  Auftrag anlegen
+                </Link>
+              )}
+            </div>
+          ) : (
+            <ul className="mt-3 divide-y divide-card-border/60 dark:divide-white/5">
+              {orders.map((order) => (
+                <li key={order.id} className="relative py-3">
+                  <Link href={`/arbeitgeber/dashboard/auftraege/${order.id}`} className="absolute inset-0 z-0" />
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-sand-900 dark:text-cockpit-text">{order.title}</p>
+                      <p className={`text-sm ${importSecondaryTextClass}`}>
+                        {order.orderNumber}
+                        {order.dueDate && ` · Fällig: ${order.dueDate.toLocaleDateString("de-DE")}`}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${orderStatusBadgeClass(order.status)}`}>
+                      {ORDER_STATUS_LABELS[order.status]}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
