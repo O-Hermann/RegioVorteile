@@ -16,7 +16,7 @@ import { monthParamValue } from "@/lib/finance-format";
 import { importPanelClass, importSecondaryTextClass } from "@/lib/import-ui";
 import { primaryButtonClass } from "@/lib/ui";
 import { ModulePlaceholder } from "@/components/module-placeholder";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 import { RevenueLineChart, type RevenueHistoryPoint } from "@/components/finance/revenue-line-chart";
 import { CustomerRevenueList, type CustomerRevenueView } from "@/components/finance/customer-revenue-list";
 import { InvoiceTable, type InvoiceRowView } from "@/components/finance/invoice-table";
@@ -72,7 +72,7 @@ export default async function FinanzuebersichtPage({
   if (availableMonths.length === 0) {
     return (
       <div>
-        <BackLink href="/arbeitgeber/dashboard" label="Zurück zur Übersicht" />
+        <PageNav />
         <ModulePlaceholder
           icon={FileTextIcon}
           title="Finanzübersicht"
@@ -169,7 +169,7 @@ export default async function FinanzuebersichtPage({
 
   return (
     <div className="space-y-6 pb-10">
-      <BackLink href="/arbeitgeber/dashboard" label="Zurück zur Übersicht" />
+      <PageNav />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Finanzübersicht</h1>

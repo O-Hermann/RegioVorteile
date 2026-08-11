@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { submitCompanySupportRequest } from "@/actions/feedback";
 import { cardClass, primaryButtonClass, labelClass, inputClass } from "@/lib/ui";
 import { CATEGORY_LABELS, categoryBadgeClass, statusLabel, statusBadgeClass } from "@/lib/feedback";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 const CATEGORY_OPTIONS = [
   { value: "HELP", label: "Hilfe" },
@@ -28,7 +28,7 @@ export default async function SupportPage({
 
   return (
     <div>
-      <BackLink href="/arbeitgeber/dashboard" label="Zurück zur Übersicht" />
+      <PageNav />
       <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Support</h1>
       <p className="mt-2 text-sand-600">
         Hilfe anfordern, einen Fehler melden oder eine Verbesserung vorschlagen.

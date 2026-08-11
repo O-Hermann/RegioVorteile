@@ -12,6 +12,7 @@ import {
 import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass } from "@/lib/ui";
 import { UploadIcon, EyeIcon } from "@/components/icons";
+import { PageNav } from "@/components/page-nav";
 
 export default async function DatenimportePage({
   searchParams,
@@ -30,7 +31,8 @@ export default async function DatenimportePage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageNav />
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Datenimporte</h1>
           <p className={`mt-2 max-w-xl ${importSecondaryTextClass}`}>

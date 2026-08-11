@@ -16,6 +16,7 @@ import {
 import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass, inputClass } from "@/lib/ui";
 import { BriefcaseIcon, EyeIcon } from "@/components/icons";
+import { PageNav } from "@/components/page-nav";
 
 const SORT_VALUES = ORDER_SORT_OPTIONS.map((o) => o.value);
 const STATUS_VALUES = ORDER_STATUS_FILTER_OPTIONS.map((o) => o.value);
@@ -67,7 +68,8 @@ export default async function AuftraegePage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageNav />
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Aufträge</h1>
           <p className={`mt-2 max-w-xl ${importSecondaryTextClass}`}>

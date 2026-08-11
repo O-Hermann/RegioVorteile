@@ -16,7 +16,7 @@ import {
 import { importPanelClass, importSecondaryTextClass, importIconBadgeClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 import { ArrowLeftIcon, TargetIcon, CheckCircleIcon } from "@/components/icons";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export default async function DatenimportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -64,7 +64,7 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
 
   return (
     <div>
-      <BackLink href="/arbeitgeber/dashboard/datenimporte" label="Zurück zu Datenimporten" />
+      <PageNav backHref="/arbeitgeber/dashboard/datenimporte" backLabel="Zurück zu Datenimporten" />
 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>

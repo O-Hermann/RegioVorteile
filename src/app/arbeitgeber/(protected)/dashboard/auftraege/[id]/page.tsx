@@ -4,7 +4,7 @@ import { requireCompanyMember } from "@/lib/auth";
 import { getOrder, ORDER_STATUS_LABELS, orderStatusBadgeClass } from "@/lib/orders";
 import { cardClass } from "@/lib/ui";
 import { importSecondaryTextClass } from "@/lib/import-ui";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 // Bewusst nur eine einfache Read-only-Grundansicht (Punkt 11) - die
 // vollstaendige Detailseite mit Bearbeiten/Aufgaben/etc. folgt erst in
@@ -19,7 +19,7 @@ export default async function AuftragDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-2xl">
-      <BackLink href="/arbeitgeber/dashboard/auftraege" label="Zurück zu Aufträgen" />
+      <PageNav backHref="/arbeitgeber/dashboard/auftraege" backLabel="Zurück zu Aufträgen" />
       <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">{order.title}</h1>

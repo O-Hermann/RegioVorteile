@@ -5,7 +5,7 @@ import { getCustomer, CUSTOMER_ERROR_MESSAGES } from "@/lib/customers";
 import { updateCustomer } from "@/actions/customers";
 import { CustomerFormFields } from "@/components/customers/customer-form-fields";
 import { cardClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export default async function KundeBearbeitenPage({
   params,
@@ -27,7 +27,7 @@ export default async function KundeBearbeitenPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <BackLink href={`/arbeitgeber/dashboard/kunden/${customer.id}`} label="Zurück zum Kunden" />
+      <PageNav backHref={`/arbeitgeber/dashboard/kunden/${customer.id}`} backLabel="Zurück zum Kunden" />
       <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Kunde bearbeiten</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">{customer.name}</p>
 

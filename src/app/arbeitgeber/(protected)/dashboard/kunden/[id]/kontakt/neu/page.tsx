@@ -5,7 +5,7 @@ import { getCustomer, CUSTOMER_ERROR_MESSAGES } from "@/lib/customers";
 import { createCustomerContact } from "@/actions/customers";
 import { CustomerContactFormFields } from "@/components/customers/customer-contact-form-fields";
 import { cardClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export default async function NeuerAnsprechpartnerPage({
   params,
@@ -25,7 +25,7 @@ export default async function NeuerAnsprechpartnerPage({
 
   return (
     <div className="mx-auto max-w-xl">
-      <BackLink href={`/arbeitgeber/dashboard/kunden/${customer.id}`} label="Zurück zum Kunden" />
+      <PageNav backHref={`/arbeitgeber/dashboard/kunden/${customer.id}`} backLabel="Zurück zum Kunden" />
       <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Ansprechpartner hinzufügen</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">{customer.name}</p>
 

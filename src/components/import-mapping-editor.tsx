@@ -8,7 +8,7 @@ import { IGNORE_FIELD_KEY, IMPORT_FIELD_DATA_TYPE_LABELS, type ImportFieldDataTy
 import { importPanelClass, importSecondaryTextClass, importIconBadgeClass } from "@/lib/import-ui";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 import { CheckCircleIcon, AlertTriangleIcon, ArrowLeftIcon, TargetIcon } from "@/components/icons";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export type MappingFieldOption = { key: string; label: string; group: string };
 
@@ -118,7 +118,7 @@ export function ImportMappingEditor({
 
   return (
     <div className="mx-auto max-w-[1000px] space-y-6">
-      <BackLink href={detailHref} label="Zurück zum Datenimport" />
+      <PageNav backHref={detailHref} backLabel="Zurück zum Datenimport" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Spalten zuordnen</h1>

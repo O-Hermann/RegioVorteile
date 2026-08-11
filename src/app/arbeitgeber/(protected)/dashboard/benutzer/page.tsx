@@ -11,6 +11,7 @@ import {
   COMPANY_MANAGER_ROLES,
   INVITE_ERROR_MESSAGES,
 } from "@/lib/company";
+import { PageNav } from "@/components/page-nav";
 
 export default async function UnternehmensBenutzerPage({
   searchParams,
@@ -38,7 +39,8 @@ export default async function UnternehmensBenutzerPage({
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-sand-900">Benutzer</h1>
+      <PageNav />
+      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Benutzer</h1>
       <p className="mt-2 text-sand-600">Zugänge und Rollen für {company.name} verwalten.</p>
 
       {newInviteToken && (

@@ -14,6 +14,7 @@ import {
 import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass, inputClass } from "@/lib/ui";
 import { UsersIcon, EyeIcon } from "@/components/icons";
+import { PageNav } from "@/components/page-nav";
 
 const STATUS_TABS: { value: CustomerStatusFilter; label: string }[] = [
   { value: "all", label: "Alle" },
@@ -64,7 +65,8 @@ export default async function KundenPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageNav />
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold text-sand-900">Kunden</h1>
           <p className={`mt-2 max-w-xl ${importSecondaryTextClass}`}>

@@ -1,14 +1,14 @@
 import { requireCompanyMember } from "@/lib/auth";
 import { TrendingUpIcon } from "@/components/icons";
 import { ModulePlaceholder } from "@/components/module-placeholder";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export default async function EntwicklungPage() {
   await requireCompanyMember();
 
   return (
     <div>
-      <BackLink href="/arbeitgeber/dashboard" label="Zurück zur Übersicht" />
+      <PageNav />
       <ModulePlaceholder
         icon={TrendingUpIcon}
         title="Entwicklung"

@@ -3,7 +3,7 @@ import { requireCompanyMember, assertCanManageOrders } from "@/lib/auth";
 import { getCustomersForOrderSelect, ORDER_ERROR_MESSAGES } from "@/lib/orders";
 import { createOrder } from "@/actions/orders";
 import { cardClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 
 export default async function NeuerAuftragPage({
   searchParams,
@@ -21,7 +21,7 @@ export default async function NeuerAuftragPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <BackLink href="/arbeitgeber/dashboard/auftraege" label="Zurück zu Aufträgen" />
+      <PageNav backHref="/arbeitgeber/dashboard/auftraege" backLabel="Zurück zu Aufträgen" />
       <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Neuer Auftrag</h1>
       <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">
         Legen Sie einen neuen Auftrag an und ordnen Sie ihn einem Kunden zu.

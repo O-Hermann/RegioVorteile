@@ -579,51 +579,61 @@ export default async function ArbeitgeberDashboardPage() {
                 STRIKT getrennt von der Finanzkennzahl "Kunden mit Umsatz"
                 (die aus importierten Rechnungsdaten stammt, siehe
                 metrics.customersWithRevenueCurrent weiter oben).
-                Phase 6.2.1 (Punkt 17/18): die Karte zeigt nun zusaetzlich
-                echte Order-Zahlen und fuehrt zu ZWEI Zielen (Aufträge UND
-                Kunden) statt einem einzigen - deshalb ist die Karte selbst
-                bewusst kein grosser <Link> mehr (das wuerde zu ungueltig
-                verschachteltem <a>-Markup fuehren, sobald die beiden
-                Text-Links darunter eigene <Link>s sind), sondern ein
-                schlichtes <div> mit "group" fuer die Hover-Optik; nur der
-                Kartenkopf selbst ist ein eigener <Link> auf die
-                Auftragsuebersicht (der Pfeil oben rechts darf laut Vorgabe
-                dorthin fuehren). */}
-            <div className={`${panelClass} ${panelHoverClass} group flex min-h-[300px] flex-col !p-4`}>
-              <Link
-                href="/arbeitgeber/dashboard/auftraege"
-                className="-m-1 flex shrink-0 rounded-lg p-1 transition-colors hover:bg-sand-100 dark:hover:bg-white/5"
-              >
-                <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" linked />
-              </Link>
-              <div className="mt-2 flex flex-1 min-h-0 flex-col justify-center gap-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className={secondaryTextClass}>Offene Aufträge</span>
-                  <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{orderCounts.open}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className={secondaryTextClass}>Aktive Kunden</span>
-                  <span className="font-semibold text-sand-900 dark:text-cockpit-heading">{customerCounts.active}</span>
-                </div>
-                {/* Feinschliff Teil E: als eigenstaendiger, klar auf Hover
-                    reagierender Text-Link gestaltet (Pfeil bewegt sich, Farbe
-                    vertieft sich) statt eines statischen "→"-Zeichens. */}
-                <div className="mt-1 flex flex-col gap-1">
-                  <Link
-                    href="/arbeitgeber/dashboard/auftraege"
-                    className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90"
-                  >
-                    Aufträge öffnen
-                    <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                  <Link
-                    href="/arbeitgeber/dashboard/kunden"
-                    className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-ink-600 transition-colors group-hover:text-ink-700 dark:text-cockpit-accent-light dark:group-hover:text-cockpit-accent-light/90"
-                  >
-                    Kunden öffnen
-                    <ArrowRightIcon className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                </div>
+                Feinschliff 6.2.1.1: die Karte fuehrt zu ZWEI gleichwertigen
+                Zielen (Kunden UND Aufträge) - dafuer jetzt in zwei klar
+                getrennte, je vollstaendig anklickbare Bereiche gegliedert
+                statt zweier kleiner "öffnen"-Textlinks. Der Kartenkopf ist
+                bewusst KEIN Link mehr (kein Pfeil, "linked" weggelassen) -
+                ein einzelner Pfeil fuer die ganze Karte waere jetzt
+                zweideutig, da es zwei unabhaengige Ziele gibt. Jeder Bereich
+                ist ein einziger <Link>, der seinen gesamten Inhalt umschliesst
+                (kein Stretched-Link/absolute-Overlay noetig, da innerhalb
+                keine zweite eigenstaendig klickbare Flaeche existiert) -
+                dadurch bleibt das Markup einfach und garantiert gueltig
+                (keine verschachtelten <a>). Die Karte selbst hebt sich beim
+                Hover NICHT mehr als Ganzes (kein panelHoverClass, kein
+                "group") - jeder Bereich reagiert eigenstaendig ueber sein
+                eigenes benanntes group/kunden bzw. group/auftraege, damit nie
+                der "falsche" Bereich mitreagiert. */}
+            <div className={`${panelClass} flex min-h-[300px] flex-col overflow-hidden !p-0`}>
+              <div className="shrink-0 px-4 pt-4 pb-1">
+                <MiddleCardHeader icon={BriefcaseIcon} title="Aufträge und Kunden" color="slate" />
+              </div>
+              <div className="mt-1 flex flex-1 min-h-0 flex-col divide-y divide-card-border/70 dark:divide-white/10">
+                <Link
+                  href="/arbeitgeber/dashboard/kunden"
+                  className="group/kunden relative flex flex-1 items-center gap-3 border-l-2 border-l-transparent px-4 py-2.5 transition-colors duration-150 hover:border-l-ink-400 hover:bg-sand-50 dark:hover:border-l-cockpit-accent-light/60 dark:hover:bg-white/[0.04]"
+                >
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES.sky}`}>
+                    <UsersIcon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-sand-900 transition-colors duration-150 group-hover/kunden:text-ink-700 dark:text-cockpit-heading dark:group-hover/kunden:text-cockpit-accent-light">
+                      Kunden
+                    </p>
+                    <p className={`text-xs ${secondaryTextClass}`}>
+                      {customerCounts.active} {customerCounts.active === 1 ? "aktiver Kunde" : "aktive Kunden"}
+                    </p>
+                  </div>
+                  <ArrowRightIcon className="h-3.5 w-3.5 shrink-0 text-sand-300 transition-transform duration-150 group-hover/kunden:translate-x-1 group-hover/kunden:text-ink-600 dark:text-cockpit-text-weak dark:group-hover/kunden:text-cockpit-accent-light" />
+                </Link>
+                <Link
+                  href="/arbeitgeber/dashboard/auftraege"
+                  className="group/auftraege relative flex flex-1 items-center gap-3 border-l-2 border-l-transparent px-4 py-2.5 transition-colors duration-150 hover:border-l-ink-400 hover:bg-sand-50 dark:hover:border-l-cockpit-accent-light/60 dark:hover:bg-white/[0.04]"
+                >
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ACCENT_CLASSES.slate}`}>
+                    <BriefcaseIcon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-sand-900 transition-colors duration-150 group-hover/auftraege:text-ink-700 dark:text-cockpit-heading dark:group-hover/auftraege:text-cockpit-accent-light">
+                      Aufträge
+                    </p>
+                    <p className={`text-xs ${secondaryTextClass}`}>
+                      {orderCounts.open} {orderCounts.open === 1 ? "offener Auftrag" : "offene Aufträge"}
+                    </p>
+                  </div>
+                  <ArrowRightIcon className="h-3.5 w-3.5 shrink-0 text-sand-300 transition-transform duration-150 group-hover/auftraege:translate-x-1 group-hover/auftraege:text-ink-600 dark:text-cockpit-text-weak dark:group-hover/auftraege:text-cockpit-accent-light" />
+                </Link>
               </div>
             </div>
           </div>

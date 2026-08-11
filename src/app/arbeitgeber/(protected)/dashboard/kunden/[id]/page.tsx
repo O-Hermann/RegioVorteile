@@ -7,7 +7,7 @@ import { setCustomerStatus, deleteCustomerContact, deleteCustomer } from "@/acti
 import { cardClass, secondaryButtonClass, dangerButtonClass } from "@/lib/ui";
 import { importSecondaryTextClass } from "@/lib/import-ui";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
-import { BackLink } from "@/components/back-link";
+import { PageNav } from "@/components/page-nav";
 import { KebabMenu } from "@/components/kebab-menu";
 import { PlusIcon, MailIcon, PhoneIcon } from "@/components/icons";
 
@@ -34,7 +34,7 @@ export default async function KundeDetailPage({
 
   return (
     <div>
-      <BackLink href="/arbeitgeber/dashboard/kunden" label="Zurück zu Kunden" />
+      <PageNav backHref="/arbeitgeber/dashboard/kunden" backLabel="Zurück zu Kunden" />
       {error && (
         <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
           {CUSTOMER_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}

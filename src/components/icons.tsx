@@ -483,6 +483,23 @@ export function EyeIcon({ className }: { className?: string }) {
   );
 }
 
+export function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5.5 10v9.5a1 1 0 0 0 1 1H9.5v-6h5v6h3a1 1 0 0 0 1-1V10" />
+    </svg>
+  );
+}
+
 export function ArrowLeftIcon({ className }: { className?: string }) {
   return (
     <svg
