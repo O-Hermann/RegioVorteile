@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { CheckIcon, EyeIcon, SearchIcon, TargetIcon } from "@/components/icons";
 
 type Tone = "danger" | "warning" | "purple" | "accent";
@@ -32,9 +33,6 @@ const MARKER_RANGES: [number, number][] = [
   [0.92, 1],
 ];
 
-// Eine durchgehende Buchungsliste, die ueber alle Analyse-Phasen sichtbar
-// bleibt - nur welche Zeile hervorgehoben ist, aendert sich weich mit dem
-// Scrollfortschritt.
 const MASTER_ROWS: { id: string; name: string; amount: string }[] = [
   { id: "mueller-1", name: "Müller GmbH", amount: "2.480 €" },
   { id: "telekom", name: "Telekom", amount: "184 €" },
@@ -156,11 +154,9 @@ const TALLY: { value: string; label: string }[] = [
 
 // Choreografie einzelner Zeilen innerhalb ihrer jeweiligen Fund-Phase (lokaler
 // Fortschritt 0..1 = Anteil am Scrollbereich DIESER Phase): erst die erste
-// Buchung, kurz danach die zweite, dann ein Matching-Hinweis dazwischen.
-// Die Fenster sind bewusst grosszuegig (0.2-0.3 lokaler Breite): bei einem
-// einzelnen Mausrad-Wheelticks (~100-120px) darf ein einzelner Teilschritt
-// nicht schon vollstaendig durchlaufen sein, sonst wirkt er trotz stetiger
-// Funktion wie ein Sprung. Siehe STORY_VH weiter unten fuer denselben Grund.
+// Buchung, kurz danach die zweite, dann ein Matching-Hinweis dazwischen. Die
+// Fenster sind bewusst grosszuegig, damit ein einzelner Scroll-Impuls (Rad,
+// Trackpad, Scrollbar) einen Teilschritt nicht in einem Ruck durchlaeuft.
 const ROW_STAGE: Record<string, [number, number]> = {
   "mueller-1": [0, 0.26],
   "mueller-2": [0.2, 0.42],
@@ -213,28 +209,12 @@ const TONE_STYLES: Record<
   },
 };
 
-// Gesamt-Scrollstrecke der gepinnten Story. Bewusst deutlich laenger als der
-// urspruengliche 500-650vh-Richtwert: mit der choreografierten Abfolge
-// mehrerer Teilschritte je Fund-Phase (Zeile 1 -> Zeile 2 -> Matching -> Chip
-// -> Panel) braucht jeder einzelne Teilschritt genug Scroll-Wegstrecke, damit
-// ein einzelner grober Scroll-Delta (z.B. ein Mausrad-Wheeltick von grob
-// 100-120px) ihn nicht in einem Schritt komplett durchlaeuft - sonst wirkt
-// eine mathematisch stetige Funktion trotzdem wie ein Sprung, weil zu wenige
-// Zwischenwerte tatsaechlich abgetastet werden.
+// Gesamt-Scrollstrecke der gepinnten Szene. Bewusst grosszuegig bemessen:
+// jeder Choreografie-Teilschritt braucht genug Scroll-Wegstrecke, damit ein
+// einzelner Scroll-Impuls ihn nicht in einem Ruck komplett durchlaeuft.
 const STORY_VH = 900;
-// Hoehe des fixen Landing-Headers (h-16 = 64px) + dezenter Abstand.
 const STICKY_TOP_PX = 88;
-// Zeitfenster fuer den Text-Crossfade (Headline/Copy muss diskret wechseln,
-// bekommt dafuer aber ein weiches Aus-/Einblenden statt eines harten Schnitts).
-const TEXT_CROSSFADE_MS = 200;
 
-// Szenen-Bandbreiten (Anteil am Gesamtfortschritt). Innerhalb jeder Phase
-// bleibt der grosse mittlere Bereich stabil ("Ruhephase"), nur an den
-// Raendern wird ueber die Bandbreite weich ein-/ausgeblendet. ROW_BAND ist
-// bewusst schmaler als frueher: der letzte Choreografie-Teilschritt (Panel)
-// endet erst bei lokal 0.86 - das Ausblenden am Phasenende darf erst danach
-// einsetzen, sonst wuerde das Panel wieder abgeschnitten, bevor es fertig
-// aufgeblendet ist.
 const LIST_RANGE: [number, number] = [0, 0.59];
 const ZUSAMMENHANG_RANGE: [number, number] = [0.59, 0.78];
 const EFFEKT_RANGE: [number, number] = [0.78, 0.92];
@@ -244,53 +224,63 @@ const ROW_BAND = 0.025;
 const CHIP_BAND = 0.06;
 const PANEL_RANGE: [number, number] = [DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end];
 
-function clamp01(x: number): number {
-  return x < 0 ? 0 : x > 1 ? 1 : x;
-}
+// -----------------------------------------------------------------------
+// Keyframe-Helfer: liefern reine [input, output]-Arrays fuer useTransform.
+// Es wird bewusst NICHT mehr mit React-State/Prozentwerten pro Renderzyklus
+// gerechnet - jede sichtbare Eigenschaft wird direkt als MotionValue aus
+// scrollYProgress abgeleitet und von Framer Motion ausserhalb des React-
+// Renderzyklus auf das DOM geschrieben (kein Re-Render pro Scroll-Frame).
+// -----------------------------------------------------------------------
 
-function smoothstep(t: number): number {
-  const x = clamp01(t);
-  return x * x * (3 - 2 * x);
-}
-
-// Weiches Aktivierungsgewicht 0..1: haelt sich innerhalb [start,end] bei 1 und
-// blendet symmetrisch um die Raender ueber `band` weich ein/aus.
-function bandWeight(progress: number, start: number, end: number, band: number): number {
+// Symmetrisches Auf-/Abblenden um [start,end] - fuer Szenen-Crossfades und
+// die Kopf-Akzentfarbe. Am offenen Rand (Start der ersten / Ende der
+// letzten Phase) wird nicht ausgeblendet, da davor/danach nichts folgt.
+function bandKeyframes(start: number, end: number, band: number): [number[], number[]] {
   const half = band / 2;
-  const inW = start <= 0 ? 1 : smoothstep((progress - (start - half)) / band);
-  const outW = end >= 1 ? 1 : 1 - smoothstep((progress - (end - half)) / band);
-  return Math.max(0, Math.min(inW, outW));
+  const xs: number[] = [];
+  const ys: number[] = [];
+  if (start <= 0) {
+    xs.push(0);
+    ys.push(1);
+  } else {
+    xs.push(Math.max(0, start - half), start + half);
+    ys.push(0, 1);
+  }
+  if (end >= 1) {
+    xs.push(1);
+    ys.push(1);
+  } else {
+    xs.push(end - half, Math.min(1, end + half));
+    ys.push(1, 0);
+  }
+  return [xs, ys];
 }
 
-// Nur ansteigende Blende (bleibt danach aktiv) - fuer Funde, die als Chip
-// bestehen bleiben, sobald sie einmal erreicht wurden.
-function riseWeight(progress: number, at: number, band: number): number {
-  return smoothstep((progress - (at - band / 2)) / band);
+// Choreografierter Teilschritt innerhalb einer Phase: steigt weich im
+// lokalen Fenster [riseFromLocal, riseToLocal] und blendet symmetrisch am
+// Phasenende wieder aus (Fokus wandert zur naechsten Phase).
+function phaseStageKeyframes(
+  phase: Phase,
+  riseFromLocal: number,
+  riseToLocal: number,
+  fadeBand: number
+): [number[], number[]] {
+  const width = phase.end - phase.start;
+  const riseFrom = phase.start + riseFromLocal * width;
+  const riseTo = phase.start + riseToLocal * width;
+  if (phase.end >= 1) return [[riseFrom, riseTo], [0, 1]];
+  const half = fadeBand / 2;
+  return [
+    [riseFrom, riseTo, phase.end - half, Math.min(1, phase.end + half)],
+    [0, 1, 1, 0],
+  ];
 }
 
-// Lokaler Fortschritt 0..1 INNERHALB einer Phase (0 = Phasenanfang, 1 =
-// Phasenende) - Grundlage fuer die choreografierte Abfolge einzelner
-// Teilschritte innerhalb ein und derselben Scrollphase.
-function localProgress(progress: number, phase: Phase): number {
-  return clamp01((progress - phase.start) / (phase.end - phase.start));
-}
-
-// Ein Teilschritt innerhalb der Choreografie einer Phase: steigt weich von 0
-// auf 1 im lokalen Fortschrittsfenster [from,to] und bleibt danach bei 1 -
-// mehrere solcher Teilschritte mit versetzten Fenstern ergeben eine
-// Abfolge ("erst Zeile 1, dann Zeile 2, dann Verbindung, dann Fund-Chip...")
-// statt eines gemeinsamen Einblendens.
-function stageWeight(localT: number, from: number, to: number): number {
-  return smoothstep((localT - from) / (to - from));
-}
-
-// Wie stageWeight, blendet aber zusaetzlich am Ende der Phase (symmetrisch
-// um `phase.end`) wieder aus - fuer Elemente, die beim Uebergang zur
-// naechsten Phase aus dem Fokus wandern (Zeilen-Highlight, Panel-Inhalt).
-function choreographedWeight(progress: number, phase: Phase, from: number, to: number, fadeBand: number): number {
-  const riseW = stageWeight(localProgress(progress, phase), from, to);
-  const outW = phase.end >= 1 ? 1 : 1 - smoothstep((progress - (phase.end - fadeBand / 2)) / fadeBand);
-  return Math.max(0, Math.min(riseW, outW));
+// Nur ansteigend, kein Ausblenden - fuer Funde, die als Chip bestehen
+// bleiben, sobald sie einmal erreicht wurden.
+function riseKeyframes(phase: Phase, riseFromLocal: number, riseToLocal: number): [number[], number[]] {
+  const width = phase.end - phase.start;
+  return [[phase.start + riseFromLocal * width, phase.start + riseToLocal * width], [0, 1]];
 }
 
 function resolvePhaseIndex(progress: number): number {
@@ -315,77 +305,27 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-// Zentrale Produktgeschichte der Startseite: EINE grosse gepinnte Section,
-// deren Scrollfortschritt (0..1) ueber die tatsaechliche Position der Section
-// im Dokument berechnet wird. Alle visuellen Zustaende der Produktbuehne
-// werden als STETIGE Funktionen dieses einen Fortschrittswerts berechnet
-// (bandWeight/riseWeight/choreographedWeight), nicht als diskrete An/Aus-
-// Zustaende - dadurch entwickelt sich die Buehne beim Scrollen weich statt
-// zu springen, und einzelne Elemente (Zeilen, Verbindungshinweis, Fund-Chip,
-// Transparenzpanel) laufen innerhalb einer Phase choreografiert nacheinander
-// ab statt gleichzeitig einzublenden. Nur der Story-Text (Headline/Copy)
-// muss inhaltlich diskret wechseln; dafuer gibt es einen kurzen, im Scroll-
-// Callback ausgeloesten Crossfade. Auf Mobile und bei reduzierter Bewegung
-// wird eine statische, nicht gepinnte Liste aller Phasen gerendert.
+// Zentrale Produktgeschichte der Startseite: EINE grosse gepinnte Section.
+// scrollYProgress (0..1, aus useScroll) ist die einzige Quelle der Wahrheit;
+// jede sichtbare Eigenschaft der Produktbuehne wird per useTransform direkt
+// daraus abgeleitet und als MotionValue an motion.*-Elemente gebunden -
+// Framer Motion schreibt diese Werte bei jedem Scroll-Frame unabhaengig vom
+// React-Renderzyklus direkt ins DOM (kein setState, kein Re-Render pro
+// Pixel). React-State wird nur fuer echte Inhalts-/Accessibility-Zwecke
+// verwendet (Screenreader-Ansage der aktuellen Phase) und aktualisiert sich
+// nur bei tatsaechlichem Phasenwechsel, nicht pro Scroll-Event. Auf Mobile
+// und bei reduzierter Bewegung wird eine statische, nicht gepinnte Liste
+// aller Phasen gerendert.
 export function LeakScrollytelling() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [displayPhaseIndex, setDisplayPhaseIndex] = useState(0);
-  const [textFading, setTextFading] = useState(false);
-  const progressRef = useRef(0);
-  const displayPhaseRef = useRef(0);
-  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+  const [announcedPhase, setAnnouncedPhase] = useState(0);
 
-  useEffect(() => {
-    if (prefersReducedMotion) return;
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const desktopMq = window.matchMedia("(min-width: 1024px)");
-    let frame = 0;
-
-    function evaluate() {
-      frame = 0;
-      if (!desktopMq.matches) return;
-      const rect = section!.getBoundingClientRect();
-      const total = rect.height - window.innerHeight;
-      const raw = total > 0 ? -rect.top / total : 0;
-      const clamped = clamp01(raw);
-      if (Math.abs(clamped - progressRef.current) < 0.0003) return;
-      progressRef.current = clamped;
-      setProgress(clamped);
-
-      const nextPhase = resolvePhaseIndex(clamped);
-      if (nextPhase !== displayPhaseRef.current && !fadeTimeoutRef.current) {
-        setTextFading(true);
-        fadeTimeoutRef.current = setTimeout(() => {
-          const latest = resolvePhaseIndex(progressRef.current);
-          displayPhaseRef.current = latest;
-          setDisplayPhaseIndex(latest);
-          setTextFading(false);
-          fadeTimeoutRef.current = null;
-        }, TEXT_CROSSFADE_MS);
-      }
-    }
-
-    function onScroll() {
-      if (frame) return;
-      frame = requestAnimationFrame(evaluate);
-    }
-
-    evaluate();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    desktopMq.addEventListener("change", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      desktopMq.removeEventListener("change", onScroll);
-      if (frame) cancelAnimationFrame(frame);
-      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
-    };
-  }, [prefersReducedMotion]);
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const next = resolvePhaseIndex(latest);
+    setAnnouncedPhase((prev) => (prev === next ? prev : next));
+  });
 
   return (
     <section id="geldlecks" className="relative bg-landing-bg-alt">
@@ -398,14 +338,17 @@ export function LeakScrollytelling() {
           <div ref={sectionRef} className="relative hidden lg:block" style={{ height: `${STORY_VH}vh` }}>
             <div className="sticky" style={{ top: STICKY_TOP_PX, height: `calc(100vh - ${STICKY_TOP_PX}px)` }}>
               <div className="relative flex h-full items-center">
-                <AmbientLayer progress={progress} />
+                <AmbientLayer scrollYProgress={scrollYProgress} />
                 <div className="relative mx-auto grid w-full max-w-6xl grid-cols-[1.5rem_0.42fr_0.56fr] items-center gap-x-8 px-4 sm:px-6">
-                  <StoryRail progress={progress} />
-                  <PhaseText phaseIndex={displayPhaseIndex} fading={textFading} />
-                  <ProductStage progress={progress} reveal={false} />
+                  <StoryRail scrollYProgress={scrollYProgress} />
+                  <PhaseTextStack scrollYProgress={scrollYProgress} />
+                  <ProductStage scrollYProgress={scrollYProgress} />
                 </div>
               </div>
             </div>
+            <span className="sr-only" aria-live="polite">
+              {PHASES[announcedPhase].kicker}: {PHASES[announcedPhase].headline}
+            </span>
           </div>
           <div className="py-20 lg:hidden">
             <StaticStory />
@@ -416,141 +359,163 @@ export function LeakScrollytelling() {
   );
 }
 
-function AmbientLayer({ progress }: { progress: number }) {
-  const problemGlow = bandWeight(progress, DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end, 0.08);
-  const resultGlow = Math.max(
-    bandWeight(progress, EFFEKT_RANGE[0], EFFEKT_RANGE[1], SCENE_BAND),
-    bandWeight(progress, KONTROLLE_RANGE[0], KONTROLLE_RANGE[1], SCENE_BAND) * 0.7
-  );
+function AmbientLayer({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
+  const [problemIn, problemOut] = bandKeyframes(DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end, 0.08);
+  const problemGlow = useTransform(scrollYProgress, problemIn, problemOut);
+  const [effektIn, effektOut] = bandKeyframes(EFFEKT_RANGE[0], EFFEKT_RANGE[1], SCENE_BAND);
+  const effektGlow = useTransform(scrollYProgress, effektIn, effektOut);
+  const [kontrolleIn, kontrolleOut] = bandKeyframes(KONTROLLE_RANGE[0], KONTROLLE_RANGE[1], SCENE_BAND);
+  const kontrolleGlow = useTransform(scrollYProgress, kontrolleIn, kontrolleOut);
+  const problemOpacity = useTransform(problemGlow, (v) => v * 0.08);
+  const resultOpacity = useTransform(() => 0.03 + Math.max(effektGlow.get(), kontrolleGlow.get() * 0.7) * 0.11);
+
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
+      <motion.div
         className="absolute -right-24 top-1/4 h-[28rem] w-[28rem] rounded-full bg-landing-danger blur-[120px]"
-        style={{ opacity: problemGlow * 0.08 }}
+        style={{ opacity: problemOpacity }}
       />
-      <div
+      <motion.div
         className="absolute -left-24 bottom-1/4 h-[26rem] w-[26rem] rounded-full bg-landing-accent-light blur-[120px]"
-        style={{ opacity: 0.03 + resultGlow * 0.11 }}
+        style={{ opacity: resultOpacity }}
       />
       <div className="absolute inset-0 opacity-0 [background-image:radial-gradient(rgba(25,198,193,0.5)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] dark:opacity-[0.06]" />
     </div>
   );
 }
 
-function StoryRail({ progress }: { progress: number }) {
+function StoryRail({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
   return (
     <div className="relative hidden h-full flex-col items-center justify-center gap-6 lg:flex">
       <span aria-hidden className="absolute inset-y-2 w-px bg-landing-border" />
-      {MARKERS.map((label, i) => {
-        const [start, end] = MARKER_RANGES[i];
-        const weight = bandWeight(progress, start, end, 0.04);
-        return (
-          <span
-            key={label}
-            title={label}
-            className="relative h-3 w-3 shrink-0 rounded-full border border-landing-border bg-landing-bg-alt"
-            style={{ transform: `scale(${0.55 + 0.45 * weight})` }}
-          >
-            <span
-              aria-hidden
-              className="absolute inset-0 rounded-full bg-landing-accent-light"
-              style={{ opacity: weight, boxShadow: `0 0 0 4px color-mix(in srgb, var(--landing-accent-subtle) ${weight * 100}%, transparent)` }}
-            />
-          </span>
-        );
-      })}
+      {MARKERS.map((label, i) => (
+        <RailDot key={label} label={label} range={MARKER_RANGES[i]} scrollYProgress={scrollYProgress} />
+      ))}
     </div>
   );
 }
 
-function PhaseText({ phaseIndex, fading }: { phaseIndex: number; fading: boolean }) {
-  const phase = PHASES[phaseIndex];
+function RailDot({
+  label,
+  range,
+  scrollYProgress,
+}: {
+  label: string;
+  range: [number, number];
+  scrollYProgress: MotionValue<number>;
+}) {
+  const [input, output] = bandKeyframes(range[0], range[1], 0.04);
+  const weight = useTransform(scrollYProgress, input, output);
+  const scale = useTransform(weight, (w) => 0.55 + 0.45 * w);
+  return (
+    <motion.span
+      title={label}
+      className="relative h-3 w-3 shrink-0 rounded-full border border-landing-border bg-landing-bg-alt"
+      style={{ scale }}
+    >
+      <motion.span aria-hidden className="absolute inset-0 rounded-full bg-landing-accent-light" style={{ opacity: weight }} />
+    </motion.span>
+  );
+}
+
+// Alle sieben Story-Texte liegen uebereinander gestapelt (CSS-Grid-Overlap)
+// und blenden rein ueber ihre eigene, aus scrollYProgress abgeleitete
+// Opacity ein/aus - kein Timer, kein setTimeout-Crossfade.
+function PhaseTextStack({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
+  return (
+    <div className="relative grid max-w-md grid-cols-1">
+      {PHASES.map((phase) => (
+        <PhaseTextBlock key={phase.id} phase={phase} scrollYProgress={scrollYProgress} />
+      ))}
+    </div>
+  );
+}
+
+function PhaseTextBlock({ phase, scrollYProgress }: { phase: Phase; scrollYProgress: MotionValue<number> }) {
+  const [input, output] = bandKeyframes(phase.start, phase.end, 0.03);
+  const weight = useTransform(scrollYProgress, input, output);
+  const y = useTransform(weight, (w) => (1 - w) * 8);
   const kickerClass = phase.tone === "neutral" ? "bg-landing-bg-alt text-landing-text-muted" : TONE_STYLES[phase.tone].kicker;
   return (
-    <div
-      className={`max-w-md transition-all duration-200 ease-out ${fading ? "translate-y-1.5 opacity-0" : "translate-y-0 opacity-100"}`}
-    >
+    <motion.div className="col-start-1 row-start-1" style={{ opacity: weight, y }}>
       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${kickerClass}`}>
         {phase.kicker}
       </span>
       <h3 className="mt-4 font-display text-2xl font-bold text-landing-text-primary sm:text-3xl lg:text-4xl">{phase.headline}</h3>
       <p className="mt-4 text-landing-text-secondary">{phase.copy}</p>
-    </div>
+    </motion.div>
   );
 }
 
-// `reveal=false` (Desktop-Buehne): jedes Element blendet stetig ueber den
-// Scrollfortschritt ein. `reveal=true` (statische Fassung): sofort voll
-// sichtbar, keine Teil-Deckkraft.
-function TallyStrip({ progress, sceneStart, reveal }: { progress: number; sceneStart: number; reveal: boolean }) {
+function TallyStrip({ scrollYProgress, sceneStart }: { scrollYProgress: MotionValue<number>; sceneStart: number }) {
   return (
     <div className="grid grid-cols-3 gap-3 text-center">
-      {TALLY.map((t, i) => {
-        const w = reveal ? 1 : clamp01((progress - (sceneStart + i * 0.02)) / 0.08);
-        return (
-          <div
-            key={t.label}
-            className="flex flex-col items-center gap-1.5"
-            style={{ opacity: w, transform: `translateY(${(1 - w) * 6}px)` }}
-          >
-            <p className="font-display text-base font-extrabold tabular-nums text-landing-text-primary">{t.value}</p>
-            <p className="text-[11px] text-landing-text-secondary">{t.label}</p>
-          </div>
-        );
-      })}
+      {TALLY.map((t, i) => (
+        <TallyItem key={t.label} value={t.value} label={t.label} start={sceneStart + i * 0.02} scrollYProgress={scrollYProgress} />
+      ))}
     </div>
   );
 }
 
-// Die Produktbuehne: EINE Kartenh uelle, deren INHALT sich stetig ueber den
-// Scrollfortschritt entwickelt. Alle vier "Szenen" liegen in derselben Grid-
-// Zelle uebereinander (row-start-1/col-start-1) und werden per stetigem
-// Gewicht weich uebereinander geblendet.
-function ProductStage({ progress, reveal }: { progress: number; reveal: boolean }) {
-  const listWeight = reveal ? 1 : bandWeight(progress, LIST_RANGE[0], LIST_RANGE[1], SCENE_BAND);
-  const zusammenhangWeight = reveal ? 1 : bandWeight(progress, ZUSAMMENHANG_RANGE[0], ZUSAMMENHANG_RANGE[1], SCENE_BAND);
-  const effektWeight = reveal ? 1 : bandWeight(progress, EFFEKT_RANGE[0], EFFEKT_RANGE[1], SCENE_BAND);
-  const kontrolleWeight = reveal ? 1 : bandWeight(progress, KONTROLLE_RANGE[0], KONTROLLE_RANGE[1], SCENE_BAND);
-  const sceneActive = progress >= LIST_RANGE[0] && progress < LIST_RANGE[1] + 0.001;
-  const inZusammenhang = progress >= ZUSAMMENHANG_RANGE[0] && progress < ZUSAMMENHANG_RANGE[1];
-  const inEffekt = progress >= EFFEKT_RANGE[0] && progress < EFFEKT_RANGE[1];
-  const inKontrolle = progress >= KONTROLLE_RANGE[0];
-  const effektLocal = localProgress(progress, EFFEKT_PHASE);
+function TallyItem({
+  value,
+  label,
+  start,
+  scrollYProgress,
+}: {
+  value: string;
+  label: string;
+  start: number;
+  scrollYProgress: MotionValue<number>;
+}) {
+  const weight = useTransform(scrollYProgress, [start, start + 0.08], [0, 1]);
+  const y = useTransform(weight, (w) => (1 - w) * 6);
+  return (
+    <motion.div className="flex flex-col items-center gap-1.5" style={{ opacity: weight, y }}>
+      <p className="font-display text-base font-extrabold tabular-nums text-landing-text-primary">{value}</p>
+      <p className="text-[11px] text-landing-text-secondary">{label}</p>
+    </motion.div>
+  );
+}
 
-  const stripeWeights: Record<Tone, number> = reveal
-    ? { danger: 0, warning: 0, purple: 0, accent: 1 }
-    : {
-        danger: bandWeight(progress, DOPPELZAHLUNG_PHASE.start, DOPPELZAHLUNG_PHASE.end, ROW_BAND),
-        warning: bandWeight(progress, GUTSCHRIFT_PHASE.start, GUTSCHRIFT_PHASE.end, ROW_BAND),
-        purple: bandWeight(progress, MUSTER_PHASE.start, MUSTER_PHASE.end, ROW_BAND),
-        accent: Math.max(bandWeight(progress, 0, ANALYSE_PHASE.end, ROW_BAND), zusammenhangWeight, effektWeight, kontrolleWeight),
-      };
+// Die Produktbuehne: EINE Kartenh uelle. Alle vier "Szenen" liegen
+// uebereinander in derselben Grid-Zelle und ihre Deckkraft folgt direkt
+// scrollYProgress - keine Montage/Demontage anhand von React-State.
+function ProductStage({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
+  const [listIn, listOut] = bandKeyframes(LIST_RANGE[0], LIST_RANGE[1], SCENE_BAND);
+  const listWeight = useTransform(scrollYProgress, listIn, listOut);
+  const [zIn, zOut] = bandKeyframes(ZUSAMMENHANG_RANGE[0], ZUSAMMENHANG_RANGE[1], SCENE_BAND);
+  const zusammenhangWeight = useTransform(scrollYProgress, zIn, zOut);
+  const [eIn, eOut] = bandKeyframes(EFFEKT_RANGE[0], EFFEKT_RANGE[1], SCENE_BAND);
+  const effektWeight = useTransform(scrollYProgress, eIn, eOut);
+  const [kIn, kOut] = bandKeyframes(KONTROLLE_RANGE[0], KONTROLLE_RANGE[1], SCENE_BAND);
+  const kontrolleWeight = useTransform(scrollYProgress, kIn, kOut);
 
-  // Payoff-Szene: erst waechst die Ergebnisflaeche, dann erscheint die Zahl,
-  // zuletzt die Beschriftung - statt alles gleichzeitig einzublenden.
-  const surfaceW = reveal ? 1 : stageWeight(effektLocal, 0, 0.28);
-  const numberW = reveal ? 1 : stageWeight(effektLocal, 0.28, 0.54);
-  const labelW = reveal ? 1 : stageWeight(effektLocal, 0.5, 0.78);
+  const [dIn, dOut] = bandKeyframes(DOPPELZAHLUNG_PHASE.start, DOPPELZAHLUNG_PHASE.end, ROW_BAND);
+  const dangerWeight = useTransform(scrollYProgress, dIn, dOut);
+  const [gIn, gOut] = bandKeyframes(GUTSCHRIFT_PHASE.start, GUTSCHRIFT_PHASE.end, ROW_BAND);
+  const warningWeight = useTransform(scrollYProgress, gIn, gOut);
+  const [mIn, mOut] = bandKeyframes(MUSTER_PHASE.start, MUSTER_PHASE.end, ROW_BAND);
+  const purpleWeight = useTransform(scrollYProgress, mIn, mOut);
+  const [aIn, aOut] = bandKeyframes(0, ANALYSE_PHASE.end, ROW_BAND);
+  const analyseWeight = useTransform(scrollYProgress, aIn, aOut);
+  const accentWeight = useTransform(() => Math.max(analyseWeight.get(), zusammenhangWeight.get(), effektWeight.get(), kontrolleWeight.get()));
+
+  const zusammenhangY = useTransform(zusammenhangWeight, (w) => (1 - w) * 10);
+  const effektY = useTransform(effektWeight, (w) => (1 - w) * 10);
+  const kontrolleY = useTransform(kontrolleWeight, (w) => (1 - w) * 10);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
-      {(Object.keys(TONE_STYLES) as Tone[]).map((tone) => (
-        <div
-          key={tone}
-          aria-hidden
-          className={`pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl ${TONE_STYLES[tone].glow}`}
-          style={{ opacity: stripeWeights[tone] * 0.1 }}
-        />
-      ))}
+      <ToneGlow tone="danger" weight={dangerWeight} />
+      <ToneGlow tone="warning" weight={warningWeight} />
+      <ToneGlow tone="purple" weight={purpleWeight} />
+      <ToneGlow tone="accent" weight={accentWeight} />
       <div className="relative h-1 w-full">
-        {(Object.keys(TONE_STYLES) as Tone[]).map((tone) => (
-          <div
-            key={tone}
-            aria-hidden
-            className={`absolute inset-0 ${TONE_STYLES[tone].stripe}`}
-            style={{ opacity: stripeWeights[tone] }}
-          />
-        ))}
+        <ToneStripe tone="danger" weight={dangerWeight} />
+        <ToneStripe tone="warning" weight={warningWeight} />
+        <ToneStripe tone="purple" weight={purpleWeight} />
+        <ToneStripe tone="accent" weight={accentWeight} />
       </div>
 
       <div className="relative flex items-center justify-between px-7 py-5">
@@ -564,261 +529,295 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
       </div>
 
       <div className="relative grid grid-cols-1">
-        {(reveal ? sceneActive : listWeight > 0.005) && (
-          <div className="col-start-1 row-start-1" style={{ opacity: listWeight }}>
-            <ListScene progress={progress} reveal={reveal} leavingWeight={reveal ? 0 : 1 - listWeight} />
+        <motion.div className="col-start-1 row-start-1" style={{ opacity: listWeight }}>
+          <ListScene scrollYProgress={scrollYProgress} listWeight={listWeight} />
+        </motion.div>
+
+        <motion.div className="col-start-1 row-start-1 px-7 py-8" style={{ opacity: zusammenhangWeight, y: zusammenhangY }}>
+          <div className="flex flex-wrap gap-3">
+            {FINDING_PHASES.map((f, i) => (
+              <ZusammenhangTile key={f.id} phase={f} start={ZUSAMMENHANG_RANGE[0] + i * 0.025} scrollYProgress={scrollYProgress} />
+            ))}
           </div>
-        )}
-        {(reveal ? inZusammenhang : zusammenhangWeight > 0.005) && (
-          <div
-            className="col-start-1 row-start-1 px-7 py-8"
-            style={{ opacity: zusammenhangWeight, transform: reveal ? undefined : `translateY(${(1 - zusammenhangWeight) * 10}px)` }}
-          >
-            <div className="flex flex-wrap gap-3">
-              {FINDING_PHASES.map((f, i) => {
-                const t = TONE_STYLES[f.tone as Tone];
-                const w = reveal ? 1 : clamp01((progress - (ZUSAMMENHANG_RANGE[0] + i * 0.025)) / 0.09);
-                return (
-                  <div
-                    key={f.id}
-                    className={`min-w-[9rem] flex-1 rounded-2xl border border-landing-border p-4 ${t.rowBg}`}
-                    style={{
-                      opacity: w,
-                      transform: reveal ? undefined : `translateY(${(1 - w) * 8}px) scale(${0.94 + 0.06 * w})`,
-                    }}
-                  >
-                    <p className={`text-xs font-semibold ${t.rowText}`}>{f.kicker}</p>
-                    <p className="mt-1 font-display text-lg font-bold tabular-nums text-landing-text-primary">{f.findingAmount}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-6 border-t border-landing-border pt-6">
-              <TallyStrip progress={progress} sceneStart={ZUSAMMENHANG_RANGE[0] + 0.06} reveal={reveal} />
-            </div>
+          <div className="mt-6 border-t border-landing-border pt-6">
+            <TallyStrip scrollYProgress={scrollYProgress} sceneStart={ZUSAMMENHANG_RANGE[0] + 0.06} />
           </div>
-        )}
-        {(reveal ? inEffekt : effektWeight > 0.005) && (
-          <div
-            className="col-start-1 row-start-1 px-7 py-8"
-            style={{ opacity: effektWeight, transform: reveal ? undefined : `translateY(${(1 - effektWeight) * 10}px)` }}
-          >
-            <div style={{ opacity: 0.5 + 0.5 * surfaceW }}>
-              <TallyStrip progress={progress} sceneStart={EFFEKT_RANGE[0] - 0.04} reveal={reveal} />
+        </motion.div>
+
+        <motion.div className="col-start-1 row-start-1 px-7 py-8" style={{ opacity: effektWeight, y: effektY }}>
+          <EffektScene scrollYProgress={scrollYProgress} />
+        </motion.div>
+
+        <motion.div className="col-start-1 row-start-1 px-7 py-8" style={{ opacity: kontrolleWeight, y: kontrolleY }}>
+          <div className="border-b border-landing-border pb-6 opacity-80">
+            <TallyStrip scrollYProgress={scrollYProgress} sceneStart={KONTROLLE_RANGE[0] - 0.06} />
+          </div>
+          <div className="mt-6 rounded-2xl border border-landing-border bg-landing-bg-alt p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-landing-text-primary">Müller GmbH</p>
+                <p className="text-xs text-landing-text-muted">Mögliche Doppelzahlung</p>
+              </div>
+              <p className="font-display text-lg font-bold tabular-nums text-landing-danger">2.480 €</p>
             </div>
-            <div
-              className="relative mt-6 overflow-hidden rounded-2xl border border-landing-accent-light/40 bg-gradient-to-br from-landing-accent-subtle to-landing-bg-alt p-7 text-center"
-              style={{ transform: reveal ? undefined : `scale(${0.9 + 0.1 * surfaceW})`, opacity: reveal ? 1 : surfaceW }}
-            >
-              <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-landing-accent-light/20" />
-              <span className="relative mx-auto block h-6 w-6" style={{ opacity: reveal ? 1 : numberW }}>
-                <TargetIcon className="h-6 w-6 text-landing-accent-light" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
+                <EyeIcon className="h-3.5 w-3.5" />
+                Details ansehen
               </span>
-              <p
-                className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light"
-                style={{ opacity: reveal ? 1 : numberW, transform: reveal ? undefined : `translateY(${(1 - numberW) * 6}px)` }}
-              >
-                18.740 €
-              </p>
-              <p
-                className="relative mt-1 text-sm font-semibold text-landing-text-secondary"
-                style={{ opacity: reveal ? 1 : labelW }}
-              >
-                Potenzieller finanzieller Effekt
-              </p>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-landing-accent px-3 py-1.5 text-xs font-semibold text-white">
+                <CheckIcon className="h-3.5 w-3.5" />
+                Bestätigen
+              </span>
+              <span className="inline-flex items-center rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
+                Kein Problem
+              </span>
             </div>
           </div>
-        )}
-        {(reveal ? inKontrolle : kontrolleWeight > 0.005) && (
-          <div
-            className="col-start-1 row-start-1 px-7 py-8"
-            style={{ opacity: kontrolleWeight, transform: reveal ? undefined : `translateY(${(1 - kontrolleWeight) * 10}px)` }}
-          >
-            <div className="border-b border-landing-border pb-6 opacity-80">
-              <TallyStrip progress={progress} sceneStart={KONTROLLE_RANGE[0] - 0.06} reveal={reveal} />
-            </div>
-            <div className="mt-6 rounded-2xl border border-landing-border bg-landing-bg-alt p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-landing-text-primary">Müller GmbH</p>
-                  <p className="text-xs text-landing-text-muted">Mögliche Doppelzahlung</p>
-                </div>
-                <p className="font-display text-lg font-bold tabular-nums text-landing-danger">2.480 €</p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
-                  <EyeIcon className="h-3.5 w-3.5" />
-                  Details ansehen
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-landing-accent px-3 py-1.5 text-xs font-semibold text-white">
-                  <CheckIcon className="h-3.5 w-3.5" />
-                  Bestätigen
-                </span>
-                <span className="inline-flex items-center rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
-                  Kein Problem
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        </motion.div>
       </div>
     </div>
   );
 }
 
-// Die "Analyse"-Szene deckt Analyse/Doppelzahlung/Gutschrift/Auffaelligkeit
-// als EINE zusammenhaengende, sich choreografiert entwickelnde Ansicht ab:
-// dieselbe Buchungsliste bleibt sichtbar; innerhalb jeder Fund-Phase laeuft
-// eine feste Abfolge ab (Zeile 1 → Zeile 2/Vergleich → Verbindungshinweis →
-// Fund-Chip entsteht → Transparenzpanel oeffnet sich), bevor der Fokus zur
-// naechsten Phase weiterzieht. Bereits gefundene Chips bleiben als
-// dezenter werdender Verlauf sichtbar, begleitet von einem kleinen Zaehler.
-function ListScene({ progress, reveal, leavingWeight }: { progress: number; reveal: boolean; leavingWeight: number }) {
-  const foundCount = FINDING_PHASES.reduce((acc, f) => acc + (progress >= f.start ? 1 : 0), 0);
-  const counterOpacity = reveal ? (foundCount >= 1 ? 1 : 0) : riseWeight(progress, DOPPELZAHLUNG_PHASE.start, CHIP_BAND);
+function ToneGlow({ tone, weight }: { tone: Tone; weight: MotionValue<number> }) {
+  const opacity = useTransform(weight, (w) => w * 0.1);
+  return (
+    <motion.div
+      aria-hidden
+      className={`pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl ${TONE_STYLES[tone].glow}`}
+      style={{ opacity }}
+    />
+  );
+}
 
-  const chipEntries = FINDING_PHASES.map((f) => {
-    // "focus": ist gerade DIESE Phase im Zentrum? Steuert Groesse/Deckkraft
-    // des Fund-Chips, sobald der Fokus weiterzieht ("wird kleiner, ruecht in
-    // den Analysebereich").
-    const focusRow = ROW_STAGE[f.highlightRowIds![f.highlightRowIds!.length - 1]];
-    const focus = reveal ? (progress >= f.start && progress < f.end ? 1 : 0) : choreographedWeight(progress, f, focusRow[0], focusRow[1], ROW_BAND);
-    const rise = reveal ? (progress >= f.start ? 1 : 0) : stageWeight(localProgress(progress, f), CHIP_STAGE[0], CHIP_STAGE[1]);
-    return { phase: f, opacity: rise * (0.6 + 0.4 * focus), scale: 0.86 + 0.14 * focus, rise };
-  }).filter((c) => c.rise > 0.01);
+function ToneStripe({ tone, weight }: { tone: Tone; weight: MotionValue<number> }) {
+  return <motion.div aria-hidden className={`absolute inset-0 ${TONE_STYLES[tone].stripe}`} style={{ opacity: weight }} />;
+}
 
-  const panelOuterWeight = reveal
-    ? PHASES.some((f) => f.reasonFields && progress >= f.start - 0.001 && progress < f.end + 0.001)
-      ? 1
-      : 0
-    : bandWeight(progress, PANEL_RANGE[0], PANEL_RANGE[1], SCENE_BAND);
+function ZusammenhangTile({
+  phase,
+  start,
+  scrollYProgress,
+}: {
+  phase: Phase;
+  start: number;
+  scrollYProgress: MotionValue<number>;
+}) {
+  const t = TONE_STYLES[phase.tone as Tone];
+  const weight = useTransform(scrollYProgress, [start, start + 0.09], [0, 1]);
+  const y = useTransform(weight, (w) => (1 - w) * 8);
+  const scale = useTransform(weight, (w) => 0.94 + 0.06 * w);
+  return (
+    <motion.div className={`min-w-[9rem] flex-1 rounded-2xl border border-landing-border p-4 ${t.rowBg}`} style={{ opacity: weight, y, scale }}>
+      <p className={`text-xs font-semibold ${t.rowText}`}>{phase.kicker}</p>
+      <p className="mt-1 font-display text-lg font-bold tabular-nums text-landing-text-primary">{phase.findingAmount}</p>
+    </motion.div>
+  );
+}
 
-  const groupTransform = reveal ? undefined : `scale(${1 - leavingWeight * 0.05}) translateY(${-leavingWeight * 5}px)`;
+function EffektScene({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
+  const [surfaceIn, surfaceOut] = riseKeyframes(EFFEKT_PHASE, 0, 0.28);
+  const surfaceW = useTransform(scrollYProgress, surfaceIn, surfaceOut);
+  const [numberIn, numberOut] = riseKeyframes(EFFEKT_PHASE, 0.28, 0.54);
+  const numberW = useTransform(scrollYProgress, numberIn, numberOut);
+  const [labelIn, labelOut] = riseKeyframes(EFFEKT_PHASE, 0.5, 0.78);
+  const labelW = useTransform(scrollYProgress, labelIn, labelOut);
+
+  const tallyOpacity = useTransform(surfaceW, (w) => 0.5 + 0.5 * w);
+  const surfaceScale = useTransform(surfaceW, (w) => 0.9 + 0.1 * w);
+  const numberY = useTransform(numberW, (w) => (1 - w) * 6);
 
   return (
     <>
-      {(chipEntries.length > 0 || counterOpacity > 0.02) && (
-        <div className="relative flex flex-wrap items-center gap-2 px-7 pb-4" style={{ transform: groupTransform }}>
-          {chipEntries.map(({ phase, opacity, scale }) => {
-            const t = TONE_STYLES[phase.tone as Tone];
-            return (
-              <span
-                key={phase.id}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${t.kicker}`}
-                style={{ opacity, transform: reveal ? undefined : `scale(${scale})` }}
-              >
-                {phase.findingLabel}
-                <span className="tabular-nums">{phase.findingAmount}</span>
-              </span>
-            );
-          })}
-          {counterOpacity > 0.02 && (
-            <span className="text-[11px] font-medium text-landing-text-muted" style={{ opacity: counterOpacity }}>
-              {foundCount} {foundCount === 1 ? "Auffälligkeit" : "Auffälligkeiten"} erkannt
-            </span>
-          )}
-        </div>
-      )}
+      <motion.div style={{ opacity: tallyOpacity }}>
+        <TallyStrip scrollYProgress={scrollYProgress} sceneStart={EFFEKT_RANGE[0] - 0.04} />
+      </motion.div>
+      <motion.div
+        className="relative mt-6 overflow-hidden rounded-2xl border border-landing-accent-light/40 bg-gradient-to-br from-landing-accent-subtle to-landing-bg-alt p-7 text-center"
+        style={{ opacity: surfaceW, scale: surfaceScale }}
+      >
+        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-landing-accent-light/20" />
+        <motion.span className="relative mx-auto block h-6 w-6" style={{ opacity: numberW }}>
+          <TargetIcon className="h-6 w-6 text-landing-accent-light" />
+        </motion.span>
+        <motion.p
+          className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light"
+          style={{ opacity: numberW, y: numberY }}
+        >
+          18.740 €
+        </motion.p>
+        <motion.p className="relative mt-1 text-sm font-semibold text-landing-text-secondary" style={{ opacity: labelW }}>
+          Potenzieller finanzieller Effekt
+        </motion.p>
+      </motion.div>
+    </>
+  );
+}
+
+// Die "Analyse"-Szene deckt Analyse/Doppelzahlung/Gutschrift/Auffaelligkeit
+// als EINE zusammenhaengende Ansicht ab: dieselbe Buchungsliste bleibt
+// immer im DOM, nur ihre Zeilen-Hervorhebung, Fund-Chips und das
+// Transparenzpanel aendern kontinuierlich ihre Deckkraft.
+function ListScene({
+  scrollYProgress,
+  listWeight,
+}: {
+  scrollYProgress: MotionValue<number>;
+  listWeight: MotionValue<number>;
+}) {
+  const counterOpacity = useTransform(
+    scrollYProgress,
+    [DOPPELZAHLUNG_PHASE.start - CHIP_BAND / 2, DOPPELZAHLUNG_PHASE.start + CHIP_BAND / 2],
+    [0, 1]
+  );
+  // Stufenfunktion (keine lineare Rampe): der Zaehler soll bei 1/2/3 stehen
+  // bleiben statt zwischen den Werten durchzuinterpolieren.
+  const foundCountMV = useTransform(
+    scrollYProgress,
+    [
+      DOPPELZAHLUNG_PHASE.start,
+      GUTSCHRIFT_PHASE.start - 0.0001,
+      GUTSCHRIFT_PHASE.start,
+      MUSTER_PHASE.start - 0.0001,
+      MUSTER_PHASE.start,
+      1,
+    ],
+    [1, 1, 2, 2, 3, 3]
+  );
+  const [foundCount, setFoundCount] = useState(0);
+  useMotionValueEvent(foundCountMV, "change", (latest) => {
+    const rounded = Math.max(0, Math.round(latest));
+    setFoundCount((prev) => (prev === rounded ? prev : rounded));
+  });
+
+  const [panelIn, panelOut] = bandKeyframes(PANEL_RANGE[0], PANEL_RANGE[1], SCENE_BAND);
+  const panelOuterWeight = useTransform(scrollYProgress, panelIn, panelOut);
+  const groupScale = useTransform(listWeight, (w) => 1 - (1 - w) * 0.05);
+  const groupY = useTransform(listWeight, (w) => -(1 - w) * 5);
+
+  return (
+    <>
+      <motion.div className="relative flex flex-wrap items-center gap-2 px-7 pb-4" style={{ scale: groupScale, y: groupY }}>
+        {FINDING_PHASES.map((f) => (
+          <FindingChip key={f.id} phase={f} scrollYProgress={scrollYProgress} />
+        ))}
+        <motion.span className="text-[11px] font-medium text-landing-text-muted" style={{ opacity: counterOpacity }}>
+          {foundCount || 1} {foundCount === 1 ? "Auffälligkeit" : "Auffälligkeiten"} erkannt
+        </motion.span>
+      </motion.div>
 
       <ul className="relative divide-y divide-landing-border">
-        {MASTER_ROWS.map((row) => {
-          const owner = FINDING_PHASES.find((p) => p.highlightRowIds?.includes(row.id));
-          const stage = ROW_STAGE[row.id];
-          const weight = owner
-            ? reveal
-              ? progress >= owner.start && progress < owner.end
-                ? 1
-                : 0
-              : choreographedWeight(progress, owner, stage[0], stage[1], ROW_BAND)
-            : 0;
-          const isDoppelzahlungB = row.id === "mueller-2";
-          const connectionWeight =
-            isDoppelzahlungB && owner
-              ? reveal
-                ? progress >= owner.start && progress < owner.end
-                  ? 1
-                  : 0
-                : choreographedWeight(progress, owner, CONNECTION_STAGE[0], CONNECTION_STAGE[1], ROW_BAND)
-              : 0;
-          const t = owner ? TONE_STYLES[owner.tone as Tone] : null;
-          return (
-            <li key={row.id} className="relative flex items-center justify-between px-7 py-3.5">
-              {t && (
-                <>
-                  <span aria-hidden className={`absolute inset-0 ${t.rowBg}`} style={{ opacity: weight }} />
-                  <span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${t.rowBar}`} style={{ opacity: weight }} />
-                </>
-              )}
-              <span className="relative inline-grid">
-                <span className="col-start-1 row-start-1 text-sm text-landing-text-secondary">{row.name}</span>
-                <span
-                  className="col-start-1 row-start-1 text-sm font-semibold text-landing-text-primary"
-                  style={{ opacity: weight }}
-                >
-                  {row.name}
-                </span>
-              </span>
-              <span className="relative flex items-center gap-2">
-                {connectionWeight > 0.02 && (
-                  <span
-                    className="rounded-full border border-landing-danger/40 bg-landing-danger-subtle px-1.5 py-0.5 text-[10px] font-semibold text-landing-danger"
-                    style={{ opacity: connectionWeight, transform: `scale(${0.85 + 0.15 * connectionWeight})` }}
-                  >
-                    ≈ Buchung 1
-                  </span>
-                )}
-                <span className="relative inline-grid">
-                  <span className="col-start-1 row-start-1 text-sm font-semibold tabular-nums text-landing-text-secondary">
-                    {row.amount}
-                  </span>
-                  {t && (
-                    <span
-                      className="col-start-1 row-start-1 text-sm font-semibold tabular-nums"
-                      style={{ opacity: weight, color: `var(${t.cssVar})` }}
-                    >
-                      {row.amount}
-                    </span>
-                  )}
-                </span>
-              </span>
-            </li>
-          );
-        })}
+        {MASTER_ROWS.map((row) => (
+          <BookingRow key={row.id} row={row} scrollYProgress={scrollYProgress} />
+        ))}
       </ul>
 
-      {panelOuterWeight > 0.01 && (
-        <div
-          className="relative border-t border-landing-border bg-landing-bg-alt px-7 py-5"
-          style={{ opacity: panelOuterWeight, transform: reveal ? undefined : `translateY(${(1 - panelOuterWeight) * 6}px)` }}
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-landing-text-muted">Warum auffällig?</p>
-          <div className="relative mt-3 grid grid-cols-1">
-            {FINDING_PHASES.map((f) => {
-              const w = reveal
-                ? progress >= f.start && progress < f.end
-                  ? 1
-                  : 0
-                : choreographedWeight(progress, f, PANEL_STAGE[0], PANEL_STAGE[1], ROW_BAND);
-              if (w < 0.01 || !f.reasonFields) return null;
-              return (
-                <dl
-                  key={f.id}
-                  className="col-start-1 row-start-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm"
-                  style={{ opacity: w, transform: reveal ? undefined : `translateY(${(1 - w) * 4}px)` }}
-                >
-                  {f.reasonFields.map((field) => (
-                    <div key={field.label} className="flex items-center justify-between gap-2">
-                      <dt className="text-landing-text-muted">{field.label}</dt>
-                      <dd className="text-right font-medium text-landing-text-primary">{field.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              );
-            })}
-          </div>
+      <motion.div className="relative border-t border-landing-border bg-landing-bg-alt px-7 py-5" style={{ opacity: panelOuterWeight }}>
+        <p className="text-xs font-semibold uppercase tracking-wide text-landing-text-muted">Warum auffällig?</p>
+        <div className="relative mt-3 grid grid-cols-1">
+          {FINDING_PHASES.map((f) => (
+            <ReasonBlock key={f.id} phase={f} scrollYProgress={scrollYProgress} />
+          ))}
         </div>
-      )}
+      </motion.div>
     </>
+  );
+}
+
+function FindingChip({ phase, scrollYProgress }: { phase: Phase; scrollYProgress: MotionValue<number> }) {
+  const t = TONE_STYLES[phase.tone as Tone];
+  const focusStage = ROW_STAGE[phase.highlightRowIds![phase.highlightRowIds!.length - 1]];
+  const [riseIn, riseOut] = riseKeyframes(phase, CHIP_STAGE[0], CHIP_STAGE[1]);
+  const rise = useTransform(scrollYProgress, riseIn, riseOut);
+  const [focusIn, focusOut] = phaseStageKeyframes(phase, focusStage[0], focusStage[1], ROW_BAND);
+  const focus = useTransform(scrollYProgress, focusIn, focusOut);
+  const opacity = useTransform(() => rise.get() * (0.6 + 0.4 * focus.get()));
+  const scale = useTransform(focus, (f) => 0.86 + 0.14 * f);
+  return (
+    <motion.span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${t.kicker}`}
+      style={{ opacity, scale }}
+    >
+      {phase.findingLabel}
+      <span className="tabular-nums">{phase.findingAmount}</span>
+    </motion.span>
+  );
+}
+
+function BookingRow({
+  row,
+  scrollYProgress,
+}: {
+  row: { id: string; name: string; amount: string };
+  scrollYProgress: MotionValue<number>;
+}) {
+  const owner = FINDING_PHASES.find((p) => p.highlightRowIds?.includes(row.id));
+  const stage = owner ? ROW_STAGE[row.id] : undefined;
+  const [wIn, wOut] = owner && stage ? phaseStageKeyframes(owner, stage[0], stage[1], ROW_BAND) : [[0, 1], [0, 0]];
+  const weight = useTransform(scrollYProgress, wIn, wOut);
+  const t = owner ? TONE_STYLES[owner.tone as Tone] : null;
+
+  const isConnectionRow = owner?.id === "doppelzahlung" && row.id === "mueller-2";
+  const [cIn, cOut] = isConnectionRow && owner
+    ? phaseStageKeyframes(owner, CONNECTION_STAGE[0], CONNECTION_STAGE[1], ROW_BAND)
+    : [[0, 1], [0, 0]];
+  const connectionWeight = useTransform(scrollYProgress, cIn, cOut);
+  const connectionScale = useTransform(connectionWeight, (w) => 0.85 + 0.15 * w);
+
+  return (
+    <li className="relative flex items-center justify-between px-7 py-3.5">
+      {t && (
+        <>
+          <motion.span aria-hidden className={`absolute inset-0 ${t.rowBg}`} style={{ opacity: weight }} />
+          <motion.span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${t.rowBar}`} style={{ opacity: weight }} />
+        </>
+      )}
+      <span className="relative inline-grid">
+        <span className="col-start-1 row-start-1 text-sm text-landing-text-secondary">{row.name}</span>
+        <motion.span className="col-start-1 row-start-1 text-sm font-semibold text-landing-text-primary" style={{ opacity: weight }}>
+          {row.name}
+        </motion.span>
+      </span>
+      <span className="relative flex items-center gap-2">
+        {isConnectionRow && (
+          <motion.span
+            className="rounded-full border border-landing-danger/40 bg-landing-danger-subtle px-1.5 py-0.5 text-[10px] font-semibold text-landing-danger"
+            style={{ opacity: connectionWeight, scale: connectionScale }}
+          >
+            ≈ Buchung 1
+          </motion.span>
+        )}
+        <span className="relative inline-grid">
+          <span className="col-start-1 row-start-1 text-sm font-semibold tabular-nums text-landing-text-secondary">{row.amount}</span>
+          {t && (
+            <motion.span
+              className="col-start-1 row-start-1 text-sm font-semibold tabular-nums"
+              style={{ opacity: weight, color: `var(${t.cssVar})` }}
+            >
+              {row.amount}
+            </motion.span>
+          )}
+        </span>
+      </span>
+    </li>
+  );
+}
+
+function ReasonBlock({ phase, scrollYProgress }: { phase: Phase; scrollYProgress: MotionValue<number> }) {
+  const [input, output] = phaseStageKeyframes(phase, PANEL_STAGE[0], PANEL_STAGE[1], ROW_BAND);
+  const weight = useTransform(scrollYProgress, input, output);
+  const y = useTransform(weight, (w) => (1 - w) * 4);
+  if (!phase.reasonFields) return null;
+  return (
+    <motion.dl className="col-start-1 row-start-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm" style={{ opacity: weight, y }}>
+      {phase.reasonFields.map((field) => (
+        <div key={field.label} className="flex items-center justify-between gap-2">
+          <dt className="text-landing-text-muted">{field.label}</dt>
+          <dd className="text-right font-medium text-landing-text-primary">{field.value}</dd>
+        </div>
+      ))}
+    </motion.dl>
   );
 }
 
@@ -830,12 +829,170 @@ function StaticStory() {
     <div className="mx-auto max-w-2xl space-y-14 px-4 sm:px-6">
       {PHASES.map((phase, i) => (
         <div key={phase.id}>
-          <PhaseText phaseIndex={i} fading={false} />
+          <StaticPhaseText phase={phase} />
           <div className="mt-6">
-            <ProductStage progress={(phase.start + phase.end) / 2} reveal />
+            <StaticProductStage phase={phase} phaseIndex={i} />
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function StaticPhaseText({ phase }: { phase: Phase }) {
+  const kickerClass = phase.tone === "neutral" ? "bg-landing-bg-alt text-landing-text-muted" : TONE_STYLES[phase.tone].kicker;
+  return (
+    <div className="max-w-md">
+      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${kickerClass}`}>
+        {phase.kicker}
+      </span>
+      <h3 className="mt-4 font-display text-2xl font-bold text-landing-text-primary sm:text-3xl lg:text-4xl">{phase.headline}</h3>
+      <p className="mt-4 text-landing-text-secondary">{phase.copy}</p>
+    </div>
+  );
+}
+
+function StaticProductStage({ phase, phaseIndex }: { phase: Phase; phaseIndex: number }) {
+  const tone = phase.tone !== "neutral" ? TONE_STYLES[phase.tone] : null;
+  const isListPhase = phaseIndex <= 3;
+  const foundFindings = FINDING_PHASES.filter((f) => PHASES.indexOf(f) <= phaseIndex);
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
+      <div className={`h-1 w-full bg-gradient-to-r ${tone ? tone.stripe : "from-landing-border via-landing-border to-transparent"}`} />
+      <div className="relative flex items-center justify-between px-7 py-5">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-landing-bg-alt text-landing-text-muted">
+            <SearchIcon className="h-4 w-4" />
+          </span>
+          <span className="text-sm font-semibold uppercase tracking-wide text-landing-text-muted">Effivo Analyse</span>
+        </div>
+        <span className="text-xs font-medium text-landing-text-muted">Juli 2026</span>
+      </div>
+
+      {isListPhase && (
+        <>
+          {foundFindings.length > 0 && (
+            <div className="relative flex flex-wrap gap-2 px-7 pb-4">
+              {foundFindings.map((f) => {
+                const t = TONE_STYLES[f.tone as Tone];
+                return (
+                  <span key={f.id} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${t.kicker}`}>
+                    {f.findingLabel}
+                    <span className="tabular-nums">{f.findingAmount}</span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          <ul className="relative divide-y divide-landing-border">
+            {MASTER_ROWS.map((row) => {
+              const owner = FINDING_PHASES.find((p) => p.highlightRowIds?.includes(row.id));
+              const highlighted = owner?.id === phase.id;
+              const t = highlighted && owner ? TONE_STYLES[owner.tone as Tone] : null;
+              return (
+                <li key={row.id} className={`relative flex items-center justify-between px-7 py-3.5 ${t ? t.rowBg : ""}`}>
+                  {t && <span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${t.rowBar}`} />}
+                  <span className={`text-sm ${highlighted ? "font-semibold text-landing-text-primary" : "text-landing-text-secondary"}`}>
+                    {row.name}
+                  </span>
+                  <span className={`text-sm font-semibold tabular-nums ${t ? t.rowText : "text-landing-text-secondary"}`}>{row.amount}</span>
+                </li>
+              );
+            })}
+          </ul>
+          {phase.reasonFields && (
+            <div className="relative border-t border-landing-border bg-landing-bg-alt px-7 py-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-landing-text-muted">Warum auffällig?</p>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                {phase.reasonFields.map((field) => (
+                  <div key={field.label} className="flex items-center justify-between gap-2">
+                    <dt className="text-landing-text-muted">{field.label}</dt>
+                    <dd className="text-right font-medium text-landing-text-primary">{field.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+        </>
+      )}
+
+      {phase.id === "zusammenhang" && (
+        <div className="relative px-7 py-8">
+          <div className="flex flex-wrap gap-3">
+            {FINDING_PHASES.map((f) => {
+              const t = TONE_STYLES[f.tone as Tone];
+              return (
+                <div key={f.id} className={`min-w-[9rem] flex-1 rounded-2xl border border-landing-border p-4 ${t.rowBg}`}>
+                  <p className={`text-xs font-semibold ${t.rowText}`}>{f.kicker}</p>
+                  <p className="mt-1 font-display text-lg font-bold tabular-nums text-landing-text-primary">{f.findingAmount}</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-3 border-t border-landing-border pt-6 text-center">
+            {TALLY.map((t) => (
+              <div key={t.label}>
+                <p className="font-display text-base font-extrabold tabular-nums text-landing-text-primary">{t.value}</p>
+                <p className="text-[11px] text-landing-text-secondary">{t.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase.id === "effekt" && (
+        <div className="relative px-7 py-8">
+          <div className="grid grid-cols-3 gap-3 text-center">
+            {TALLY.map((t) => (
+              <div key={t.label}>
+                <p className="font-display text-base font-extrabold tabular-nums text-landing-text-primary">{t.value}</p>
+                <p className="text-[11px] text-landing-text-secondary">{t.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="relative mt-6 overflow-hidden rounded-2xl border border-landing-accent-light/40 bg-gradient-to-br from-landing-accent-subtle to-landing-bg-alt p-7 text-center">
+            <TargetIcon className="relative mx-auto h-6 w-6 text-landing-accent-light" />
+            <p className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light">18.740 €</p>
+            <p className="relative mt-1 text-sm font-semibold text-landing-text-secondary">Potenzieller finanzieller Effekt</p>
+          </div>
+        </div>
+      )}
+
+      {phase.id === "kontrolle" && (
+        <div className="relative px-7 py-8">
+          <div className="grid grid-cols-3 gap-3 border-b border-landing-border pb-6 text-center opacity-80">
+            {TALLY.map((t) => (
+              <div key={t.label}>
+                <p className="font-display text-base font-extrabold tabular-nums text-landing-text-primary">{t.value}</p>
+                <p className="text-[11px] text-landing-text-secondary">{t.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 rounded-2xl border border-landing-border bg-landing-bg-alt p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-landing-text-primary">Müller GmbH</p>
+                <p className="text-xs text-landing-text-muted">Mögliche Doppelzahlung</p>
+              </div>
+              <p className="font-display text-lg font-bold tabular-nums text-landing-danger">2.480 €</p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
+                <EyeIcon className="h-3.5 w-3.5" />
+                Details ansehen
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-landing-accent px-3 py-1.5 text-xs font-semibold text-white">
+                <CheckIcon className="h-3.5 w-3.5" />
+                Bestätigen
+              </span>
+              <span className="inline-flex items-center rounded-full border border-landing-border px-3 py-1.5 text-xs font-semibold text-landing-text-secondary">
+                Kein Problem
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
