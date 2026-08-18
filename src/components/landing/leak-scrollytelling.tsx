@@ -1,30 +1,34 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon, SearchIcon } from "@/components/icons";
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  FileTextIcon,
+  SearchIcon,
+  TargetIcon,
+} from "@/components/icons";
 
 type BookingRow = { name: string; amount: string };
 
+type StoryStepBase = { id: string; kicker: string; title: string };
+
 type StoryStep =
-  | {
-      id: string;
-      title: string;
-      details: string[];
+  | (StoryStepBase & {
       variant: "booking";
+      details: string[];
       datasetLabel: string;
       rows: BookingRow[];
       highlightIndexes: number[];
       potential: string;
-    }
-  | {
-      id: string;
-      title: string;
-      variant: "summary";
-    };
+    })
+  | (StoryStepBase & { variant: "summary" });
 
 const STEPS: StoryStep[] = [
   {
     id: "doppelzahlung",
+    kicker: "Doppelzahlung",
     title: "Eine Rechnung wird zweimal bezahlt.",
     details: ["Gleicher Lieferant.", "Gleicher Betrag.", "Ähnliche Rechnungsnummer."],
     variant: "booking",
@@ -41,6 +45,7 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "gutschrift",
+    kicker: "Offene Gutschrift",
     title: "Eine Gutschrift bleibt liegen.",
     details: ["Erfasst, aber nie verrechnet."],
     variant: "booking",
@@ -55,6 +60,7 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "auffaelligkeit",
+    kicker: "Auffälligkeit",
     title: "Ein weiterer ungewöhnlicher Zahlungsvorgang fällt auf.",
     details: ["Rundbetrag ohne Rechnungsbezug.", "Zahlung außerhalb des üblichen Rhythmus."],
     variant: "booking",
@@ -69,6 +75,7 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "zusammenfuehrung",
+    kicker: "Ergebnis",
     title: "Einzeln unauffällig. Zusammen teuer.",
     variant: "summary",
   },
@@ -79,22 +86,22 @@ const STEPS: StoryStep[] = [
 // statt vom Header ueberdeckt zu werden.
 const STICKY_TOP_PX = 88;
 // Dauer der Ausblend-Phase beim Schrittwechsel (danach wird der Inhalt
-// getauscht und wieder eingeblendet) - siehe useStepCrossfade weiter unten.
-const CROSSFADE_MS = 220;
+// getauscht und wieder eingeblendet, siehe Kommentar am Observer-Callback).
+const CROSSFADE_MS = 240;
 
 // Sticky Scrollytelling: auf lg+ bleibt die rechte Visualisierung stehen und
 // wechselt per IntersectionObserver (gleiches Muster wie LandingNav)
 // abhaengig vom aktuell im Viewport zentrierten Story-Schritt, mit einer
-// kurzen Ausblend-/Einblend-Ueberblendung statt eines abrupten Wechsels. Auf
-// Mobile wird das Sticky-Konzept bewusst vereinfacht - jeder Schritt zeigt
-// dort seine eigene, statische Visualisierung direkt unter dem Text, ohne
-// Observer-/Crossfade-Abhaengigkeit.
+// weichen Aus-/Einblend-Ueberblendung und einem gestaffelten Wiederaufbau
+// des Karteninhalts (per remount ueber "key") statt eines abrupten Wechsels.
+// Auf Mobile wird das Sticky-Konzept bewusst vereinfacht - jeder Schritt
+// zeigt dort seine eigene, statische Visualisierung direkt unter dem Text,
+// ohne Timeline-Leiste, Observer- oder Crossfade-Abhaengigkeit.
 export function LeakScrollytelling() {
   const [activeStep, setActiveStep] = useState(0);
   // displayStep/fadedOut steuern ausschliesslich die sticky Visualisierung
-  // und hinken activeStep bewusst kurz hinterher (siehe Kommentar bei der
-  // Observer-Callback weiter unten) - activeStep selbst aktualisiert die
-  // Story-Texte (Hervorhebung/Nummerierung) weiterhin sofort.
+  // und hinken activeStep bewusst kurz hinterher - activeStep selbst
+  // aktualisiert Timeline-Marker und Story-Texte weiterhin sofort.
   const [displayStep, setDisplayStep] = useState(0);
   const [fadedOut, setFadedOut] = useState(false);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -116,10 +123,6 @@ export function LeakScrollytelling() {
         activeStepRef.current = index;
         setActiveStep(index);
 
-        // Zweiphasige Ueberblendung der sticky Visualisierung: zunaechst
-        // ausblenden, den Inhalt erst danach tauschen und anschliessend
-        // weich wieder einblenden - fuehlt sich als Crossfade an, ohne zwei
-        // Kartenversionen gleichzeitig im DOM halten zu muessen. Die
         // State-Updates laufen bewusst innerhalb dieses (asynchronen)
         // Observer-Callbacks, nicht synchron im Effekt-Body selbst.
         if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
@@ -141,7 +144,11 @@ export function LeakScrollytelling() {
 
   return (
     <section id="geldlecks" className="relative bg-landing-bg-alt py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-10 [background-image:radial-gradient(rgba(25,198,193,0.4)_1px,transparent_1px)] [background-size:26px_26px]"
+      />
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-landing-text-primary">
             Geld geht selten auf einmal verloren.
@@ -160,11 +167,18 @@ export function LeakScrollytelling() {
               ref={(el) => {
                 stepRefs.current[i] = el;
               }}
-              className="lg:flex lg:min-h-[60vh] lg:flex-col lg:justify-center"
+              className="lg:flex lg:min-h-[60vh] lg:items-center lg:gap-6"
             >
-              <StepText step={step} index={i} active={activeStep === i} />
-              <div className="mt-6 lg:hidden">
-                <StoryVisual step={step} />
+              <div className="hidden lg:flex lg:h-full lg:w-6 lg:shrink-0 lg:flex-col lg:items-center">
+                <span className={`w-px flex-1 ${i === 0 ? "bg-transparent" : "bg-landing-border"}`} />
+                <StepMarker index={i} active={activeStep === i} />
+                <span className={`w-px flex-1 ${i === STEPS.length - 1 ? "bg-transparent" : "bg-landing-border"}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <StepText step={step} index={i} active={activeStep === i} />
+                <div className="mt-6 lg:hidden">
+                  <StoryVisual step={step} />
+                </div>
               </div>
             </div>
           ))}
@@ -172,8 +186,12 @@ export function LeakScrollytelling() {
 
         <div className="hidden lg:block">
           <div className="sticky" style={{ top: STICKY_TOP_PX }}>
-            <div className={`transition-opacity duration-200 ease-out ${fadedOut ? "opacity-0" : "opacity-100"}`}>
-              <StoryVisual step={STEPS[displayStep]} />
+            <div
+              className={`transition-all duration-300 ease-out ${
+                fadedOut ? "translate-y-2 opacity-0" : "translate-y-0 opacity-100"
+              }`}
+            >
+              <StoryVisual key={STEPS[displayStep].id} step={STEPS[displayStep]} />
             </div>
           </div>
         </div>
@@ -182,14 +200,35 @@ export function LeakScrollytelling() {
   );
 }
 
+function StepMarker({ index, active }: { index: number; active: boolean }) {
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-full border font-display text-xs font-bold tabular-nums transition-all duration-500 ${
+        active
+          ? "h-8 w-8 border-landing-accent-light bg-landing-accent-subtle text-landing-accent-light ring-4 ring-landing-accent-subtle"
+          : "h-2.5 w-2.5 border-landing-border bg-landing-bg-alt text-transparent"
+      }`}
+    >
+      {active && String(index + 1).padStart(2, "0")}
+    </span>
+  );
+}
+
 function StepText({ step, index, active }: { step: StoryStep; index: number; active: boolean }) {
+  const isSummary = step.variant === "summary";
   return (
     <div className="max-w-md">
-      <div className="flex items-center gap-2.5">
-        <span className="font-display text-xs font-semibold tabular-nums text-landing-text-muted">
+      <div className="flex items-center gap-3">
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-opacity duration-500 ${
+            isSummary ? "bg-landing-accent-subtle text-landing-accent-light" : "bg-landing-danger-subtle text-landing-danger"
+          } ${active ? "opacity-100" : "lg:opacity-55"}`}
+        >
+          {step.kicker}
+        </span>
+        <span className="text-xs font-semibold tabular-nums text-landing-text-muted">
           {String(index + 1).padStart(2, "0")} / 04
         </span>
-        <span className="h-px flex-1 max-w-10 bg-landing-border" />
       </div>
       <h3
         className={`mt-4 font-display font-bold text-landing-text-primary transition-all duration-500 ${
@@ -200,13 +239,15 @@ function StepText({ step, index, active }: { step: StoryStep; index: number; act
       </h3>
       {step.variant === "booking" && (
         <ul
-          className={`mt-4 space-y-1.5 text-sm text-landing-text-secondary transition-opacity duration-500 ${
+          className={`mt-4 space-y-2 text-sm text-landing-text-secondary transition-opacity duration-500 ${
             active ? "lg:opacity-100" : "lg:opacity-45"
           }`}
         >
           {step.details.map((d) => (
-            <li key={d} className="flex items-center gap-2">
-              <span className="h-1 w-1 shrink-0 rounded-full bg-landing-text-muted" />
+            <li key={d} className="flex items-center gap-2.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-landing-danger-subtle text-landing-danger">
+                <CheckIcon className="h-3 w-3" />
+              </span>
               {d}
             </li>
           ))}
@@ -223,21 +264,30 @@ function StoryVisual({ step }: { step: StoryStep }) {
 
 function BookingVisual({ step }: { step: Extract<StoryStep, { variant: "booking" }> }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
-      <div className="flex items-center justify-between border-b border-landing-border px-7 py-5">
-        <span className="text-sm font-semibold uppercase tracking-wide text-landing-text-muted">{step.datasetLabel}</span>
+    <div className="relative overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-landing-danger/10 blur-3xl" />
+      <div className="h-1 w-full bg-gradient-to-r from-landing-danger via-landing-danger to-transparent" />
+      <div className="relative flex items-center justify-between px-7 py-5">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-landing-danger-subtle text-landing-danger">
+            <AlertTriangleIcon className="h-4 w-4" />
+          </span>
+          <span className="text-sm font-semibold uppercase tracking-wide text-landing-text-muted">{step.datasetLabel}</span>
+        </div>
         <SearchIcon className="h-5 w-5 text-landing-text-muted" />
       </div>
-      <ul className="divide-y divide-landing-border">
+      <ul className="relative divide-y divide-landing-border">
         {step.rows.map((row, i) => {
           const highlighted = step.highlightIndexes.includes(i);
           return (
             <li
               key={`${row.name}-${i}`}
-              className={`flex items-center justify-between px-7 py-[1.125rem] transition-colors duration-300 ${
+              className={`relative flex items-center justify-between px-7 py-[1.125rem] opacity-0 transition-colors duration-300 animate-fade-in-up ${
                 highlighted ? "bg-landing-danger-subtle" : ""
               }`}
+              style={{ animationDelay: `${i * 70}ms` }}
             >
+              {highlighted && <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-landing-danger" />}
               <span className={`text-base ${highlighted ? "font-semibold text-landing-text-primary" : "text-landing-text-secondary"}`}>
                 {row.name}
               </span>
@@ -248,8 +298,9 @@ function BookingVisual({ step }: { step: Extract<StoryStep, { variant: "booking"
           );
         })}
       </ul>
-      <div className="flex items-center justify-end border-t border-landing-border bg-landing-bg-alt px-7 py-5">
-        <span className="rounded-full bg-landing-danger px-4 py-2 text-sm font-bold text-white">
+      <div className="relative flex items-center justify-between gap-3 border-t border-landing-border bg-landing-bg-alt px-7 py-5">
+        <span className="text-xs text-landing-text-muted">Automatisch erkannt</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-landing-danger px-4 py-2 text-sm font-bold text-white shadow-lg shadow-landing-danger/30">
           Potenzial: {step.potential}
         </span>
       </div>
@@ -258,35 +309,45 @@ function BookingVisual({ step }: { step: Extract<StoryStep, { variant: "booking"
 }
 
 const FUNNEL = [
-  { label: "Buchungen analysiert", value: "38.421" },
-  { label: "Auffälligkeiten erkannt", value: "47" },
-  { label: "bestätigt", value: "32" },
-  { label: "Potenzial", value: "18.740 €", accent: true },
+  { label: "Buchungen analysiert", value: "38.421", icon: FileTextIcon },
+  { label: "Auffälligkeiten erkannt", value: "47", icon: AlertTriangleIcon },
+  { label: "bestätigt", value: "32", icon: CheckCircleIcon },
 ];
 
 function SummaryVisual() {
   return (
-    <div className="rounded-3xl border border-landing-border bg-landing-card-elevated p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
-      {FUNNEL.map((item, i) => (
-        <div key={item.label}>
-          <div
-            className={`mx-auto rounded-2xl border px-6 py-[1.125rem] text-center ${
-              item.accent ? "border-landing-accent-light/40 bg-landing-accent-subtle" : "border-landing-border bg-landing-bg-alt"
-            }`}
-            style={{ width: `${100 - i * 10}%` }}
-          >
-            <p className={`font-display text-2xl font-extrabold ${item.accent ? "text-landing-accent-light" : "text-landing-text-primary"}`}>
-              {item.value}
-            </p>
-            <p className="mt-1 text-sm text-landing-text-secondary">{item.label}</p>
-          </div>
-          {i < FUNNEL.length - 1 && (
-            <div className="flex justify-center py-2.5">
-              <ArrowRightIcon className="h-5 w-5 rotate-90 text-landing-text-muted" />
-            </div>
-          )}
+    <div className="relative overflow-hidden rounded-3xl border border-landing-accent-light/30 bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-landing-accent-light/15 blur-3xl" />
+      <div className="h-1 w-full bg-gradient-to-r from-landing-accent-light via-landing-accent to-transparent" />
+      <div className="relative p-7 sm:p-8">
+        <ul className="space-y-3">
+          {FUNNEL.map((item, i) => (
+            <li
+              key={item.label}
+              className="flex items-center gap-4 opacity-0 animate-fade-in-up"
+              style={{ animationDelay: `${i * 110}ms` }}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-landing-border bg-landing-bg-alt text-landing-text-muted">
+                <item.icon className="h-5 w-5" />
+              </span>
+              <div className="flex-1">
+                <p className="font-display text-xl font-extrabold tabular-nums text-landing-text-primary">{item.value}</p>
+                <p className="text-xs text-landing-text-secondary">{item.label}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div
+          className="relative mt-6 overflow-hidden rounded-2xl border border-landing-accent-light/40 bg-gradient-to-br from-landing-accent-subtle to-landing-bg-alt p-6 text-center opacity-0 animate-fade-in-up"
+          style={{ animationDelay: "440ms" }}
+        >
+          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-landing-accent-light/20" />
+          <TargetIcon className="relative mx-auto h-6 w-6 text-landing-accent-light" />
+          <p className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light">18.740 €</p>
+          <p className="relative mt-1 text-sm font-semibold text-landing-text-secondary">Potenzieller finanzieller Effekt</p>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
