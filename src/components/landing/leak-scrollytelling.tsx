@@ -146,12 +146,26 @@ const PHASES: Phase[] = [
   },
 ];
 
+const [ANALYSE_PHASE, DOPPELZAHLUNG_PHASE, GUTSCHRIFT_PHASE, MUSTER_PHASE, , EFFEKT_PHASE] = PHASES;
 const FINDING_PHASES = PHASES.filter((p) => p.findingLabel);
 const TALLY: { value: string; label: string }[] = [
   { value: "38.421", label: "Buchungen" },
   { value: "47", label: "Auffälligkeiten" },
   { value: "32", label: "bestätigt" },
 ];
+
+// Choreografie einzelner Zeilen innerhalb ihrer jeweiligen Fund-Phase (lokaler
+// Fortschritt 0..1 = Anteil am Scrollbereich DIESER Phase): erst die erste
+// Buchung, kurz danach die zweite, dann ein Matching-Hinweis dazwischen.
+const ROW_STAGE: Record<string, [number, number]> = {
+  "mueller-1": [0, 0.2],
+  "mueller-2": [0.16, 0.34],
+  "gutschrift-buerobedarf": [0, 0.22],
+  logistik: [0, 0.22],
+};
+const CONNECTION_STAGE: [number, number] = [0.3, 0.46];
+const CHIP_STAGE: [number, number] = [0.42, 0.64];
+const PANEL_STAGE: [number, number] = [0.6, 0.82];
 
 const TONE_STYLES: Record<
   Tone,
@@ -203,9 +217,9 @@ const STICKY_TOP_PX = 88;
 // bekommt dafuer aber ein weiches Aus-/Einblenden statt eines harten Schnitts).
 const TEXT_CROSSFADE_MS = 200;
 
-// Szenen- und Uebergangs-Bandbreiten (Anteil am Gesamtfortschritt). Innerhalb
-// jeder Phase bleibt der grosse mittlere Bereich stabil ("Ruhephase"), nur an
-// den Raendern wird ueber die Bandbreite weich ein-/ausgeblendet.
+// Szenen-Bandbreiten (Anteil am Gesamtfortschritt). Innerhalb jeder Phase
+// bleibt der grosse mittlere Bereich stabil ("Ruhephase"), nur an den
+// Raendern wird ueber die Bandbreite weich ein-/ausgeblendet.
 const LIST_RANGE: [number, number] = [0, 0.59];
 const ZUSAMMENHANG_RANGE: [number, number] = [0.59, 0.78];
 const EFFEKT_RANGE: [number, number] = [0.78, 0.92];
@@ -213,7 +227,7 @@ const KONTROLLE_RANGE: [number, number] = [0.92, 1];
 const SCENE_BAND = 0.045;
 const ROW_BAND = 0.05;
 const CHIP_BAND = 0.06;
-const PANEL_RANGE: [number, number] = [PHASES[1].start, PHASES[3].end];
+const PANEL_RANGE: [number, number] = [DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end];
 
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
@@ -225,10 +239,7 @@ function smoothstep(t: number): number {
 }
 
 // Weiches Aktivierungsgewicht 0..1: haelt sich innerhalb [start,end] bei 1 und
-// blendet symmetrisch um die Raender ueber `band` weich ein/aus - so entsteht
-// eine Ruhephase in der Mitte jeder Phase statt eines harten Zustandswechsels
-// genau an der Scrollgrenze. Die allererste bzw. allerletzte Phase blendet an
-// ihrem offenen Ende gar nicht (nichts davor/danach).
+// blendet symmetrisch um die Raender ueber `band` weich ein/aus.
 function bandWeight(progress: number, start: number, end: number, band: number): number {
   const half = band / 2;
   const inW = start <= 0 ? 1 : smoothstep((progress - (start - half)) / band);
@@ -240,6 +251,31 @@ function bandWeight(progress: number, start: number, end: number, band: number):
 // bestehen bleiben, sobald sie einmal erreicht wurden.
 function riseWeight(progress: number, at: number, band: number): number {
   return smoothstep((progress - (at - band / 2)) / band);
+}
+
+// Lokaler Fortschritt 0..1 INNERHALB einer Phase (0 = Phasenanfang, 1 =
+// Phasenende) - Grundlage fuer die choreografierte Abfolge einzelner
+// Teilschritte innerhalb ein und derselben Scrollphase.
+function localProgress(progress: number, phase: Phase): number {
+  return clamp01((progress - phase.start) / (phase.end - phase.start));
+}
+
+// Ein Teilschritt innerhalb der Choreografie einer Phase: steigt weich von 0
+// auf 1 im lokalen Fortschrittsfenster [from,to] und bleibt danach bei 1 -
+// mehrere solcher Teilschritte mit versetzten Fenstern ergeben eine
+// Abfolge ("erst Zeile 1, dann Zeile 2, dann Verbindung, dann Fund-Chip...")
+// statt eines gemeinsamen Einblendens.
+function stageWeight(localT: number, from: number, to: number): number {
+  return smoothstep((localT - from) / (to - from));
+}
+
+// Wie stageWeight, blendet aber zusaetzlich am Ende der Phase (symmetrisch
+// um `phase.end`) wieder aus - fuer Elemente, die beim Uebergang zur
+// naechsten Phase aus dem Fokus wandern (Zeilen-Highlight, Panel-Inhalt).
+function choreographedWeight(progress: number, phase: Phase, from: number, to: number, fadeBand: number): number {
+  const riseW = stageWeight(localProgress(progress, phase), from, to);
+  const outW = phase.end >= 1 ? 1 : 1 - smoothstep((progress - (phase.end - fadeBand / 2)) / fadeBand);
+  return Math.max(0, Math.min(riseW, outW));
 }
 
 function resolvePhaseIndex(progress: number): number {
@@ -267,14 +303,15 @@ function usePrefersReducedMotion(): boolean {
 // Zentrale Produktgeschichte der Startseite: EINE grosse gepinnte Section,
 // deren Scrollfortschritt (0..1) ueber die tatsaechliche Position der Section
 // im Dokument berechnet wird. Alle visuellen Zustaende der Produktbuehne
-// (Zeilen-Highlights, Fund-Chips, Transparenzpanel, Szenenwechsel, Ambient-
-// Glow, Rail) werden als STETIGE Funktionen dieses einen Fortschrittswerts
-// berechnet (bandWeight/riseWeight), nicht als diskrete An/Aus-Zustaende -
-// dadurch entwickelt sich die Buehne beim Scrollen weich statt zu springen.
-// Nur der Story-Text (Headline/Copy) muss inhaltlich diskret wechseln; dafuer
-// gibt es einen kurzen, im Scroll-Callback ausgeloesten Crossfade. Auf Mobile
-// und bei reduzierter Bewegung wird eine statische, nicht gepinnte Liste
-// aller Phasen gerendert (dort immer voll sichtbar, ohne Scroll-Kopplung).
+// werden als STETIGE Funktionen dieses einen Fortschrittswerts berechnet
+// (bandWeight/riseWeight/choreographedWeight), nicht als diskrete An/Aus-
+// Zustaende - dadurch entwickelt sich die Buehne beim Scrollen weich statt
+// zu springen, und einzelne Elemente (Zeilen, Verbindungshinweis, Fund-Chip,
+// Transparenzpanel) laufen innerhalb einer Phase choreografiert nacheinander
+// ab statt gleichzeitig einzublenden. Nur der Story-Text (Headline/Copy)
+// muss inhaltlich diskret wechseln; dafuer gibt es einen kurzen, im Scroll-
+// Callback ausgeloesten Crossfade. Auf Mobile und bei reduzierter Bewegung
+// wird eine statische, nicht gepinnte Liste aller Phasen gerendert.
 export function LeakScrollytelling() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -365,7 +402,7 @@ export function LeakScrollytelling() {
 }
 
 function AmbientLayer({ progress }: { progress: number }) {
-  const problemGlow = bandWeight(progress, PHASES[1].start, PHASES[3].end, 0.08);
+  const problemGlow = bandWeight(progress, DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end, 0.08);
   const resultGlow = Math.max(
     bandWeight(progress, EFFEKT_RANGE[0], EFFEKT_RANGE[1], SCENE_BAND),
     bandWeight(progress, KONTROLLE_RANGE[0], KONTROLLE_RANGE[1], SCENE_BAND) * 0.7
@@ -430,8 +467,7 @@ function PhaseText({ phaseIndex, fading }: { phaseIndex: number; fading: boolean
 
 // `reveal=false` (Desktop-Buehne): jedes Element blendet stetig ueber den
 // Scrollfortschritt ein. `reveal=true` (statische Fassung): sofort voll
-// sichtbar, keine Teil-Deckkraft - wichtig fuer Mobile/reduced-motion, wo
-// nichts an Sichtbarkeit von Scroll-Interaktion abhaengen darf.
+// sichtbar, keine Teil-Deckkraft.
 function TallyStrip({ progress, sceneStart, reveal }: { progress: number; sceneStart: number; reveal: boolean }) {
   return (
     <div className="grid grid-cols-3 gap-3 text-center">
@@ -453,12 +489,9 @@ function TallyStrip({ progress, sceneStart, reveal }: { progress: number; sceneS
 }
 
 // Die Produktbuehne: EINE Kartenh uelle, deren INHALT sich stetig ueber den
-// Scrollfortschritt entwickelt. Statt Szenen diskret zu montieren/demontieren
-// werden alle gerade relevanten Szenen in derselben Grid-Zelle uebereinander
-// gerendert (row-start-1/col-start-1) und per stetigem Opacity-/Transform-
-// Gewicht (bandWeight) uebereinander weich ausgeblendet - das ergibt eine
-// echte Transformation statt eines Zustandssprungs. `reveal=true` schaltet
-// alle Teil-Deckkraft-Effekte auf "voll sichtbar" fuer die statische Fassung.
+// Scrollfortschritt entwickelt. Alle vier "Szenen" liegen in derselben Grid-
+// Zelle uebereinander (row-start-1/col-start-1) und werden per stetigem
+// Gewicht weich uebereinander geblendet.
 function ProductStage({ progress, reveal }: { progress: number; reveal: boolean }) {
   const listWeight = reveal ? 1 : bandWeight(progress, LIST_RANGE[0], LIST_RANGE[1], SCENE_BAND);
   const zusammenhangWeight = reveal ? 1 : bandWeight(progress, ZUSAMMENHANG_RANGE[0], ZUSAMMENHANG_RANGE[1], SCENE_BAND);
@@ -468,15 +501,22 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
   const inZusammenhang = progress >= ZUSAMMENHANG_RANGE[0] && progress < ZUSAMMENHANG_RANGE[1];
   const inEffekt = progress >= EFFEKT_RANGE[0] && progress < EFFEKT_RANGE[1];
   const inKontrolle = progress >= KONTROLLE_RANGE[0];
+  const effektLocal = localProgress(progress, EFFEKT_PHASE);
 
   const stripeWeights: Record<Tone, number> = reveal
     ? { danger: 0, warning: 0, purple: 0, accent: 1 }
     : {
-        danger: bandWeight(progress, PHASES[1].start, PHASES[1].end, ROW_BAND),
-        warning: bandWeight(progress, PHASES[2].start, PHASES[2].end, ROW_BAND),
-        purple: bandWeight(progress, PHASES[3].start, PHASES[3].end, ROW_BAND),
-        accent: Math.max(bandWeight(progress, 0, PHASES[0].end, ROW_BAND), zusammenhangWeight, effektWeight, kontrolleWeight),
+        danger: bandWeight(progress, DOPPELZAHLUNG_PHASE.start, DOPPELZAHLUNG_PHASE.end, ROW_BAND),
+        warning: bandWeight(progress, GUTSCHRIFT_PHASE.start, GUTSCHRIFT_PHASE.end, ROW_BAND),
+        purple: bandWeight(progress, MUSTER_PHASE.start, MUSTER_PHASE.end, ROW_BAND),
+        accent: Math.max(bandWeight(progress, 0, ANALYSE_PHASE.end, ROW_BAND), zusammenhangWeight, effektWeight, kontrolleWeight),
       };
+
+  // Payoff-Szene: erst waechst die Ergebnisflaeche, dann erscheint die Zahl,
+  // zuletzt die Beschriftung - statt alles gleichzeitig einzublenden.
+  const surfaceW = reveal ? 1 : stageWeight(effektLocal, 0, 0.32);
+  const numberW = reveal ? 1 : stageWeight(effektLocal, 0.32, 0.6);
+  const labelW = reveal ? 1 : stageWeight(effektLocal, 0.55, 0.85);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
@@ -512,7 +552,7 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
       <div className="relative grid grid-cols-1">
         {(reveal ? sceneActive : listWeight > 0.005) && (
           <div className="col-start-1 row-start-1" style={{ opacity: listWeight }}>
-            <ListScene progress={progress} reveal={reveal} />
+            <ListScene progress={progress} reveal={reveal} leavingWeight={reveal ? 0 : 1 - listWeight} />
           </div>
         )}
         {(reveal ? inZusammenhang : zusammenhangWeight > 0.005) && (
@@ -528,7 +568,10 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
                   <div
                     key={f.id}
                     className={`min-w-[9rem] flex-1 rounded-2xl border border-landing-border p-4 ${t.rowBg}`}
-                    style={{ opacity: w, transform: reveal ? undefined : `translateY(${(1 - w) * 8}px)` }}
+                    style={{
+                      opacity: w,
+                      transform: reveal ? undefined : `translateY(${(1 - w) * 8}px) scale(${0.94 + 0.06 * w})`,
+                    }}
                   >
                     <p className={`text-xs font-semibold ${t.rowText}`}>{f.kicker}</p>
                     <p className="mt-1 font-display text-lg font-bold tabular-nums text-landing-text-primary">{f.findingAmount}</p>
@@ -546,15 +589,29 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
             className="col-start-1 row-start-1 px-7 py-8"
             style={{ opacity: effektWeight, transform: reveal ? undefined : `translateY(${(1 - effektWeight) * 10}px)` }}
           >
-            <TallyStrip progress={progress} sceneStart={EFFEKT_RANGE[0] - 0.04} reveal={reveal} />
+            <div style={{ opacity: 0.5 + 0.5 * surfaceW }}>
+              <TallyStrip progress={progress} sceneStart={EFFEKT_RANGE[0] - 0.04} reveal={reveal} />
+            </div>
             <div
               className="relative mt-6 overflow-hidden rounded-2xl border border-landing-accent-light/40 bg-gradient-to-br from-landing-accent-subtle to-landing-bg-alt p-7 text-center"
-              style={{ transform: reveal ? undefined : `scale(${0.96 + 0.04 * effektWeight})` }}
+              style={{ transform: reveal ? undefined : `scale(${0.9 + 0.1 * surfaceW})`, opacity: reveal ? 1 : surfaceW }}
             >
               <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-landing-accent-light/20" />
-              <TargetIcon className="relative mx-auto h-6 w-6 text-landing-accent-light" />
-              <p className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light">18.740 €</p>
-              <p className="relative mt-1 text-sm font-semibold text-landing-text-secondary">Potenzieller finanzieller Effekt</p>
+              <span className="relative mx-auto block h-6 w-6" style={{ opacity: reveal ? 1 : numberW }}>
+                <TargetIcon className="h-6 w-6 text-landing-accent-light" />
+              </span>
+              <p
+                className="relative mt-2 font-display text-4xl font-extrabold text-landing-accent-light"
+                style={{ opacity: reveal ? 1 : numberW, transform: reveal ? undefined : `translateY(${(1 - numberW) * 6}px)` }}
+              >
+                18.740 €
+              </p>
+              <p
+                className="relative mt-1 text-sm font-semibold text-landing-text-secondary"
+                style={{ opacity: reveal ? 1 : labelW }}
+              >
+                Potenzieller finanzieller Effekt
+              </p>
             </div>
           </div>
         )}
@@ -596,47 +653,79 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
 }
 
 // Die "Analyse"-Szene deckt Analyse/Doppelzahlung/Gutschrift/Auffaelligkeit
-// als EINE zusammenhaengende Ansicht ab: dieselbe Buchungsliste bleibt
-// durchgehend sichtbar, nur welche Zeile hervorgehoben ist, welche Fund-Chips
-// bereits sichtbar sind und welcher Inhalt im Transparenzpanel steht, aendert
-// sich stetig mit dem Scrollfortschritt.
-function ListScene({ progress, reveal }: { progress: number; reveal: boolean }) {
+// als EINE zusammenhaengende, sich choreografiert entwickelnde Ansicht ab:
+// dieselbe Buchungsliste bleibt sichtbar; innerhalb jeder Fund-Phase laeuft
+// eine feste Abfolge ab (Zeile 1 → Zeile 2/Vergleich → Verbindungshinweis →
+// Fund-Chip entsteht → Transparenzpanel oeffnet sich), bevor der Fokus zur
+// naechsten Phase weiterzieht. Bereits gefundene Chips bleiben als
+// dezenter werdender Verlauf sichtbar, begleitet von einem kleinen Zaehler.
+function ListScene({ progress, reveal, leavingWeight }: { progress: number; reveal: boolean; leavingWeight: number }) {
+  const foundCount = FINDING_PHASES.reduce((acc, f) => acc + (progress >= f.start ? 1 : 0), 0);
+  const counterOpacity = reveal ? (foundCount >= 1 ? 1 : 0) : riseWeight(progress, DOPPELZAHLUNG_PHASE.start, CHIP_BAND);
+
   const chipEntries = FINDING_PHASES.map((f) => {
-    const rise = reveal ? (progress >= f.start ? 1 : 0) : riseWeight(progress, f.start, CHIP_BAND);
-    const focus = reveal ? 1 : bandWeight(progress, f.start, f.end, CHIP_BAND);
-    return { phase: f, opacity: reveal ? rise : rise * (0.55 + 0.45 * focus), rise };
+    // "focus": ist gerade DIESE Phase im Zentrum? Steuert Groesse/Deckkraft
+    // des Fund-Chips, sobald der Fokus weiterzieht ("wird kleiner, ruecht in
+    // den Analysebereich").
+    const focusRow = ROW_STAGE[f.highlightRowIds![f.highlightRowIds!.length - 1]];
+    const focus = reveal ? (progress >= f.start && progress < f.end ? 1 : 0) : choreographedWeight(progress, f, focusRow[0], focusRow[1], ROW_BAND);
+    const rise = reveal ? (progress >= f.start ? 1 : 0) : stageWeight(localProgress(progress, f), CHIP_STAGE[0], CHIP_STAGE[1]);
+    return { phase: f, opacity: rise * (0.6 + 0.4 * focus), scale: 0.86 + 0.14 * focus, rise };
   }).filter((c) => c.rise > 0.01);
 
-  const panelWeight = reveal
+  const panelOuterWeight = reveal
     ? PHASES.some((f) => f.reasonFields && progress >= f.start - 0.001 && progress < f.end + 0.001)
       ? 1
       : 0
     : bandWeight(progress, PANEL_RANGE[0], PANEL_RANGE[1], SCENE_BAND);
 
+  const groupTransform = reveal ? undefined : `scale(${1 - leavingWeight * 0.05}) translateY(${-leavingWeight * 5}px)`;
+
   return (
     <>
-      {chipEntries.length > 0 && (
-        <div className="relative flex flex-wrap gap-2 px-7 pb-4">
-          {chipEntries.map(({ phase, opacity, rise }) => {
+      {(chipEntries.length > 0 || counterOpacity > 0.02) && (
+        <div className="relative flex flex-wrap items-center gap-2 px-7 pb-4" style={{ transform: groupTransform }}>
+          {chipEntries.map(({ phase, opacity, scale }) => {
             const t = TONE_STYLES[phase.tone as Tone];
             return (
               <span
                 key={phase.id}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${t.kicker}`}
-                style={{ opacity, transform: reveal ? undefined : `scale(${0.92 + 0.08 * rise})` }}
+                style={{ opacity, transform: reveal ? undefined : `scale(${scale})` }}
               >
                 {phase.findingLabel}
                 <span className="tabular-nums">{phase.findingAmount}</span>
               </span>
             );
           })}
+          {counterOpacity > 0.02 && (
+            <span className="text-[11px] font-medium text-landing-text-muted" style={{ opacity: counterOpacity }}>
+              {foundCount} {foundCount === 1 ? "Auffälligkeit" : "Auffälligkeiten"} erkannt
+            </span>
+          )}
         </div>
       )}
 
       <ul className="relative divide-y divide-landing-border">
         {MASTER_ROWS.map((row) => {
           const owner = FINDING_PHASES.find((p) => p.highlightRowIds?.includes(row.id));
-          const weight = owner ? (reveal ? (progress >= owner.start && progress < owner.end ? 1 : 0) : bandWeight(progress, owner.start, owner.end, ROW_BAND)) : 0;
+          const stage = ROW_STAGE[row.id];
+          const weight = owner
+            ? reveal
+              ? progress >= owner.start && progress < owner.end
+                ? 1
+                : 0
+              : choreographedWeight(progress, owner, stage[0], stage[1], ROW_BAND)
+            : 0;
+          const isDoppelzahlungB = row.id === "mueller-2";
+          const connectionWeight =
+            isDoppelzahlungB && owner
+              ? reveal
+                ? progress >= owner.start && progress < owner.end
+                  ? 1
+                  : 0
+                : choreographedWeight(progress, owner, CONNECTION_STAGE[0], CONNECTION_STAGE[1], ROW_BAND)
+              : 0;
           const t = owner ? TONE_STYLES[owner.tone as Tone] : null;
           return (
             <li key={row.id} className="relative flex items-center justify-between px-7 py-3.5">
@@ -652,29 +741,47 @@ function ListScene({ progress, reveal }: { progress: number; reveal: boolean }) 
               >
                 {row.name}
               </span>
-              <span
-                className="relative text-sm font-semibold tabular-nums text-landing-text-secondary transition-colors duration-150"
-                style={{ color: t && weight > 0.5 ? `var(${t.cssVar})` : undefined }}
-              >
-                {row.amount}
+              <span className="relative flex items-center gap-2">
+                {connectionWeight > 0.02 && (
+                  <span
+                    className="rounded-full border border-landing-danger/40 bg-landing-danger-subtle px-1.5 py-0.5 text-[10px] font-semibold text-landing-danger"
+                    style={{ opacity: connectionWeight, transform: `scale(${0.85 + 0.15 * connectionWeight})` }}
+                  >
+                    ≈ Buchung 1
+                  </span>
+                )}
+                <span
+                  className="text-sm font-semibold tabular-nums text-landing-text-secondary transition-colors duration-150"
+                  style={{ color: t && weight > 0.5 ? `var(${t.cssVar})` : undefined }}
+                >
+                  {row.amount}
+                </span>
               </span>
             </li>
           );
         })}
       </ul>
 
-      {panelWeight > 0.01 && (
+      {panelOuterWeight > 0.01 && (
         <div
           className="relative border-t border-landing-border bg-landing-bg-alt px-7 py-5"
-          style={{ opacity: panelWeight, transform: reveal ? undefined : `translateY(${(1 - panelWeight) * 6}px)` }}
+          style={{ opacity: panelOuterWeight, transform: reveal ? undefined : `translateY(${(1 - panelOuterWeight) * 6}px)` }}
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-landing-text-muted">Warum auffällig?</p>
           <div className="relative mt-3 grid grid-cols-1">
             {FINDING_PHASES.map((f) => {
-              const w = reveal ? (progress >= f.start && progress < f.end ? 1 : 0) : bandWeight(progress, f.start, f.end, ROW_BAND);
+              const w = reveal
+                ? progress >= f.start && progress < f.end
+                  ? 1
+                  : 0
+                : choreographedWeight(progress, f, PANEL_STAGE[0], PANEL_STAGE[1], ROW_BAND);
               if (w < 0.01 || !f.reasonFields) return null;
               return (
-                <dl key={f.id} className="col-start-1 row-start-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm" style={{ opacity: w }}>
+                <dl
+                  key={f.id}
+                  className="col-start-1 row-start-1 grid grid-cols-2 gap-x-4 gap-y-2 text-sm"
+                  style={{ opacity: w, transform: reveal ? undefined : `translateY(${(1 - w) * 4}px)` }}
+                >
                   {f.reasonFields.map((field) => (
                     <div key={field.label} className="flex items-center justify-between gap-2">
                       <dt className="text-landing-text-muted">{field.label}</dt>
