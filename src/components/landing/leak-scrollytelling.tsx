@@ -8,7 +8,6 @@ type BookingRow = { name: string; amount: string };
 type StoryStep =
   | {
       id: string;
-      eyebrow: string;
       title: string;
       details: string[];
       variant: "booking";
@@ -19,7 +18,6 @@ type StoryStep =
     }
   | {
       id: string;
-      eyebrow: string;
       title: string;
       variant: "summary";
     };
@@ -27,7 +25,6 @@ type StoryStep =
 const STEPS: StoryStep[] = [
   {
     id: "doppelzahlung",
-    eyebrow: "Story-Schritt 1",
     title: "Eine Rechnung wird zweimal bezahlt.",
     details: ["Gleicher Lieferant.", "Gleicher Betrag.", "Ähnliche Rechnungsnummer."],
     variant: "booking",
@@ -44,7 +41,6 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "gutschrift",
-    eyebrow: "Story-Schritt 2",
     title: "Eine Gutschrift bleibt liegen.",
     details: ["Erfasst, aber nie verrechnet."],
     variant: "booking",
@@ -59,7 +55,6 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "auffaelligkeit",
-    eyebrow: "Story-Schritt 3",
     title: "Ein weiterer ungewöhnlicher Zahlungsvorgang fällt auf.",
     details: ["Rundbetrag ohne Rechnungsbezug.", "Zahlung außerhalb des üblichen Rhythmus."],
     variant: "booking",
@@ -74,21 +69,37 @@ const STEPS: StoryStep[] = [
   },
   {
     id: "zusammenfuehrung",
-    eyebrow: "Zusammenführung",
     title: "Einzeln unauffällig. Zusammen teuer.",
     variant: "summary",
   },
 ];
 
-// Sticky Scrollytelling (Punkt "erstes Geldleck-Scrollytelling"): auf lg+
-// bleibt die rechte Visualisierung stehen und wechselt per IntersectionObserver
-// (gleiches Muster wie LandingNav) abhaengig vom aktuell im Viewport
-// zentrierten Story-Schritt. Auf Mobile wird das Sticky-Konzept bewusst
-// vereinfacht - jeder Schritt zeigt dort seine eigene, statische
-// Visualisierung direkt unter dem Text, ohne Observer-Abhaengigkeit.
+// Hoehe des fixen Landing-Headers (h-16 = 64px, siehe landing-header.tsx) +
+// dezenter Abstand, damit die sticky Visualisierung sauber darunter bleibt
+// statt vom Header ueberdeckt zu werden.
+const STICKY_TOP_PX = 88;
+// Dauer der Ausblend-Phase beim Schrittwechsel (danach wird der Inhalt
+// getauscht und wieder eingeblendet) - siehe useStepCrossfade weiter unten.
+const CROSSFADE_MS = 220;
+
+// Sticky Scrollytelling: auf lg+ bleibt die rechte Visualisierung stehen und
+// wechselt per IntersectionObserver (gleiches Muster wie LandingNav)
+// abhaengig vom aktuell im Viewport zentrierten Story-Schritt, mit einer
+// kurzen Ausblend-/Einblend-Ueberblendung statt eines abrupten Wechsels. Auf
+// Mobile wird das Sticky-Konzept bewusst vereinfacht - jeder Schritt zeigt
+// dort seine eigene, statische Visualisierung direkt unter dem Text, ohne
+// Observer-/Crossfade-Abhaengigkeit.
 export function LeakScrollytelling() {
   const [activeStep, setActiveStep] = useState(0);
+  // displayStep/fadedOut steuern ausschliesslich die sticky Visualisierung
+  // und hinken activeStep bewusst kurz hinterher (siehe Kommentar bei der
+  // Observer-Callback weiter unten) - activeStep selbst aktualisiert die
+  // Story-Texte (Hervorhebung/Nummerierung) weiterhin sofort.
+  const [displayStep, setDisplayStep] = useState(0);
+  const [fadedOut, setFadedOut] = useState(false);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const activeStepRef = useRef(0);
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const elements = stepRefs.current.filter((el): el is HTMLDivElement => el !== null);
@@ -101,13 +112,31 @@ export function LeakScrollytelling() {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (!visible[0]) return;
         const index = elements.indexOf(visible[0].target as HTMLDivElement);
-        if (index !== -1) setActiveStep(index);
+        if (index === -1 || index === activeStepRef.current) return;
+        activeStepRef.current = index;
+        setActiveStep(index);
+
+        // Zweiphasige Ueberblendung der sticky Visualisierung: zunaechst
+        // ausblenden, den Inhalt erst danach tauschen und anschliessend
+        // weich wieder einblenden - fuehlt sich als Crossfade an, ohne zwei
+        // Kartenversionen gleichzeitig im DOM halten zu muessen. Die
+        // State-Updates laufen bewusst innerhalb dieses (asynchronen)
+        // Observer-Callbacks, nicht synchron im Effekt-Body selbst.
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        setFadedOut(true);
+        transitionTimeoutRef.current = setTimeout(() => {
+          setDisplayStep(index);
+          setFadedOut(false);
+        }, CROSSFADE_MS);
       },
       { rootMargin: "-40% 0px -40% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
 
     elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    };
   }, []);
 
   return (
@@ -123,17 +152,17 @@ export function LeakScrollytelling() {
         </div>
       </div>
 
-      <div className="relative mx-auto mt-16 max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_420px] lg:items-start lg:gap-16">
-        <div className="flex flex-col gap-14 lg:gap-0">
+      <div className="relative mx-auto mt-12 max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[0.44fr_0.56fr] lg:gap-x-10">
+        <div className="flex flex-col gap-10 lg:gap-0">
           {STEPS.map((step, i) => (
             <div
               key={step.id}
               ref={(el) => {
                 stepRefs.current[i] = el;
               }}
-              className="lg:flex lg:min-h-[80vh] lg:flex-col lg:justify-center"
+              className="lg:flex lg:min-h-[60vh] lg:flex-col lg:justify-center"
             >
-              <StepText step={step} active={activeStep === i} />
+              <StepText step={step} index={i} active={activeStep === i} />
               <div className="mt-6 lg:hidden">
                 <StoryVisual step={step} />
               </div>
@@ -142,8 +171,10 @@ export function LeakScrollytelling() {
         </div>
 
         <div className="hidden lg:block">
-          <div className="sticky top-28">
-            <StoryVisual step={STEPS[activeStep]} />
+          <div className="sticky" style={{ top: STICKY_TOP_PX }}>
+            <div className={`transition-opacity duration-200 ease-out ${fadedOut ? "opacity-0" : "opacity-100"}`}>
+              <StoryVisual step={STEPS[displayStep]} />
+            </div>
           </div>
         </div>
       </div>
@@ -151,15 +182,28 @@ export function LeakScrollytelling() {
   );
 }
 
-function StepText({ step, active }: { step: StoryStep; active: boolean }) {
+function StepText({ step, index, active }: { step: StoryStep; index: number; active: boolean }) {
   return (
-    <div className={`max-w-md transition-opacity duration-500 ${active ? "lg:opacity-100" : "lg:opacity-45"}`}>
-      <span className="inline-block rounded-full bg-landing-accent-subtle px-3 py-1 text-xs font-semibold uppercase tracking-wide text-landing-accent-light">
-        {step.eyebrow}
-      </span>
-      <h3 className="mt-4 font-display text-2xl sm:text-3xl font-bold text-landing-text-primary">{step.title}</h3>
+    <div className="max-w-md">
+      <div className="flex items-center gap-2.5">
+        <span className="font-display text-xs font-semibold tabular-nums text-landing-text-muted">
+          {String(index + 1).padStart(2, "0")} / 04
+        </span>
+        <span className="h-px flex-1 max-w-10 bg-landing-border" />
+      </div>
+      <h3
+        className={`mt-4 font-display font-bold text-landing-text-primary transition-all duration-500 ${
+          active ? "text-2xl sm:text-3xl lg:text-4xl lg:opacity-100" : "text-2xl sm:text-3xl lg:opacity-45"
+        }`}
+      >
+        {step.title}
+      </h3>
       {step.variant === "booking" && (
-        <ul className="mt-4 space-y-1.5 text-sm text-landing-text-secondary">
+        <ul
+          className={`mt-4 space-y-1.5 text-sm text-landing-text-secondary transition-opacity duration-500 ${
+            active ? "lg:opacity-100" : "lg:opacity-45"
+          }`}
+        >
           {step.details.map((d) => (
             <li key={d} className="flex items-center gap-2">
               <span className="h-1 w-1 shrink-0 rounded-full bg-landing-text-muted" />
@@ -179,10 +223,10 @@ function StoryVisual({ step }: { step: StoryStep }) {
 
 function BookingVisual({ step }: { step: Extract<StoryStep, { variant: "booking" }> }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-landing-border bg-landing-card-elevated shadow-lg shadow-slate-900/5 dark:shadow-xl dark:shadow-black/30">
-      <div className="flex items-center justify-between border-b border-landing-border px-5 py-3.5">
-        <span className="text-xs font-semibold uppercase tracking-wide text-landing-text-muted">{step.datasetLabel}</span>
-        <SearchIcon className="h-4 w-4 text-landing-text-muted" />
+    <div className="overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
+      <div className="flex items-center justify-between border-b border-landing-border px-7 py-5">
+        <span className="text-sm font-semibold uppercase tracking-wide text-landing-text-muted">{step.datasetLabel}</span>
+        <SearchIcon className="h-5 w-5 text-landing-text-muted" />
       </div>
       <ul className="divide-y divide-landing-border">
         {step.rows.map((row, i) => {
@@ -190,20 +234,22 @@ function BookingVisual({ step }: { step: Extract<StoryStep, { variant: "booking"
           return (
             <li
               key={`${row.name}-${i}`}
-              className={`flex items-center justify-between px-5 py-3 transition-colors ${highlighted ? "bg-landing-danger-subtle" : ""}`}
+              className={`flex items-center justify-between px-7 py-[1.125rem] transition-colors duration-300 ${
+                highlighted ? "bg-landing-danger-subtle" : ""
+              }`}
             >
-              <span className={`text-sm ${highlighted ? "font-semibold text-landing-text-primary" : "text-landing-text-secondary"}`}>
+              <span className={`text-base ${highlighted ? "font-semibold text-landing-text-primary" : "text-landing-text-secondary"}`}>
                 {row.name}
               </span>
-              <span className={`text-sm font-semibold tabular-nums ${highlighted ? "text-landing-danger" : "text-landing-text-secondary"}`}>
+              <span className={`text-base font-semibold tabular-nums ${highlighted ? "text-landing-danger" : "text-landing-text-secondary"}`}>
                 {row.amount}
               </span>
             </li>
           );
         })}
       </ul>
-      <div className="flex items-center justify-end border-t border-landing-border bg-landing-bg-alt px-5 py-4">
-        <span className="rounded-full bg-landing-danger px-3 py-1.5 text-xs font-bold text-white">
+      <div className="flex items-center justify-end border-t border-landing-border bg-landing-bg-alt px-7 py-5">
+        <span className="rounded-full bg-landing-danger px-4 py-2 text-sm font-bold text-white">
           Potenzial: {step.potential}
         </span>
       </div>
@@ -220,23 +266,23 @@ const FUNNEL = [
 
 function SummaryVisual() {
   return (
-    <div className="rounded-2xl border border-landing-border bg-landing-card-elevated p-6 shadow-lg shadow-slate-900/5 dark:shadow-xl dark:shadow-black/30">
+    <div className="rounded-3xl border border-landing-border bg-landing-card-elevated p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
       {FUNNEL.map((item, i) => (
         <div key={item.label}>
           <div
-            className={`mx-auto rounded-xl border px-5 py-3.5 text-center ${
+            className={`mx-auto rounded-2xl border px-6 py-[1.125rem] text-center ${
               item.accent ? "border-landing-accent-light/40 bg-landing-accent-subtle" : "border-landing-border bg-landing-bg-alt"
             }`}
             style={{ width: `${100 - i * 10}%` }}
           >
-            <p className={`font-display text-xl font-extrabold ${item.accent ? "text-landing-accent-light" : "text-landing-text-primary"}`}>
+            <p className={`font-display text-2xl font-extrabold ${item.accent ? "text-landing-accent-light" : "text-landing-text-primary"}`}>
               {item.value}
             </p>
-            <p className="mt-0.5 text-xs text-landing-text-secondary">{item.label}</p>
+            <p className="mt-1 text-sm text-landing-text-secondary">{item.label}</p>
           </div>
           {i < FUNNEL.length - 1 && (
-            <div className="flex justify-center py-2">
-              <ArrowRightIcon className="h-4 w-4 rotate-90 text-landing-text-muted" />
+            <div className="flex justify-center py-2.5">
+              <ArrowRightIcon className="h-5 w-5 rotate-90 text-landing-text-muted" />
             </div>
           )}
         </div>
