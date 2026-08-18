@@ -23,11 +23,7 @@ export function LandingThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={theme === "dark" ? "Zu hellem Modus wechseln" : "Zu dunklem Modus wechseln"}
-      className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors ${
-        theme === "dark"
-          ? "border-cockpit-border bg-cockpit-card text-cockpit-text-secondary hover:bg-cockpit-card-dark"
-          : "border-petrol-200 bg-white text-petrol-700 hover:bg-petrol-50"
-      }`}
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-landing-border bg-landing-card text-landing-text-secondary hover:bg-landing-bg-alt transition-colors"
     >
       {theme === "dark" ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
     </button>

@@ -1,6 +1,7 @@
 import { LandingHeader } from "@/components/landing-header";
 import { LandingFooter } from "@/components/landing-footer";
 import { Hero } from "@/components/landing/hero";
+import { LeakScrollytelling } from "@/components/landing/leak-scrollytelling";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { FeatureSection } from "@/components/landing/feature-section";
 import { ProcessSection } from "@/components/landing/process-section";
@@ -17,6 +18,7 @@ export default function LandingPage() {
       <LandingHeader />
       <main className="flex-1">
         <Hero />
+        <LeakScrollytelling />
         <ProblemSection />
         <FeatureSection />
         <ProcessSection />

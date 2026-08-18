@@ -58,8 +58,8 @@ export function LandingNav() {
             key={item.href}
             href={item.href}
             onClick={(e) => handleClick(e, item.href)}
-            className={`transition-colors hover:text-slate-900 dark:hover:text-cockpit-heading ${
-              active ? "text-slate-900 dark:text-cockpit-heading" : ""
+            className={`transition-colors hover:text-landing-text-primary ${
+              active ? "text-landing-text-primary" : ""
             }`}
           >
             {item.label}
