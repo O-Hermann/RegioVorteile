@@ -157,15 +157,19 @@ const TALLY: { value: string; label: string }[] = [
 // Choreografie einzelner Zeilen innerhalb ihrer jeweiligen Fund-Phase (lokaler
 // Fortschritt 0..1 = Anteil am Scrollbereich DIESER Phase): erst die erste
 // Buchung, kurz danach die zweite, dann ein Matching-Hinweis dazwischen.
+// Die Fenster sind bewusst grosszuegig (0.2-0.3 lokaler Breite): bei einem
+// einzelnen Mausrad-Wheelticks (~100-120px) darf ein einzelner Teilschritt
+// nicht schon vollstaendig durchlaufen sein, sonst wirkt er trotz stetiger
+// Funktion wie ein Sprung. Siehe STORY_VH weiter unten fuer denselben Grund.
 const ROW_STAGE: Record<string, [number, number]> = {
-  "mueller-1": [0, 0.2],
-  "mueller-2": [0.16, 0.34],
-  "gutschrift-buerobedarf": [0, 0.22],
-  logistik: [0, 0.22],
+  "mueller-1": [0, 0.26],
+  "mueller-2": [0.2, 0.42],
+  "gutschrift-buerobedarf": [0, 0.3],
+  logistik: [0, 0.3],
 };
-const CONNECTION_STAGE: [number, number] = [0.3, 0.46];
-const CHIP_STAGE: [number, number] = [0.42, 0.64];
-const PANEL_STAGE: [number, number] = [0.6, 0.82];
+const CONNECTION_STAGE: [number, number] = [0.36, 0.54];
+const CHIP_STAGE: [number, number] = [0.5, 0.72];
+const PANEL_STAGE: [number, number] = [0.68, 0.86];
 
 const TONE_STYLES: Record<
   Tone,
@@ -209,8 +213,15 @@ const TONE_STYLES: Record<
   },
 };
 
-// Gesamt-Scrollstrecke der gepinnten Story (500-650vh Zielbereich).
-const STORY_VH = 560;
+// Gesamt-Scrollstrecke der gepinnten Story. Bewusst deutlich laenger als der
+// urspruengliche 500-650vh-Richtwert: mit der choreografierten Abfolge
+// mehrerer Teilschritte je Fund-Phase (Zeile 1 -> Zeile 2 -> Matching -> Chip
+// -> Panel) braucht jeder einzelne Teilschritt genug Scroll-Wegstrecke, damit
+// ein einzelner grober Scroll-Delta (z.B. ein Mausrad-Wheeltick von grob
+// 100-120px) ihn nicht in einem Schritt komplett durchlaeuft - sonst wirkt
+// eine mathematisch stetige Funktion trotzdem wie ein Sprung, weil zu wenige
+// Zwischenwerte tatsaechlich abgetastet werden.
+const STORY_VH = 900;
 // Hoehe des fixen Landing-Headers (h-16 = 64px) + dezenter Abstand.
 const STICKY_TOP_PX = 88;
 // Zeitfenster fuer den Text-Crossfade (Headline/Copy muss diskret wechseln,
@@ -219,13 +230,17 @@ const TEXT_CROSSFADE_MS = 200;
 
 // Szenen-Bandbreiten (Anteil am Gesamtfortschritt). Innerhalb jeder Phase
 // bleibt der grosse mittlere Bereich stabil ("Ruhephase"), nur an den
-// Raendern wird ueber die Bandbreite weich ein-/ausgeblendet.
+// Raendern wird ueber die Bandbreite weich ein-/ausgeblendet. ROW_BAND ist
+// bewusst schmaler als frueher: der letzte Choreografie-Teilschritt (Panel)
+// endet erst bei lokal 0.86 - das Ausblenden am Phasenende darf erst danach
+// einsetzen, sonst wuerde das Panel wieder abgeschnitten, bevor es fertig
+// aufgeblendet ist.
 const LIST_RANGE: [number, number] = [0, 0.59];
 const ZUSAMMENHANG_RANGE: [number, number] = [0.59, 0.78];
 const EFFEKT_RANGE: [number, number] = [0.78, 0.92];
 const KONTROLLE_RANGE: [number, number] = [0.92, 1];
-const SCENE_BAND = 0.045;
-const ROW_BAND = 0.05;
+const SCENE_BAND = 0.035;
+const ROW_BAND = 0.025;
 const CHIP_BAND = 0.06;
 const PANEL_RANGE: [number, number] = [DOPPELZAHLUNG_PHASE.start, MUSTER_PHASE.end];
 
@@ -471,7 +486,7 @@ function TallyStrip({ progress, sceneStart, reveal }: { progress: number; sceneS
   return (
     <div className="grid grid-cols-3 gap-3 text-center">
       {TALLY.map((t, i) => {
-        const w = reveal ? 1 : clamp01((progress - (sceneStart + i * 0.012)) / 0.05);
+        const w = reveal ? 1 : clamp01((progress - (sceneStart + i * 0.02)) / 0.08);
         return (
           <div
             key={t.label}
@@ -513,9 +528,9 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
 
   // Payoff-Szene: erst waechst die Ergebnisflaeche, dann erscheint die Zahl,
   // zuletzt die Beschriftung - statt alles gleichzeitig einzublenden.
-  const surfaceW = reveal ? 1 : stageWeight(effektLocal, 0, 0.32);
-  const numberW = reveal ? 1 : stageWeight(effektLocal, 0.32, 0.6);
-  const labelW = reveal ? 1 : stageWeight(effektLocal, 0.55, 0.85);
+  const surfaceW = reveal ? 1 : stageWeight(effektLocal, 0, 0.28);
+  const numberW = reveal ? 1 : stageWeight(effektLocal, 0.28, 0.54);
+  const labelW = reveal ? 1 : stageWeight(effektLocal, 0.5, 0.78);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40">
@@ -562,7 +577,7 @@ function ProductStage({ progress, reveal }: { progress: number; reveal: boolean 
             <div className="flex flex-wrap gap-3">
               {FINDING_PHASES.map((f, i) => {
                 const t = TONE_STYLES[f.tone as Tone];
-                const w = reveal ? 1 : clamp01((progress - (ZUSAMMENHANG_RANGE[0] + i * 0.015)) / 0.05);
+                const w = reveal ? 1 : clamp01((progress - (ZUSAMMENHANG_RANGE[0] + i * 0.025)) / 0.09);
                 return (
                   <div
                     key={f.id}
