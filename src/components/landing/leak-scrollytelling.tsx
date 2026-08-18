@@ -337,7 +337,7 @@ export function LeakScrollytelling() {
       const total = rect.height - window.innerHeight;
       const raw = total > 0 ? -rect.top / total : 0;
       const clamped = clamp01(raw);
-      if (Math.abs(clamped - progressRef.current) < 0.0012) return;
+      if (Math.abs(clamped - progressRef.current) < 0.0003) return;
       progressRef.current = clamped;
       setProgress(clamped);
 
@@ -429,18 +429,17 @@ function StoryRail({ progress }: { progress: number }) {
       {MARKERS.map((label, i) => {
         const [start, end] = MARKER_RANGES[i];
         const weight = bandWeight(progress, start, end, 0.04);
-        const size = 6 + 6 * weight;
         return (
           <span
             key={label}
             title={label}
-            className="relative shrink-0 rounded-full border border-landing-border bg-landing-bg-alt"
-            style={{ width: `${size}px`, height: `${size}px` }}
+            className="relative h-3 w-3 shrink-0 rounded-full border border-landing-border bg-landing-bg-alt"
+            style={{ transform: `scale(${0.55 + 0.45 * weight})` }}
           >
             <span
               aria-hidden
               className="absolute inset-0 rounded-full bg-landing-accent-light"
-              style={{ opacity: weight, boxShadow: weight > 0.4 ? "0 0 0 4px var(--landing-accent-subtle)" : "none" }}
+              style={{ opacity: weight, boxShadow: `0 0 0 4px color-mix(in srgb, var(--landing-accent-subtle) ${weight * 100}%, transparent)` }}
             />
           </span>
         );
@@ -735,11 +734,14 @@ function ListScene({ progress, reveal, leavingWeight }: { progress: number; reve
                   <span aria-hidden className={`absolute inset-y-0 left-0 w-1 ${t.rowBar}`} style={{ opacity: weight }} />
                 </>
               )}
-              <span
-                className="relative text-sm text-landing-text-secondary transition-colors duration-150"
-                style={{ color: weight > 0.5 ? "var(--landing-text-primary)" : undefined, fontWeight: weight > 0.5 ? 600 : 400 }}
-              >
-                {row.name}
+              <span className="relative inline-grid">
+                <span className="col-start-1 row-start-1 text-sm text-landing-text-secondary">{row.name}</span>
+                <span
+                  className="col-start-1 row-start-1 text-sm font-semibold text-landing-text-primary"
+                  style={{ opacity: weight }}
+                >
+                  {row.name}
+                </span>
               </span>
               <span className="relative flex items-center gap-2">
                 {connectionWeight > 0.02 && (
@@ -750,11 +752,18 @@ function ListScene({ progress, reveal, leavingWeight }: { progress: number; reve
                     ≈ Buchung 1
                   </span>
                 )}
-                <span
-                  className="text-sm font-semibold tabular-nums text-landing-text-secondary transition-colors duration-150"
-                  style={{ color: t && weight > 0.5 ? `var(${t.cssVar})` : undefined }}
-                >
-                  {row.amount}
+                <span className="relative inline-grid">
+                  <span className="col-start-1 row-start-1 text-sm font-semibold tabular-nums text-landing-text-secondary">
+                    {row.amount}
+                  </span>
+                  {t && (
+                    <span
+                      className="col-start-1 row-start-1 text-sm font-semibold tabular-nums"
+                      style={{ opacity: weight, color: `var(${t.cssVar})` }}
+                    >
+                      {row.amount}
+                    </span>
+                  )}
                 </span>
               </span>
             </li>
