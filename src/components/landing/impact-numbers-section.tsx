@@ -167,18 +167,18 @@ export function ImpactNumbersSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
 
+  // Der frueher hier stehende eigene Intro-Textblock ("Vom Datenmeer zur
+  // Entscheidung") wiederholte im Kern nur die Aussage des vorangegangenen
+  // Scrollytellings und nahm dabei - ausserhalb jeder Scroll-Kopplung, rein
+  // durch sein eigenes Padding - fast einen ganzen Viewport ein, bevor die
+  // eigentliche Partikel-Szene ueberhaupt begann. Er war NICHT Teil des
+  // getrackten sectionRef/scrollYProgress (eigenstaendiger Block direkt
+  // davor) und konnte deshalb entfernt werden, ohne die Buehne selbst
+  // (STAGE_VH, Sticky, Partikel, Zahlen-Phasen) im Geringsten anzutasten -
+  // nur das kurze `pt-*` unten sorgt noch fuer einen kleinen Abstand zur
+  // vorherigen Section.
   return (
-    <section className="relative bg-landing-bg-alt">
-      <div className="mx-auto max-w-3xl px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-28">
-        <span className="text-xs font-black uppercase tracking-[0.16em] text-landing-accent-light">Vom Datenmeer zur Entscheidung</span>
-        <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-landing-text-primary sm:text-4xl">
-          Aus tausenden Buchungen werden wenige Entscheidungen.
-        </h2>
-        <p className="mt-4 text-landing-text-secondary">
-          Aus Datenmasse wird Klarheit – und aus bestätigten Funden ein messbarer finanzieller Effekt.
-        </p>
-      </div>
-
+    <section className="relative bg-landing-bg-alt pt-16 sm:pt-20">
       {prefersReducedMotion ? (
         <div className="pb-24">
           <StaticImpactNumbers />

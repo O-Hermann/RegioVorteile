@@ -95,21 +95,33 @@ export function LeakScrollytelling() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   // Mit diesem Offset-Paar loest sich "sticky" rein rechnerisch immer exakt
-  // bei Fortschritt 1 (Kapitelende) - das ist keine Stellschraube, sondern
-  // eine geometrische Eigenschaft dieses Musters (Sticky-Hoehe = 100vh minus
-  // Top-Offset, Track-Ende = Sticky-Ausloesepunkt sind hier untrennbar
-  // gekoppelt). Dadurch gab es bislang KEINE Scrollstrecke innerhalb des
-  // Kapitels, in der sich die bereits fertige Phase 04 sichtbar loesen
-  // konnte, bevor "Was Effivo findet" erscheint - das Kapitel endete und die
-  // naechste Section begann im selben Scroll-Frame, was wie ein
-  // abgeschnittener Szenenwechsel wirkte. Statt Sticky-Hoehe oder Track-
-  // Laenge anzutasten (beides haette Phase 04 selbst oder ihr bestehendes
-  // Timing veraendert), blendet dieser Wert Story-Spalte UND Analysekarte
-  // GEMEINSAM in den letzten 5% des Fortschritts weich aus - lange nachdem
-  // beide laengst final/gesperrt sind (Zeilen ab 0.56, Fundkarte ab 0.62,
-  // Entscheidungs-Buttons ab 0.89) - sodass beim Fortschritts-Ende, wenn
-  // sich Sticky ohnehin loest, bereits nichts mehr sichtbar ist.
-  const chapterExitOpacity = useTransform(scrollYProgress, [0.95, 1], [1, 0]);
+  // bei Fortschritt 1 - ABER das ist nicht dasselbe wie "das Kapitel endet
+  // dort": zwischen diesem Ausloese-Punkt und dem TATSAECHLICHEN Ende des
+  // 420vh-Tracks liegt geometrisch bedingt immer genau eine Viewport-Hoehe
+  // (der Unterschied zwischen "end end" [Zieluntergrenze beruehrt unteren
+  // Viewport-Rand] und dem physischen Kapitelende). In genau dieser
+  // Viewport-Hoehe passiert die eigentliche Ausschwing-Bewegung: die Karte
+  // loest sich von "sticky" und scrollt ganz normal nach oben aus dem Bild -
+  // das war schon immer so, unabhaengig von jeder Opacity-Anpassung. Ein
+  // erster Versuch blendete Story-Spalte und Analysekarte VOR diesem
+  // Fortschritt-1-Punkt auf eine niedrige Opacity herunter (per Definition
+  // von useTransform mit clamp geblieben) - dadurch war die Szene waehrend
+  // der GESAMTEN nachfolgenden Ausschwing-Viewport-Hoehe konstant dunkel,
+  // was wie ein langer, fast leerer Bildschirm wirkte.
+  //
+  // Diese Version nutzt stattdessen einen ZWEITEN, unabhaengigen
+  // Scroll-Fortschritt, der praezise NUR diese eine Viewport-Hoehe
+  // Ausschwing-Strecke abdeckt ("end end" -> "end start" auf demselben
+  // sectionRef: 0 = genau der Ausloese-Punkt, wo die Karte beginnt sich zu
+  // loesen: 1 = die Karte hat den Viewport komplett verlassen, das Kapitel
+  // endet). Der Fade laeuft dadurch WAEHREND der ohnehin stattfindenden
+  // Scroll-Bewegung, statt sie vorher schon abzudunkeln - die Szene bleibt
+  // beim eigentlichen Loesen sichtbar hell und wird erst beim Verlassen des
+  // Bildschirms dezent dunkler, was sich wie ein ruhiges Verlassen der
+  // Buehne anfuehlt statt wie eine lange, dunkle Leerflaeche.
+  const { scrollYProgress: exitProgress } = useScroll({ target: sectionRef, offset: ["end end", "end start"] });
+  const chapterExitOpacity = useTransform(exitProgress, [0, 1], [1, 0.55]);
+  const chapterExitY = useTransform(exitProgress, [0, 1], [0, -18]);
 
   return (
     <section id="geldlecks" className="relative bg-landing-bg-alt">
@@ -132,7 +144,7 @@ export function LeakScrollytelling() {
             <div className="sticky overflow-hidden" style={{ top: STICKY_TOP_PX, height: `calc(100vh - ${STICKY_TOP_PX}px)` }}>
               <motion.div
                 className="mx-auto grid h-full max-w-6xl grid-cols-[0.92fr_1.08fr] items-center gap-x-14 px-4 sm:px-6"
-                style={{ opacity: chapterExitOpacity }}
+                style={{ opacity: chapterExitOpacity, y: chapterExitY }}
               >
                 <StoryColumn scrollYProgress={scrollYProgress} />
                 <VisualCard scrollYProgress={scrollYProgress} />
