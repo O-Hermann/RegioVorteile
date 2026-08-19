@@ -34,7 +34,7 @@ export function Hero() {
                 <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <SectionNavLink
-                href="/#ablauf"
+                href="/#geldlecks"
                 className="inline-flex items-center gap-2 rounded-full border border-landing-border bg-landing-card px-6 py-3 text-sm font-semibold text-landing-text-primary hover:bg-landing-bg-alt transition-colors"
               >
                 So funktioniert Effivo
@@ -46,6 +46,9 @@ export function Hero() {
           </div>
           <RecoveryPreview />
         </div>
+        <p className="relative mt-14 text-center text-xs font-medium text-landing-text-muted sm:mt-16">
+          Scrollen, um die Analyse zu starten ↓
+        </p>
       </div>
     </section>
   );

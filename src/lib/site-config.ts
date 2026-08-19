@@ -13,8 +13,9 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Was Effivo findet", href: "/#geldlecks" },
-  { label: "So funktioniert es", href: "/#ablauf" },
+  { label: "Was Effivo findet", href: "/#findet" },
+  { label: "So funktioniert es", href: "/#geldlecks" },
+  { label: "Recovery Report", href: "/#report" },
   { label: "Sicherheit", href: "/#sicherheit" },
 ];
 

@@ -1,9 +1,9 @@
 import { CheckCircleIcon, CopyIcon, FileTextIcon, AlertTriangleIcon } from "@/components/icons";
 
 const CATEGORIES = [
-  { label: "Mögliche Doppelzahlungen", value: "3", tone: "danger" as const, icon: CopyIcon },
-  { label: "Offene Gutschriften", value: "6", tone: "warning" as const, icon: FileTextIcon },
-  { label: "Weitere Auffälligkeiten", value: "8", tone: "info" as const, icon: AlertTriangleIcon },
+  { label: "Mögliche Doppelzahlungen", value: "12", tone: "danger" as const, icon: CopyIcon },
+  { label: "Offene Gutschriften", value: "9", tone: "warning" as const, icon: FileTextIcon },
+  { label: "Weitere Auffälligkeiten", value: "26", tone: "info" as const, icon: AlertTriangleIcon },
 ];
 
 const TONE_CLASSES = {
@@ -45,11 +45,11 @@ export function RecoveryPreview() {
         </div>
         <div className="rounded-xl border border-landing-border bg-landing-bg-alt p-3">
           <p className="text-[11px] text-landing-text-secondary">Auffälligkeiten</p>
-          <p className="mt-1 font-display text-lg font-extrabold leading-none text-landing-text-primary">17</p>
+          <p className="mt-1 font-display text-lg font-extrabold leading-none text-landing-text-primary">47</p>
         </div>
         <div className="rounded-xl border border-landing-border bg-landing-bg-alt p-3">
           <p className="text-[11px] text-landing-text-secondary">Potenzieller Effekt</p>
-          <p className="mt-1 font-display text-lg font-extrabold leading-none text-landing-accent-light">12.480 €</p>
+          <p className="mt-1 font-display text-lg font-extrabold leading-none text-landing-accent-light">18.740 €</p>
         </div>
       </div>
 
