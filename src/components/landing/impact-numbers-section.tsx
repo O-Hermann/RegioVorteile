@@ -21,6 +21,14 @@ type Particle = {
 // Deterministischer Pseudo-Zufall (kein Math.random) - liefert bei jedem
 // Render/SSR-Durchlauf exakt dieselben Partikel-Parameter, damit es zu
 // keinem Hydration-Mismatch zwischen Server- und Client-Rendering kommt.
+//
+// Die Ausgangspunkte (rx/ry) sind bewusst NICHT gleichmaessig ueber eine
+// breite Flaeche verteilt, sondern in fuenf engen Clustern - je einer pro
+// Ziffer von "38.421". Dadurch wirkt es, als wuerden die Partikel aus der
+// tatsaechlichen Form der Zahl heraus entstehen, statt als loser Partikel-
+// Nebel neben dem Text zu erscheinen.
+const DIGIT_SLOTS = [-120, -60, 0, 60, 120];
+
 function generateParticles(count: number): Particle[] {
   let seed = 2941;
   const rand = () => {
@@ -29,8 +37,9 @@ function generateParticles(count: number): Particle[] {
   };
   const particles: Particle[] = [];
   for (let i = 0; i < count; i++) {
-    const rx = (rand() - 0.5) * 340;
-    const ry = (rand() - 0.5) * 100;
+    const slot = DIGIT_SLOTS[i % DIGIT_SLOTS.length];
+    const rx = slot + (rand() - 0.5) * 36;
+    const ry = (rand() - 0.5) * 90;
     const angle = rand() * Math.PI * 2;
     const burstDistance = 180 + rand() * 320;
     const sx = Math.cos(angle) * burstDistance;
@@ -48,8 +57,9 @@ function generateParticles(count: number): Particle[] {
 
 // So wenig Partikel wie moeglich, so viele wie noetig fuer den Effekt -
 // deutlich weniger als eine typische Partikel-Demo, um auf normalen
-// Business-Laptops sauber zu bleiben.
-const PARTICLES = generateParticles(64);
+// Business-Laptops sauber zu bleiben. Etwas dichter als im ersten Entwurf,
+// damit die Ziffern-Cluster im Aufbruchsmoment als Silhouette erkennbar sind.
+const PARTICLES = generateParticles(80);
 
 type NumberScene = { label: string; value: string; caption: string; final?: boolean };
 
@@ -62,20 +72,23 @@ const NUMBER_SCENES: NumberScene[] = [
 
 // [Einblenden-Start, voll sichtbar ab, voll sichtbar bis, Ausblenden-Ende] -
 // jede Zahl bekommt eine lange Haltephase, damit der Besucher wirklich Zeit
-// zum Lesen hat, bevor die naechste Zahl uebernimmt. Alle Werte muessen im
-// Bereich [0,1] bleiben: sobald der Browser scroll-gebundene Animationen
-// nativ unterstuetzt, kompiliert Framer Motion useTransform-Bereiche in
-// Element.animate()-Keyframes, deren Offsets zwingend in [0,1] liegen
-// muessen - ein Wert wie 1.001 wirft dort eine Laufzeit-Exception und reisst
-// die ganze Seite ab. Die letzte Zahl bekommt deshalb bewusst KEIN
-// Ausblenden-Ende (nur 3 statt 4 Punkte): sie bleibt bis zum Scroll-Ende
-// (p=1) vollstaendig sichtbar - passend zur geforderten absoluten Ruhe am
-// Schluss.
+// zum Lesen hat, bevor die naechste Zahl uebernimmt. Die Luecken zwischen
+// den Zahlen (wo optisch nichts passiert) sind bewusst knapper gehalten als
+// im ersten Entwurf, damit der Ablauf durchinszeniert statt leer wirkt -
+// die dadurch gewonnene Scrollstrecke geht direkt in laengere Haltephasen.
+// Alle Werte muessen im Bereich [0,1] bleiben: sobald der Browser scroll-
+// gebundene Animationen nativ unterstuetzt, kompiliert Framer Motion
+// useTransform-Bereiche in Element.animate()-Keyframes, deren Offsets
+// zwingend in [0,1] liegen muessen - ein Wert wie 1.001 wirft dort eine
+// Laufzeit-Exception und reisst die ganze Seite ab. Die letzte Zahl bekommt
+// deshalb bewusst KEIN Ausblenden-Ende (nur 3 statt 4 Punkte): sie bleibt
+// bis zum Scroll-Ende (p=1) vollstaendig sichtbar - passend zur
+// geforderten absoluten Ruhe am Schluss.
 const HOLD_RANGES: number[][] = [
-  [0, 0.018, 0.205, 0.255],
-  [0.33, 0.365, 0.495, 0.545],
-  [0.56, 0.595, 0.72, 0.765],
-  [0.835, 0.875, 1],
+  [0, 0.02, 0.21, 0.24],
+  [0.28, 0.31, 0.5, 0.53],
+  [0.55, 0.58, 0.72, 0.75],
+  [0.78, 0.81, 1],
 ];
 const HOLD_OUTPUTS: number[][] = [
   [0, 1, 1, 0],
@@ -107,7 +120,11 @@ function particleState(p: number, particle: Particle) {
   let opacity = 0;
   let scale = size;
 
-  if (p >= 0.165 && p < 0.39) {
+  if (p >= 0.15 && p < 0.39) {
+    // entryFade blendet die Partikel weich ein, statt sie am Phasen-Rand
+    // schlagartig auf ihre volle Formel-Deckkraft springen zu lassen -
+    // ohne diesen Fade gab es hier einen sichtbaren "harten Umschalter".
+    const entryFade = smoothstep((p - 0.15) / 0.035);
     const breakOpen = smoothstep((p - 0.185) / 0.055);
     const explode = smoothstep((p - 0.225) / 0.09);
     const vanish = smoothstep((p - 0.305) / 0.075);
@@ -117,13 +134,14 @@ function particleState(p: number, particle: Particle) {
     const preY = ry + (sy - ry) * 0.08 * crack;
     x = preX + (sx - preX) * e + sx * 0.3 * vanish;
     y = preY + (sy - preY) * e + sy * 0.3 * vanish;
-    opacity = (0.28 + 0.72 * crack) * (1 - 0.96 * vanish);
+    opacity = entryFade * (0.28 + 0.72 * crack) * (1 - 0.96 * vanish);
     scale = size * (0.72 + 0.58 * e);
   } else if (p >= 0.39 && p < 0.735) {
     opacity = 0;
-    x = sx * 1.32;
-    y = sy * 1.32;
+    x = sx * 1.3;
+    y = sy * 1.3;
   } else if (p >= 0.735) {
+    const entryFade2 = smoothstep((p - 0.735) / 0.02);
     const returnStart = smoothstep((p - 0.76) / 0.105);
     const collapse = smoothstep((p - 0.835) / 0.07);
     const r = clamp01(returnStart - delay * 0.65);
@@ -133,7 +151,7 @@ function particleState(p: number, particle: Particle) {
     y = midY * (1 - collapse);
     const arrival = smoothstep((r - 0.08) / 0.75);
     const hardFade = 1 - smoothstep((p - 0.885) / 0.055);
-    opacity = (0.08 + 0.84 * arrival) * (1 - 0.92 * collapse) * hardFade;
+    opacity = entryFade2 * (0.08 + 0.84 * arrival) * (1 - 0.92 * collapse) * hardFade;
     scale = size * (0.62 + 0.52 * arrival - 0.4 * collapse);
   }
 
@@ -169,8 +187,6 @@ export function ImpactNumbersSection() {
         <>
           <div ref={sectionRef} className="relative hidden lg:block" style={{ height: `${STAGE_VH}vh` }}>
             <div className="sticky overflow-hidden" style={{ top: STICKY_TOP_PX, height: `calc(100vh - ${STICKY_TOP_PX}px)` }}>
-              <StageGlow scrollYProgress={scrollYProgress} />
-              <ImpactRing scrollYProgress={scrollYProgress} />
               <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
                 {PARTICLES.map((particle, i) => (
                   <ParticleDot key={i} particle={particle} scrollYProgress={scrollYProgress} />
@@ -183,6 +199,7 @@ export function ImpactNumbersSection() {
                   range={HOLD_RANGES[i]}
                   output={HOLD_OUTPUTS[i]}
                   scrollYProgress={scrollYProgress}
+                  crack={i === 0}
                 />
               ))}
             </div>
@@ -215,22 +232,36 @@ function NumberSceneBlock({
   range,
   output,
   scrollYProgress,
+  crack,
 }: {
   scene: NumberScene;
   range: number[];
   output: number[];
   scrollYProgress: MotionValue<number>;
+  crack?: boolean;
 }) {
   const opacity = useTransform(scrollYProgress, range, output);
   const y = useTransform(opacity, (o) => `calc(-50% + ${(1 - o) * 12}px)`);
   const scale = useTransform(opacity, (o) => 0.985 + 0.035 * o);
+  // Ein sehr dezentes Zittern kurz bevor "38.421" in Partikel zerfaellt -
+  // verstaerkt den Eindruck, dass die Zahl selbst instabil wird und
+  // aufbricht, statt einfach auszublenden, waehrend daneben Partikel
+  // erscheinen. Fuer alle anderen Zahlen ist crack=false und der Jitter
+  // bleibt konstant 0 (kein Effekt, aber derselbe Hook-Aufruf fuer alle
+  // Instanzen).
+  const jitterX = useTransform(scrollYProgress, (p) => {
+    if (!crack || p < 0.14 || p > 0.26) return 0;
+    const intensity = smoothstep((p - 0.14) / 0.05) * (1 - smoothstep((p - 0.2) / 0.06));
+    return Math.sin(p * 220) * intensity * 2.2;
+  });
+  const x = useTransform(jitterX, (j) => `calc(-50% + ${j}px)`);
   const blurPx = useTransform(opacity, (o) => (1 - o) * 1.7);
   const filter = useTransform(blurPx, (b) => `blur(${b}px)`);
 
   return (
     <motion.div
       className="absolute left-1/2 top-1/2 w-full max-w-2xl px-4 text-center"
-      style={{ x: "-50%", y, scale, filter, opacity }}
+      style={{ x, y, scale, filter, opacity }}
     >
       <div className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-landing-accent-light">{scene.label}</div>
       <strong
@@ -248,8 +279,8 @@ function NumberSceneBlock({
 }
 
 function FinalExtras({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
-  const lineWidth = useTransform(scrollYProgress, [0.902, 0.952], [0, 230]);
-  const subOpacity = useTransform(scrollYProgress, [0.915, 0.97], [0, 1]);
+  const lineWidth = useTransform(scrollYProgress, [0.83, 0.87], [0, 230]);
+  const subOpacity = useTransform(scrollYProgress, [0.85, 0.91], [0, 1]);
   const subY = useTransform(subOpacity, (o) => 8 * (1 - o));
   return (
     <>
@@ -261,32 +292,6 @@ function FinalExtras({ scrollYProgress }: { scrollYProgress: MotionValue<number>
         Verborgen zwischen 38.421 Buchungen.
       </motion.p>
     </>
-  );
-}
-
-function ImpactRing({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
-  const t = useTransform(scrollYProgress, [0.205, 0.3], [0, 1]);
-  const opacity = useTransform(t, (v) => 0.5 * (1 - v));
-  const scale = useTransform(t, (v) => 0.65 + 7 * v);
-  return (
-    <motion.div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 rounded-full border border-landing-accent-light/30"
-      style={{ x: "-50%", y: "-50%", opacity, scale }}
-    />
-  );
-}
-
-function StageGlow({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
-  const finalLand = useTransform(scrollYProgress, [0.855, 0.915], [0, 1]);
-  const opacity = useTransform(finalLand, (v) => 0.7 * v);
-  const scale = useTransform(finalLand, (v) => 0.72 + 0.34 * v);
-  return (
-    <motion.div
-      aria-hidden
-      className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-[34rem] rounded-full bg-landing-accent-light/20 blur-3xl"
-      style={{ x: "-50%", y: "-50%", opacity, scale }}
-    />
   );
 }
 
