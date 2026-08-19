@@ -47,32 +47,43 @@ const REPORT_STATS = [
 // WICHTIG: "sticky" loest sich nicht erst bei Fortschritt 1 (Track-Ende),
 // sondern sobald der gepinnte Innenbereich (Hoehe ~ 100vh-STICKY_TOP_PX)
 // keinen Platz mehr im VERBLEIBENDEN Track hat - also bei ungefaehr
-// Fortschritt = 1 - (100/TRACK_VH). Mit dem ersten Versuch (TRACK_VH=260)
-// loeste sich sticky bereits bei Fortschritt ~0.62 - deutlich VOR dem
-// gewuenschten Hold-Ende (0.85), die Karte scrollte also schon waehrend der
-// vermeintlichen Hold-Phase normal weg (per Messung im echten Browser
-// bestaetigt: stickyTop war bei Fortschritt 0.7 bereits -81px statt 88px).
-// TRACK_VH muss deshalb gross genug sein, dass dieser Ausloese-Punkt klar
-// NACH dem Hold-Ende liegt.
-const TRACK_VH = 450;
+// Fortschritt = 1 - (100/TRACK_VH) * (1 - STICKY_TOP_PX/Viewport-Hoehe).
+// Ein erster Versuch mit TRACK_VH=260 loeste sich schon bei Fortschritt
+// ~0.62 (VOR jeder sinnvollen Hold-Phase). Die Korrektur auf TRACK_VH=450
+// behob das zwar, machte den GESAMTEN Track aber viel zu lang: aus dem
+// Zoom-Out-Screenshot wurde klar, dass danach eine riesige, im Dokument-
+// fluss komplett leere Flaeche zwischen dem sichtbaren Inhalt (der ja nur
+// GEPINNT einen Viewport ausfuellt, waehrend der Track selbst 4,5x so hoch
+// im Dokument steht) und der naechsten Section entstand - technisch war
+// das kein Bug (sticky "frisst" genau diese Distanz waehrend des Scrollens
+// sichtbar auf), aber die ABSOLUTE Scrollstrecke war viel zu lang fuer eine
+// kompakte, zuegige Sequenz.
+//
+// TRACK_VH ist deshalb auf 350 reduziert - klein genug fuer eine kompakte
+// Gesamtstrecke, aber immer noch gross genug, dass Sticky bis zum
+// gewuenschten Hold-Ende (~0.78) gepinnt bleibt: die verbleibende Strecke
+// nach REVEAL-Ende (0.56) bis zum rechnerischen Ausloese-Punkt entspricht
+// bei TRACK_VH=350 nur noch ca. 0,6-0,7 Viewport-Hoehen echter Hold-Zeit
+// (statt der ~0,9 Viewport-Hoehen bei TRACK_VH=450) - kompakter, aber
+// weiterhin klar spuerbar. Empirisch im Browser verifiziert, nicht nur
+// per Formel (siehe Zusammenfassung nach der Umsetzung).
+const TRACK_VH = 350;
 const STICKY_TOP_PX = 88;
 
 // Choreografie-Fenster als Bruchteil des TRACK_VH-Durchlaufs (0 = Track-
 // Oberkante beruehrt Viewport-Oberkante, sticky beginnt zu pinnen). Ab
-// REVEAL-Ende (0.58) aendert sich an KEINEM Motion-Value mehr etwas (siehe
+// REVEAL-Ende (0.56) aendert sich an KEINEM Motion-Value mehr etwas (siehe
 // reportY/Scale/Opacity, gatherEased, labelOpacity - alle sind dank
 // { clamp: true } ab da konstant), waehrend der Report dank sticky
-// weiterhin PIXELSTABIL im Viewport steht: das ist die Hold-Phase. Bei
-// TRACK_VH=450 loest sich sticky (siehe Erklaerung oben) rechnerisch bei
-// Fortschritt ~0.78-0.81 (je nach Viewport-Hoehe) - die Karte bleibt also
-// von 0.58 bis dorthin tatsaechlich gepinnt sichtbar, bevor sie sich fuer
-// den letzten kurzen Rest bis Fortschritt 1 natuerlich (ohne zusaetzliche
-// Animation) loest und mit dem Track-Ende nach oben aus dem Bild geht.
-const CARDS_IN: [number, number] = [0.15, 0.28];
-const LABEL_IN: [number, number] = [0.28, 0.32];
-const LABEL_OUT: [number, number] = [0.34, 0.36];
-const GATHER: [number, number] = [0.36, 0.52];
-const REVEAL: [number, number] = [0.42, 0.58];
+// weiterhin PIXELSTABIL im Viewport steht: das ist die Hold-Phase, bis
+// Sticky sich (siehe Erklaerung oben) natuerlich bei ca. Fortschritt 0.78
+// loest - danach laeuft keine zusaetzliche Animation, das ist bewusst nur
+// der kurze, natuerliche Ausschwing-Rest bis Fortschritt 1.
+const CARDS_IN: [number, number] = [0.12, 0.26];
+const LABEL_IN: [number, number] = [0.26, 0.3];
+const LABEL_OUT: [number, number] = [0.32, 0.34];
+const GATHER: [number, number] = [0.34, 0.5];
+const REVEAL: [number, number] = [0.4, 0.56];
 
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
