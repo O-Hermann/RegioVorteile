@@ -71,19 +71,24 @@ const TRACK_VH = 350;
 const STICKY_TOP_PX = 88;
 
 // Choreografie-Fenster als Bruchteil des TRACK_VH-Durchlaufs (0 = Track-
-// Oberkante beruehrt Viewport-Oberkante, sticky beginnt zu pinnen). Ab
-// REVEAL-Ende (0.56) aendert sich an KEINEM Motion-Value mehr etwas (siehe
-// reportY/Scale/Opacity, gatherEased, labelOpacity - alle sind dank
-// { clamp: true } ab da konstant), waehrend der Report dank sticky
-// weiterhin PIXELSTABIL im Viewport steht: das ist die Hold-Phase, bis
-// Sticky sich (siehe Erklaerung oben) natuerlich bei ca. Fortschritt 0.78
-// loest - danach laeuft keine zusaetzliche Animation, das ist bewusst nur
-// der kurze, natuerliche Ausschwing-Rest bis Fortschritt 1.
-const CARDS_IN: [number, number] = [0.12, 0.26];
-const LABEL_IN: [number, number] = [0.26, 0.3];
-const LABEL_OUT: [number, number] = [0.32, 0.34];
-const GATHER: [number, number] = [0.34, 0.5];
-const REVEAL: [number, number] = [0.4, 0.56];
+// Oberkante beruehrt Viewport-Oberkante, sticky beginnt zu pinnen). Die
+// aktive Aufbau-Phase (Karten -> Label -> Zusammenfuehren -> Reveal) ist
+// gegenueber der letzten Version gestrafft: der fertige Report steht jetzt
+// bereits ab Fortschritt 0.45 (statt 0.56), waehrend TRACK_VH UNVERAENDERT
+// bleibt - die Sticky-Praesentation selbst (Track-Hoehe, Ausloese-Punkt bei
+// ca. Fortschritt 0.78) ist bewusst NICHT angetastet, nur die Choreografie
+// innerhalb davon laeuft jetzt zuegiger ab. Ab REVEAL-Ende (0.45) aendert
+// sich an KEINEM Motion-Value mehr etwas (siehe reportY/Scale/Opacity,
+// gatherEased, labelOpacity - alle sind dank { clamp: true } ab da
+// konstant), waehrend der Report dank Sticky weiterhin PIXELSTABIL im
+// Viewport steht: das ist die (durch die frueher abgeschlossene Reveal-
+// Phase jetzt laengere) Hold-Phase, bis Sticky sich natuerlich bei ca.
+// Fortschritt 0.78 loest.
+const CARDS_IN: [number, number] = [0.1, 0.2];
+const LABEL_IN: [number, number] = [0.2, 0.26];
+const LABEL_OUT: [number, number] = [0.27, 0.32];
+const GATHER: [number, number] = [0.25, 0.43];
+const REVEAL: [number, number] = [0.32, 0.45];
 
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
