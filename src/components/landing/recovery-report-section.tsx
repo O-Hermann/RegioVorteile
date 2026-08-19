@@ -59,36 +59,40 @@ const REPORT_STATS = [
 // sichtbar auf), aber die ABSOLUTE Scrollstrecke war viel zu lang fuer eine
 // kompakte, zuegige Sequenz.
 //
-// TRACK_VH ist deshalb auf 350 reduziert - klein genug fuer eine kompakte
-// Gesamtstrecke, aber immer noch gross genug, dass Sticky bis zum
-// gewuenschten Hold-Ende (~0.78) gepinnt bleibt: die verbleibende Strecke
-// nach REVEAL-Ende (0.56) bis zum rechnerischen Ausloese-Punkt entspricht
-// bei TRACK_VH=350 nur noch ca. 0,6-0,7 Viewport-Hoehen echter Hold-Zeit
-// (statt der ~0,9 Viewport-Hoehen bei TRACK_VH=450) - kompakter, aber
-// weiterhin klar spuerbar. Empirisch im Browser verifiziert, nicht nur
-// per Formel (siehe Zusammenfassung nach der Umsetzung).
-const TRACK_VH = 350;
+// Die letzte Version (TRACK_VH=350, REVEAL-Ende bei Fortschritt 0.45) hatte
+// den Ausloese-Punkt weiterhin bei ca. Fortschritt 0.78 - das ergab eine
+// Hold-Phase von ~1,0 Viewport-Hoehe, die sich beim echten Testen als zu
+// lang/traege anfuehlte ("Leerlauf" nach fertiger Animation). Da sich der
+// Ausloese-Punkt bei GLEICHBLEIBENDEM TRACK_VH nicht unabhaengig von der
+// Choreografie verschieben laesst (er haengt nur von TRACK_VH und der
+// Viewport-Hoehe ab, siehe Formel oben), musste TRACK_VH selbst sinken.
+// Um dabei aber die ABSOLUTE Scrollstrecke der aktiven Animation (Karten
+// bis Reveal-Ende) nicht zusaetzlich zu stauchen - das war explizit NICHT
+// gewuenscht, nur die Zeit NACH der Animation sollte kuerzer werden -,
+// wurden die Phasen-Fenster als gleiche ABSOLUTE vh-Werte auf den kleineren
+// Track umgerechnet (z.B. war REVEAL vorher [112vh, 157.5vh] von 350vh
+// Track = [0.32, 0.45]; auf einem 260vh-Track ergibt derselbe Absolutwert
+// [112vh, 157.5vh] = [0.43, 0.61]). Ergebnis: die eigentliche Animation
+// dauert (in Pixeln) praktisch gleich lange wie zuvor, aber der Ausloese-
+// Punkt liegt jetzt sehr nah am REVEAL-Ende - Sticky loest sich dadurch
+// kurz nach Fertigstellung, statt noch eine weitere Viewport-Hoehe zu
+// verharren. Empirisch im Browser verifiziert (siehe Zusammenfassung).
+const TRACK_VH = 260;
 const STICKY_TOP_PX = 88;
 
 // Choreografie-Fenster als Bruchteil des TRACK_VH-Durchlaufs (0 = Track-
-// Oberkante beruehrt Viewport-Oberkante, sticky beginnt zu pinnen). Die
-// aktive Aufbau-Phase (Karten -> Label -> Zusammenfuehren -> Reveal) ist
-// gegenueber der letzten Version gestrafft: der fertige Report steht jetzt
-// bereits ab Fortschritt 0.45 (statt 0.56), waehrend TRACK_VH UNVERAENDERT
-// bleibt - die Sticky-Praesentation selbst (Track-Hoehe, Ausloese-Punkt bei
-// ca. Fortschritt 0.78) ist bewusst NICHT angetastet, nur die Choreografie
-// innerhalb davon laeuft jetzt zuegiger ab. Ab REVEAL-Ende (0.45) aendert
-// sich an KEINEM Motion-Value mehr etwas (siehe reportY/Scale/Opacity,
-// gatherEased, labelOpacity - alle sind dank { clamp: true } ab da
-// konstant), waehrend der Report dank Sticky weiterhin PIXELSTABIL im
-// Viewport steht: das ist die (durch die frueher abgeschlossene Reveal-
-// Phase jetzt laengere) Hold-Phase, bis Sticky sich natuerlich bei ca.
-// Fortschritt 0.78 loest.
-const CARDS_IN: [number, number] = [0.1, 0.2];
-const LABEL_IN: [number, number] = [0.2, 0.26];
-const LABEL_OUT: [number, number] = [0.27, 0.32];
-const GATHER: [number, number] = [0.25, 0.43];
-const REVEAL: [number, number] = [0.32, 0.45];
+// Oberkante beruehrt Viewport-Oberkante, sticky beginnt zu pinnen). Ab
+// REVEAL-Ende (0.61) aendert sich an KEINEM Motion-Value mehr etwas (siehe
+// reportY/Scale/Opacity, gatherEased, labelOpacity - alle sind dank
+// { clamp: true } ab da konstant), waehrend der Report dank Sticky
+// weiterhin PIXELSTABIL im Viewport steht - nur noch fuer einen kurzen,
+// bewussten Moment, bevor Sticky sich (siehe Erklaerung oben) bei ca.
+// Fortschritt 0.67-0.70 natuerlich loest und die Section freigibt.
+const CARDS_IN: [number, number] = [0.13, 0.27];
+const LABEL_IN: [number, number] = [0.27, 0.35];
+const LABEL_OUT: [number, number] = [0.36, 0.43];
+const GATHER: [number, number] = [0.34, 0.58];
+const REVEAL: [number, number] = [0.43, 0.61];
 
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
