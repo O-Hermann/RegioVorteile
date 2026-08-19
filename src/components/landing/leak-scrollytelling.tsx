@@ -94,6 +94,22 @@ export function LeakScrollytelling() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+  // Mit diesem Offset-Paar loest sich "sticky" rein rechnerisch immer exakt
+  // bei Fortschritt 1 (Kapitelende) - das ist keine Stellschraube, sondern
+  // eine geometrische Eigenschaft dieses Musters (Sticky-Hoehe = 100vh minus
+  // Top-Offset, Track-Ende = Sticky-Ausloesepunkt sind hier untrennbar
+  // gekoppelt). Dadurch gab es bislang KEINE Scrollstrecke innerhalb des
+  // Kapitels, in der sich die bereits fertige Phase 04 sichtbar loesen
+  // konnte, bevor "Was Effivo findet" erscheint - das Kapitel endete und die
+  // naechste Section begann im selben Scroll-Frame, was wie ein
+  // abgeschnittener Szenenwechsel wirkte. Statt Sticky-Hoehe oder Track-
+  // Laenge anzutasten (beides haette Phase 04 selbst oder ihr bestehendes
+  // Timing veraendert), blendet dieser Wert Story-Spalte UND Analysekarte
+  // GEMEINSAM in den letzten 5% des Fortschritts weich aus - lange nachdem
+  // beide laengst final/gesperrt sind (Zeilen ab 0.56, Fundkarte ab 0.62,
+  // Entscheidungs-Buttons ab 0.89) - sodass beim Fortschritts-Ende, wenn
+  // sich Sticky ohnehin loest, bereits nichts mehr sichtbar ist.
+  const chapterExitOpacity = useTransform(scrollYProgress, [0.95, 1], [1, 0]);
 
   return (
     <section id="geldlecks" className="relative bg-landing-bg-alt">
@@ -114,10 +130,13 @@ export function LeakScrollytelling() {
         <>
           <div ref={sectionRef} className="relative hidden lg:block" style={{ height: `${CHAPTER_VH}vh` }}>
             <div className="sticky overflow-hidden" style={{ top: STICKY_TOP_PX, height: `calc(100vh - ${STICKY_TOP_PX}px)` }}>
-              <div className="mx-auto grid h-full max-w-6xl grid-cols-[0.92fr_1.08fr] items-center gap-x-14 px-4 sm:px-6">
+              <motion.div
+                className="mx-auto grid h-full max-w-6xl grid-cols-[0.92fr_1.08fr] items-center gap-x-14 px-4 sm:px-6"
+                style={{ opacity: chapterExitOpacity }}
+              >
                 <StoryColumn scrollYProgress={scrollYProgress} />
                 <VisualCard scrollYProgress={scrollYProgress} />
-              </div>
+              </motion.div>
             </div>
           </div>
           <div className="pb-20 lg:hidden">
