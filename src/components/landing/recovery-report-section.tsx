@@ -160,7 +160,7 @@ export function RecoveryReportSection() {
                       style={{ x: "-50%", y: labelY, scale: labelScale, opacity: labelOpacity }}
                     >
                       <span className="text-xs font-black uppercase tracking-[0.14em] text-landing-accent-light">32 bestätigte Funde</span>
-                      <b className="mt-2 max-w-[14rem] font-display text-xl font-bold text-landing-text-primary">werden zusammengeführt</b>
+                      <b className="mt-2 max-w-[20rem] font-display text-xl font-bold leading-snug text-landing-text-primary">werden zusammengeführt</b>
                     </motion.div>
                     <div aria-hidden className="pointer-events-none absolute -inset-8">
                       {FRAGMENTS.map((fragment) => (
