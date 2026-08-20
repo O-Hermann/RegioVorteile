@@ -124,7 +124,7 @@ export function RecoveryReportSection() {
   const reportOpacity = useTransform(revealEased, (r) => 0.16 + 0.84 * r);
 
   return (
-    <section id="report" className="scroll-mt-20 border-y border-landing-border bg-landing-bg">
+    <section id="report" className="scroll-mt-20 border-y border-landing-border/60 bg-landing-bg/95">
       {prefersReducedMotion ? (
         <div className="py-24 sm:py-28">
           <StaticRecoveryReport />

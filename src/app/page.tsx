@@ -9,10 +9,12 @@ import { FutureSection } from "@/components/landing/future-section";
 import { SecuritySection } from "@/components/landing/security-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { HashScrollHandler } from "@/components/landing/hash-scroll-handler";
+import { AmbientBackground } from "@/components/landing/ambient-background";
 
 export default function LandingPage() {
   return (
     <>
+      <AmbientBackground />
       <HashScrollHandler />
       <LandingHeader />
       <main className="flex-1">

@@ -5,15 +5,7 @@ import { SectionNavLink } from "@/components/landing/section-nav-link";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-landing-bg">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-20 [background-image:radial-gradient(rgba(25,198,193,0.4)_1px,transparent_1px)] [background-size:22px_22px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-landing-accent-light/10"
-      />
+    <section className="relative bg-landing-bg/95">
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
