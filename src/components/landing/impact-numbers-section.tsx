@@ -111,6 +111,33 @@ const HOLD_OUTPUTS: number[][] = [
 const STICKY_TOP_PX = 88;
 const STAGE_VH = 500;
 
+// PRE_ENTRY_VH ist ein eigener, zusaetzlicher Streckenabschnitt VOR der
+// bestehenden Choreografie (die weiterhin exakt STAGE_VH=500vh einnimmt und
+// intern unveraendert bleibt). Grund: mit dem bisherigen einzelnen
+// useScroll-Fortschritt blieb dieser Fortschritt bei 0 haengen, bis die
+// Track-Oberkante exakt die Viewport-Oberkante erreichte - obwohl die
+// Sticky-Flaeche selbst (CSS-Sticky-Eigenschaft) schon ca. 88px VORHER
+// sichtbar gepinnt wird. In diesem Fenster stand die Flaeche zwar im Bild,
+// aber "38.421" blieb komplett unsichtbar (Opacity exakt 0, siehe
+// HOLD_RANGES) - das erzeugte den gemeldeten grossen leeren Navy-Bereich.
+// Reines Verkuerzen des ersten HOLD_RANGES-Wertes (vorherige Version)
+// aenderte daran nichts Grundsaetzliches, weil das strukturelle Problem
+// nicht die Rampen-BREITE war, sondern dass ueberhaupt erst ab Fortschritt
+// 0 etwas passiert.
+//
+// Deshalb bekommt "38.421" jetzt einen EIGENEN, von der bestehenden
+// Choreografie UNABHAENGIGEN Voreinblend-Fortschritt (siehe preEntryOpacity
+// unten), der direkt ab Fortschritt 0 des GESAMTEN (jetzt laengeren) Tracks
+// startet - die Zahl kann dadurch sichtbar werden, WAEHREND die bestehende
+// Choreografie (decayProgress) noch bei 0 haengt. decayProgress selbst
+// startet weiterhin bei EXAKT der alten "start start"-Schwelle, nur jetzt
+// um PRE_ENTRY_VH nach hinten verschoben - alle bestehenden Zahlen-/
+// Partikel-Schwellenwerte (0.15 Explosion, 0.21 Ausblenden usw.) wirken
+// dadurch bit-fuer-bit identisch wie vorher, nur der ganze Ablauf beginnt
+// jetzt insgesamt spaeter innerhalb des laengeren Tracks.
+const PRE_ENTRY_VH = 70;
+const PRE_ENTRY_FRACTION = PRE_ENTRY_VH / (STAGE_VH + PRE_ENTRY_VH);
+
 function clamp01(x: number): number {
   return x < 0 ? 0 : x > 1 ? 1 : x;
 }
@@ -176,7 +203,35 @@ function particleState(p: number, particle: Particle) {
 export function ImpactNumbersSection() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+  const { scrollYProgress: rawProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+
+  // decayProgress rekonstruiert exakt den alten [0,1]-Fortschritt der
+  // bestehenden Choreografie (Partikel, alle vier Zahlen-HOLD_RANGES,
+  // FinalExtras) - nur beginnend ab PRE_ENTRY_FRACTION des jetzt laengeren
+  // Tracks statt ab 0. Vor diesem Punkt bleibt er (per useTransform-Default)
+  // bei 0 - dort greift stattdessen ausschliesslich preEntryOpacity fuer
+  // die erste Zahl.
+  const decayProgress = useTransform(rawProgress, [PRE_ENTRY_FRACTION, 1], [0, 1]);
+
+  // "38.421" wird direkt ab Fortschritt 0 des GESAMTEN Tracks langsam
+  // sichtbar (PRE-ENTRY), haelt danach lange vollstaendig sichtbar/lesbar
+  // (HOLD) und uebergibt erst kurz vor PRE_ENTRY_FRACTION die Kontrolle an
+  // die bestehende Choreografie (siehe preEntryBlend). Design/Typografie/
+  // Position sind unveraendert - NumberSceneBlock leitet y/scale/blur wie
+  // bisher direkt aus der Opacity ab, das ergibt automatisch ein sanftes
+  // "in Position gleiten" waehrend des Einblendens, ohne eigene Bewegung.
+  const preEntryOpacity = useTransform(rawProgress, [0, 0.008, PRE_ENTRY_FRACTION * 0.92], [0, 1, 1]);
+  // Der Uebergabepunkt liegt bewusst NICHT direkt bei PRE_ENTRY_FRACTION
+  // (wo decayProgress erst bei 0 steht, HOLD_RANGES[0] dort also noch
+  // Opacity 0 liefert), sondern erst NACHDEM decayProgress die eigene,
+  // sehr kurze Einblend-Rampe von HOLD_RANGES[0] (0 -> 0.008) bereits
+  // durchlaufen hat: rawProgress = PRE_ENTRY_FRACTION + 0.008*(1-PRE_ENTRY_FRACTION)
+  // ~ 0.13. Ab dort liefert decayOpacity bereits durchgehend 1 (HOLD-Plateau
+  // bis 0.21), wodurch der lineare Uebergang zwischen preEntryOpacity (=1)
+  // und decayOpacity (=1) komplett dip-frei ist - beide Seiten sind in
+  // diesem Fenster bereits identisch bei voller Sichtbarkeit. Per
+  // Nachrechnung verifiziert (siehe Zusammenfassung).
+  const preEntryBlend = useTransform(rawProgress, [0.13, 0.14], [0, 1]);
 
   // Der frueher hier stehende eigene Intro-Textblock ("Vom Datenmeer zur
   // Entscheidung") wiederholte im Kern nur die Aussage des vorangegangenen
@@ -186,12 +241,6 @@ export function ImpactNumbersSection() {
   // getrackten sectionRef/scrollYProgress (eigenstaendiger Block direkt
   // davor) und konnte deshalb entfernt werden, ohne die Buehne selbst
   // (STAGE_VH, Sticky, Partikel, Zahlen-Phasen) im Geringsten anzutasten.
-  // Das direkt danach ergaenzte `pt-16 sm:pt-20` erwies sich als Teil des
-  // naechsten Problems: es verlaengerte genau die Strecke, auf der die
-  // Sticky-Flaeche zwar schon sichtbar ist, "38.421" aber noch nicht (siehe
-  // HOLD_RANGES oben) - eine faktisch leere Bildschirmhoehe nach "Was
-  // Effivo findet". Entfernt; "Was Effivo findet" bringt mit seinem
-  // eigenen unteren Section-Padding bereits ausreichend Abstand mit.
   return (
     <section className="relative bg-landing-bg-alt">
       {prefersReducedMotion ? (
@@ -200,11 +249,11 @@ export function ImpactNumbersSection() {
         </div>
       ) : (
         <>
-          <div ref={sectionRef} className="relative hidden lg:block" style={{ height: `${STAGE_VH}vh` }}>
+          <div ref={sectionRef} className="relative hidden lg:block" style={{ height: `${STAGE_VH + PRE_ENTRY_VH}vh` }}>
             <div className="sticky overflow-hidden" style={{ top: STICKY_TOP_PX, height: `calc(100vh - ${STICKY_TOP_PX}px)` }}>
               <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
                 {PARTICLES.map((particle, i) => (
-                  <ParticleDot key={i} particle={particle} scrollYProgress={scrollYProgress} />
+                  <ParticleDot key={i} particle={particle} scrollYProgress={decayProgress} />
                 ))}
               </div>
               {NUMBER_SCENES.map((scene, i) => (
@@ -213,8 +262,9 @@ export function ImpactNumbersSection() {
                   scene={scene}
                   range={HOLD_RANGES[i]}
                   output={HOLD_OUTPUTS[i]}
-                  scrollYProgress={scrollYProgress}
+                  scrollYProgress={decayProgress}
                   crack={i === 0}
+                  preEntry={i === 0 ? { opacity: preEntryOpacity, blend: preEntryBlend } : undefined}
                 />
               ))}
             </div>
@@ -248,14 +298,28 @@ function NumberSceneBlock({
   output,
   scrollYProgress,
   crack,
+  preEntry,
 }: {
   scene: NumberScene;
   range: number[];
   output: number[];
   scrollYProgress: MotionValue<number>;
   crack?: boolean;
+  preEntry?: { opacity: MotionValue<number>; blend: MotionValue<number> };
 }) {
-  const opacity = useTransform(scrollYProgress, range, output);
+  const decayOpacity = useTransform(scrollYProgress, range, output);
+  // Nur die erste Zahl bekommt ein preEntry-Objekt (siehe ImpactNumbersSection).
+  // Vor der Uebergabe (blend=0) zaehlt ausschliesslich preEntry.opacity, ab
+  // der Uebergabe (blend=1) ausschliesslich die bestehende decayOpacity -
+  // dazwischen ein kurzer linearer Uebergang. Fuer alle anderen drei Zahlen
+  // (preEntry undefined) ist dieser Hook-Aufruf identisch vorhanden (Regel
+  // "gleiche Hooks in jeder Instanz"), gibt aber unveraendert decayOpacity
+  // zurueck.
+  const opacity = useTransform(() => {
+    if (!preEntry) return decayOpacity.get();
+    const b = preEntry.blend.get();
+    return preEntry.opacity.get() * (1 - b) + decayOpacity.get() * b;
+  });
   const y = useTransform(opacity, (o) => `calc(-50% + ${(1 - o) * 12}px)`);
   const scale = useTransform(opacity, (o) => 0.985 + 0.035 * o);
   // Ein sehr dezentes Zittern kurz bevor "38.421" in Partikel zerfaellt -
