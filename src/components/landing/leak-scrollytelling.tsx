@@ -48,18 +48,22 @@ const STEPS: Step[] = [
 // zentriert und blendet erst zur naechsten Phase hin weich aus.
 //
 // STORY_WIDTH bestimmt, wie weit die Ein-/Ausblend-Glocke jeder Phase um
-// ihr eigenes Zentrum reicht. Bei 0.24 (vorheriger Wert) und einem
-// Zentrums-Abstand von nur ca. 0.27-0.29 ueberlappten sich die Glocken
-// benachbarter Phasen SUBSTANZIELL: am Mittelpunkt zwischen zwei Zentren
-// standen beide Headlines gleichzeitig bei ueber 35% Opacity - deutlich
-// sichtbar und lesbar uebereinander (per Nachrechnung bestaetigt, nicht nur
-// vermutet). Mit 0.185 bleibt jede Phase an ihrem eigenen Zentrum weiterhin
-// voll sichtbar (Opacity exakt 1 dort, unveraendert), aber am Mittelpunkt
-// zwischen zwei Phasen liegt die gemeinsame Opacity nur noch bei ca.
-// 12-18% - ein weicher, aber deutlich unauffaelligerer Crossfade statt
-// zwei gleichzeitig lesbaren Headlines.
+// ihr eigenes Zentrum reicht. 0.24 (Ursprung) und selbst 0.185 (erster
+// Korrekturversuch) ueberlappten benachbarte Phasen noch spuerbar: bei
+// 0.185 lag die gemeinsame Opacity am Uebergangspunkt bei 12-18% - fuer
+// normalen Fliesstext waere das kaum wahrnehmbar, aber bei diesen SEHR
+// grossen, extrafetten Headlines (bis 2.75rem) reichte selbst das noch,
+// um wie sichtbar uebereinandergelegter Text zu wirken (per Screenshot
+// bestaetigt). Jetzt 0.12: die Ein-/Ausblend-Fenster benachbarter Phasen
+// beruehren sich nicht mehr - dazwischen liegt statt eines Crossfades eine
+// kurze, echte Nullphase (rechnerisch verifiziert: ca. 100-170px reiner
+// Leerraum je Uebergang bei 800px Viewport, innerhalb der insgesamt sehr
+// viel laengeren 420vh-Kapitelstrecke kaum wahrnehmbar), bevor die naechste
+// Headline beginnt einzublenden. Volle Sichtbarkeit am jeweils eigenen
+// Zentrum bleibt exakt 1 (unveraendert) - nur die UEBERLAPPUNG ist jetzt
+// vollstaendig eliminiert statt nur reduziert.
 const STORY_CENTERS = [0.07, 0.35, 0.64, 0.91];
-const STORY_WIDTH = 0.185;
+const STORY_WIDTH = 0.12;
 const DOT_POSITIONS = [8, 36, 64, 92];
 
 const CHAPTER_VH = 420;
