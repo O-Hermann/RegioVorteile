@@ -43,7 +43,7 @@ export function SecuritySection() {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <section id="sicherheit" className="scroll-mt-20 bg-landing-bg/95 py-24 sm:py-28">
+    <section id="sicherheit" className="scroll-mt-20 bg-landing-bg/72 py-24 sm:py-28">
       <motion.div
         className="mx-auto max-w-6xl px-4 sm:px-6"
         initial={prefersReducedMotion ? undefined : { opacity: 0, y: 14 }}

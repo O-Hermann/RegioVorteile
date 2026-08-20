@@ -140,7 +140,7 @@ export function LeakScrollytelling() {
   const chapterExitY = useTransform(exitProgress, [0, 1], [0, -18]);
 
   return (
-    <section id="geldlecks" className="relative bg-landing-bg-alt/95">
+    <section id="geldlecks" className="relative bg-landing-bg-alt/72">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-20">
         <h2 className="font-display text-3xl font-extrabold tracking-tight text-landing-text-primary sm:text-4xl">
           Geld geht selten auf einmal verloren.

@@ -1,6 +1,6 @@
 // Ein einziger, fixierter Hintergrund-Layer fuer die gesamte Landingpage,
 // statt jeder Section ihre eigene flache Fuellfarbe zu geben. Die Sections
-// selbst bleiben fast deckend (bg-landing-bg/95 etc.), sodass dieser Layer
+// selbst bleiben grossteils deckend (bg-landing-bg/72 etc.), sodass dieser Layer
 // ueberall gleichmaessig durchscheint - das verbindet die sonst hart
 // gestapelten Bloecke zu einer durchgehenden Flaeche, ohne einzelne
 // Sections farblich zu veraendern.
@@ -36,9 +36,9 @@ export function AmbientBackground() {
         className="absolute inset-0 hidden dark:block"
         style={{
           background:
-            "radial-gradient(ellipse 70% 46% at 92% -6%, color-mix(in srgb, var(--landing-accent-light) 11%, transparent), transparent 64%), " +
-            "radial-gradient(ellipse 58% 42% at 4% 32%, color-mix(in srgb, var(--landing-purple) 9%, transparent), transparent 62%), " +
-            "radial-gradient(ellipse 62% 44% at 96% 80%, color-mix(in srgb, var(--landing-accent-light) 10%, transparent), transparent 60%)",
+            "radial-gradient(ellipse 70% 46% at 92% -6%, color-mix(in srgb, var(--landing-accent-light) 20%, transparent), transparent 64%), " +
+            "radial-gradient(ellipse 58% 42% at 4% 32%, color-mix(in srgb, var(--landing-purple) 15%, transparent), transparent 62%), " +
+            "radial-gradient(ellipse 62% 44% at 96% 80%, color-mix(in srgb, var(--landing-accent-light) 17%, transparent), transparent 60%)",
         }}
       />
       <div
@@ -46,12 +46,12 @@ export function AmbientBackground() {
         style={{
           background:
             "conic-gradient(from 200deg at 65% 18%, transparent 0deg, color-mix(in srgb, var(--landing-accent-light) 40%, transparent) 40deg, transparent 100deg, color-mix(in srgb, var(--landing-purple) 32%, transparent) 210deg, transparent 280deg, transparent 360deg)",
-          opacity: 0.08,
+          opacity: 0.14,
           mixBlendMode: "screen",
         }}
       />
       <div
-        className="absolute inset-0 opacity-0 dark:opacity-[0.09]"
+        className="absolute inset-0 opacity-0 dark:opacity-[0.13]"
         style={{
           backgroundImage:
             "radial-gradient(color-mix(in srgb, var(--landing-accent-light) 70%, transparent) 1px, transparent 1px)",
@@ -73,16 +73,16 @@ export function AmbientBackground() {
       <div
         className="absolute inset-0 hidden dark:block"
         style={{
-          background: "radial-gradient(ellipse 95% 80% at 50% 22%, transparent 58%, rgba(2, 8, 18, 0.3) 100%)",
+          background: "radial-gradient(ellipse 95% 80% at 50% 22%, transparent 52%, rgba(2, 8, 18, 0.4) 100%)",
         }}
       />
       <div
         className="absolute inset-x-0 top-0 hidden dark:block"
         style={{
           background:
-            "linear-gradient(to right, color-mix(in srgb, var(--landing-accent-light) 30%, transparent) 0%, color-mix(in srgb, var(--landing-accent-light) 13%, transparent) 45%, color-mix(in srgb, var(--landing-purple) 20%, transparent) 100%)",
+            "linear-gradient(to right, color-mix(in srgb, var(--landing-accent-light) 42%, transparent) 0%, color-mix(in srgb, var(--landing-accent-light) 18%, transparent) 45%, color-mix(in srgb, var(--landing-purple) 28%, transparent) 100%)",
           height: 200,
-          opacity: 0.4,
+          opacity: 0.55,
           maskImage: "linear-gradient(to bottom, black 0%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(to bottom, black 0%, transparent 100%)",
         }}

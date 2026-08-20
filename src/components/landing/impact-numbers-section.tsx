@@ -250,7 +250,7 @@ export function ImpactNumbersSection() {
   // davor) und konnte deshalb entfernt werden, ohne die Buehne selbst
   // (STAGE_VH, Sticky, Partikel, Zahlen-Phasen) im Geringsten anzutasten.
   return (
-    <section className="relative bg-landing-bg-alt/95">
+    <section className="relative bg-landing-bg-alt/72">
       {prefersReducedMotion ? (
         <div className="pb-24">
           <StaticImpactNumbers />
