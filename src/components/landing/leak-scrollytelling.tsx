@@ -240,7 +240,7 @@ function VisualCard({ scrollYProgress }: { scrollYProgress: MotionValue<number> 
         <span className="font-display text-base font-bold text-landing-text-primary">Effivo Analyse</span>
         <span className="text-xs font-medium text-landing-accent-light">38.421 Buchungen geladen</span>
       </div>
-      <div className="relative px-4 pb-[220px] pt-4">
+      <div className="relative px-4 pb-[250px] pt-4">
         {ROWS.map((row) => (
           <BookingRow key={row.id} row={row} pairPeak={pairPeak} lockTransition={lockTransition} rowsLocked={rowsLocked} scrollYProgress={scrollYProgress} />
         ))}
@@ -341,7 +341,7 @@ function FindingCard({ scrollYProgress }: { scrollYProgress: MotionValue<number>
 
   return (
     <motion.div
-      className="absolute inset-x-4 bottom-4 rounded-2xl border border-landing-border bg-landing-card px-5 py-5 shadow-lg shadow-slate-900/10 dark:shadow-xl dark:shadow-black/40"
+      className="absolute inset-x-4 bottom-6 rounded-2xl border border-landing-border bg-landing-card px-5 pb-8 pt-5 shadow-lg shadow-slate-900/10 dark:shadow-xl dark:shadow-black/40"
       style={{ opacity, y, scale, filter }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -364,7 +364,7 @@ function FindingCard({ scrollYProgress }: { scrollYProgress: MotionValue<number>
           <ReasonChip key={chip} label={chip} index={i} locked={locked} scrollYProgress={scrollYProgress} />
         ))}
       </div>
-      <div className="relative mt-3 h-9">
+      <div className="relative mt-4 h-9">
         <motion.div className="absolute inset-x-0 bottom-0 flex flex-nowrap gap-2" style={{ opacity: decisionIn, y: decisionY }}>
           <span className="inline-flex h-8 items-center rounded-lg border border-landing-accent-light/30 bg-landing-accent-subtle px-3 text-[10px] font-bold text-landing-accent-light">
             ✓ Bestätigen
