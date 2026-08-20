@@ -135,7 +135,14 @@ const STAGE_VH = 500;
 // Partikel-Schwellenwerte (0.15 Explosion, 0.21 Ausblenden usw.) wirken
 // dadurch bit-fuer-bit identisch wie vorher, nur der ganze Ablauf beginnt
 // jetzt insgesamt spaeter innerhalb des laengeren Tracks.
-const PRE_ENTRY_VH = 70;
+// 45 statt vorher 70: die Zahl steht nicht mehr lange STATISCH voll
+// sichtbar herum (das machte die Section unnoetig lang), sondern
+// materialisiert sich durchgehend ueber die GESAMTE Vorlaufstrecke - siehe
+// preEntryOpacity unten, das jetzt ohne Zwischen-Halt direkt von 0 auf 1
+// laeuft. Dadurch ist staendig eine sichtbare Veraenderung im Bild (die
+// Zahl wird zunehmend schaerfer/heller statt eine leere Flaeche zu zeigen),
+// weshalb die Strecke selbst kuerzer sein darf, ohne wieder leer zu wirken.
+const PRE_ENTRY_VH = 45;
 const PRE_ENTRY_FRACTION = PRE_ENTRY_VH / (STAGE_VH + PRE_ENTRY_VH);
 
 function clamp01(x: number): number {
@@ -213,25 +220,29 @@ export function ImpactNumbersSection() {
   // die erste Zahl.
   const decayProgress = useTransform(rawProgress, [PRE_ENTRY_FRACTION, 1], [0, 1]);
 
-  // "38.421" wird direkt ab Fortschritt 0 des GESAMTEN Tracks langsam
-  // sichtbar (PRE-ENTRY), haelt danach lange vollstaendig sichtbar/lesbar
-  // (HOLD) und uebergibt erst kurz vor PRE_ENTRY_FRACTION die Kontrolle an
-  // die bestehende Choreografie (siehe preEntryBlend). Design/Typografie/
-  // Position sind unveraendert - NumberSceneBlock leitet y/scale/blur wie
-  // bisher direkt aus der Opacity ab, das ergibt automatisch ein sanftes
-  // "in Position gleiten" waehrend des Einblendens, ohne eigene Bewegung.
-  const preEntryOpacity = useTransform(rawProgress, [0, 0.008, PRE_ENTRY_FRACTION * 0.92], [0, 1, 1]);
+  // "38.421" materialisiert sich durchgehend ueber die GESAMTE Vorlauf-
+  // strecke, statt schnell auf volle Opacity zu springen und dann lange
+  // STATISCH zu stehen: der Uebergang von 0 auf 1 laeuft jetzt fast bis zum
+  // Uebergabepunkt an die bestehende Choreografie durch. Die Zahl ist von
+  // Beginn an sichtbar (zunaechst schwach und - dank blurPx unten, das
+  // direkt an (1-opacity) gekoppelt ist - deutlich unscharf), wird beim
+  // Weiterscrollen kontinuierlich klarer/heller und steht kurz vor dem
+  // Uebergabepunkt vollstaendig scharf. Design/Typografie/Position sind
+  // unveraendert - NumberSceneBlock leitet y/scale/blur wie bisher direkt
+  // aus der Opacity ab, das ergibt automatisch das "materialisieren" ohne
+  // eigenen zusaetzlichen Code.
+  const preEntryOpacity = useTransform(rawProgress, [0, PRE_ENTRY_FRACTION * 0.9], [0, 1]);
   // Der Uebergabepunkt liegt bewusst NICHT direkt bei PRE_ENTRY_FRACTION
   // (wo decayProgress erst bei 0 steht, HOLD_RANGES[0] dort also noch
   // Opacity 0 liefert), sondern erst NACHDEM decayProgress die eigene,
   // sehr kurze Einblend-Rampe von HOLD_RANGES[0] (0 -> 0.008) bereits
   // durchlaufen hat: rawProgress = PRE_ENTRY_FRACTION + 0.008*(1-PRE_ENTRY_FRACTION)
-  // ~ 0.13. Ab dort liefert decayOpacity bereits durchgehend 1 (HOLD-Plateau
+  // ~ 0.09. Ab dort liefert decayOpacity bereits durchgehend 1 (HOLD-Plateau
   // bis 0.21), wodurch der lineare Uebergang zwischen preEntryOpacity (=1)
   // und decayOpacity (=1) komplett dip-frei ist - beide Seiten sind in
   // diesem Fenster bereits identisch bei voller Sichtbarkeit. Per
   // Nachrechnung verifiziert (siehe Zusammenfassung).
-  const preEntryBlend = useTransform(rawProgress, [0.13, 0.14], [0, 1]);
+  const preEntryBlend = useTransform(rawProgress, [0.09, 0.1], [0, 1]);
 
   // Der frueher hier stehende eigene Intro-Textblock ("Vom Datenmeer zur
   // Entscheidung") wiederholte im Kern nur die Aussage des vorangegangenen
