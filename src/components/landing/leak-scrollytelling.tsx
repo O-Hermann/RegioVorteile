@@ -231,7 +231,7 @@ function VisualCard({ scrollYProgress }: { scrollYProgress: MotionValue<number> 
   const rowsLocked = useTransform(scrollYProgress, (p) => Number(p >= 0.56));
 
   return (
-    <div className="relative hidden min-h-[min(74vh,720px)] overflow-hidden rounded-3xl border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40 lg:block">
+    <div className="relative hidden min-h-[min(74vh,720px)] overflow-hidden rounded-[2rem] border border-landing-border bg-landing-card-elevated shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/40 lg:block">
       <div
         aria-hidden
         className="h-[2px] w-full bg-gradient-to-r from-transparent via-landing-accent-light to-transparent opacity-70"
@@ -240,7 +240,7 @@ function VisualCard({ scrollYProgress }: { scrollYProgress: MotionValue<number> 
         <span className="font-display text-base font-bold text-landing-text-primary">Effivo Analyse</span>
         <span className="text-xs font-medium text-landing-accent-light">38.421 Buchungen geladen</span>
       </div>
-      <div className="relative px-4 pb-[250px] pt-4">
+      <div className="relative px-4 pb-[240px] pt-3">
         {ROWS.map((row) => (
           <BookingRow key={row.id} row={row} pairPeak={pairPeak} lockTransition={lockTransition} rowsLocked={rowsLocked} scrollYProgress={scrollYProgress} />
         ))}
@@ -306,7 +306,7 @@ function BookingRow({
 
   return (
     <motion.div
-      className="relative mb-2 grid grid-cols-[1.3fr_0.6fr] items-center gap-3 rounded-2xl border px-4 py-4 sm:grid-cols-[1.3fr_0.7fr_0.55fr]"
+      className="relative mb-1.5 grid grid-cols-[1.3fr_0.6fr] items-center gap-3 rounded-2xl border px-4 py-3 sm:grid-cols-[1.3fr_0.7fr_0.55fr]"
       style={{ background, borderColor, boxShadow, x, scale, opacity }}
     >
       <div>
@@ -341,7 +341,7 @@ function FindingCard({ scrollYProgress }: { scrollYProgress: MotionValue<number>
 
   return (
     <motion.div
-      className="absolute inset-x-4 bottom-6 rounded-2xl border border-landing-border bg-landing-card px-5 pb-8 pt-5 shadow-lg shadow-slate-900/10 dark:shadow-xl dark:shadow-black/40"
+      className="absolute inset-x-4 bottom-6 rounded-[1.5rem] border border-landing-border bg-landing-card px-5 pb-8 pt-5 shadow-lg shadow-slate-900/10 dark:shadow-xl dark:shadow-black/40"
       style={{ opacity, y, scale, filter }}
     >
       <div className="flex items-start justify-between gap-4">
