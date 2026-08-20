@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, type MotionValue } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 type Particle = {
@@ -220,18 +220,15 @@ export function ImpactNumbersSection() {
   // die erste Zahl.
   const decayProgress = useTransform(rawProgress, [PRE_ENTRY_FRACTION, 1], [0, 1]);
 
-  // "38.421" materialisiert sich durchgehend ueber die GESAMTE Vorlauf-
-  // strecke, statt schnell auf volle Opacity zu springen und dann lange
-  // STATISCH zu stehen: der Uebergang von 0 auf 1 laeuft jetzt fast bis zum
-  // Uebergabepunkt an die bestehende Choreografie durch. Die Zahl ist von
-  // Beginn an sichtbar (zunaechst schwach und - dank blurPx unten, das
-  // direkt an (1-opacity) gekoppelt ist - deutlich unscharf), wird beim
-  // Weiterscrollen kontinuierlich klarer/heller und steht kurz vor dem
-  // Uebergabepunkt vollstaendig scharf. Design/Typografie/Position sind
-  // unveraendert - NumberSceneBlock leitet y/scale/blur wie bisher direkt
-  // aus der Opacity ab, das ergibt automatisch das "materialisieren" ohne
-  // eigenen zusaetzlichen Code.
-  const preEntryOpacity = useTransform(rawProgress, [0, PRE_ENTRY_FRACTION * 0.9], [0, 1]);
+  // Ein zuvor getesteter graduelles Einblenden/"Materialisieren" (Opacity
+  // langsam von 0 auf 1, dabei unscharf) wirkte in der Praxis so, als
+  // wuerde die Zahl "irgendwann ploetzlich auftauchen", waehrend der Raum
+  // davor weiterhin leer aussah. Einfacher und wie gewuenscht: "38.421"
+  // steht von Anfang an FEST bei 100% Opacity, sobald die Sticky-Flaeche
+  // ueberhaupt sichtbar wird - keine eigene Einblend-Animation mehr fuer
+  // die erste Zahl. PRE_ENTRY_VH liefert weiterhin die Halte-Distanz, bevor
+  // die bestehende Partikel-Explosion beginnt, nur eben ohne Fade-in davor.
+  const preEntryOpacity = useMotionValue(1);
   // Der Uebergabepunkt liegt bewusst NICHT direkt bei PRE_ENTRY_FRACTION
   // (wo decayProgress erst bei 0 steht, HOLD_RANGES[0] dort also noch
   // Opacity 0 liefert), sondern erst NACHDEM decayProgress die eigene,
