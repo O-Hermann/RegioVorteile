@@ -84,8 +84,19 @@ const NUMBER_SCENES: NumberScene[] = [
 // deshalb bewusst KEIN Ausblenden-Ende (nur 3 statt 4 Punkte): sie bleibt
 // bis zum Scroll-Ende (p=1) vollstaendig sichtbar - passend zur
 // geforderten absoluten Ruhe am Schluss.
+// Der Einblenden-Start der ERSTEN Zahl (0 -> 0.02) war unnoetig traege:
+// scrollYProgress bleibt exakt bei 0 haengen, bis die Track-Oberkante die
+// Viewport-Oberkante erreicht - aber die Sticky-Flaeche selbst wird schon
+// bis zu 88px VORHER sichtbar gepinnt (CSS-Sticky-Eigenschaft, kein Bug).
+// In diesem kurzen Fenster stand die Flaeche also bereits im Bild, aber
+// "38.421" war noch komplett unsichtbar (Opacity exakt 0) - zusammen mit
+// zusaetzlichem Padding wirkte das wie eine fast leere Bildschirmhoehe vor
+// der ersten Zahl. Nur dieser ERSTE Einblenden-Wert wurde verkuerzt
+// (0.02 -> 0.008); alle anderen Werte (Haltephasen, Ausblenden, restliche
+// drei Zahlen) sind unveraendert - die Choreografie selbst bleibt gleich,
+// nur ihr Start reagiert jetzt schneller.
 const HOLD_RANGES: number[][] = [
-  [0, 0.02, 0.21, 0.24],
+  [0, 0.008, 0.21, 0.24],
   [0.28, 0.31, 0.5, 0.53],
   [0.55, 0.58, 0.72, 0.75],
   [0.78, 0.81, 1],
@@ -174,11 +185,15 @@ export function ImpactNumbersSection() {
   // eigentliche Partikel-Szene ueberhaupt begann. Er war NICHT Teil des
   // getrackten sectionRef/scrollYProgress (eigenstaendiger Block direkt
   // davor) und konnte deshalb entfernt werden, ohne die Buehne selbst
-  // (STAGE_VH, Sticky, Partikel, Zahlen-Phasen) im Geringsten anzutasten -
-  // nur das kurze `pt-*` unten sorgt noch fuer einen kleinen Abstand zur
-  // vorherigen Section.
+  // (STAGE_VH, Sticky, Partikel, Zahlen-Phasen) im Geringsten anzutasten.
+  // Das direkt danach ergaenzte `pt-16 sm:pt-20` erwies sich als Teil des
+  // naechsten Problems: es verlaengerte genau die Strecke, auf der die
+  // Sticky-Flaeche zwar schon sichtbar ist, "38.421" aber noch nicht (siehe
+  // HOLD_RANGES oben) - eine faktisch leere Bildschirmhoehe nach "Was
+  // Effivo findet". Entfernt; "Was Effivo findet" bringt mit seinem
+  // eigenen unteren Section-Padding bereits ausreichend Abstand mit.
   return (
-    <section className="relative bg-landing-bg-alt pt-16 sm:pt-20">
+    <section className="relative bg-landing-bg-alt">
       {prefersReducedMotion ? (
         <div className="pb-24">
           <StaticImpactNumbers />

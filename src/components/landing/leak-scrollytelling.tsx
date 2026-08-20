@@ -46,8 +46,20 @@ const STEPS: Step[] = [
 // Zentren (Anteil am Kapitel-Scrollfortschritt 0..1) und Haltebreite jedes
 // Story-Texts - identisch zur Referenz-Dramaturgie: jede Phase haelt lange
 // zentriert und blendet erst zur naechsten Phase hin weich aus.
+//
+// STORY_WIDTH bestimmt, wie weit die Ein-/Ausblend-Glocke jeder Phase um
+// ihr eigenes Zentrum reicht. Bei 0.24 (vorheriger Wert) und einem
+// Zentrums-Abstand von nur ca. 0.27-0.29 ueberlappten sich die Glocken
+// benachbarter Phasen SUBSTANZIELL: am Mittelpunkt zwischen zwei Zentren
+// standen beide Headlines gleichzeitig bei ueber 35% Opacity - deutlich
+// sichtbar und lesbar uebereinander (per Nachrechnung bestaetigt, nicht nur
+// vermutet). Mit 0.185 bleibt jede Phase an ihrem eigenen Zentrum weiterhin
+// voll sichtbar (Opacity exakt 1 dort, unveraendert), aber am Mittelpunkt
+// zwischen zwei Phasen liegt die gemeinsame Opacity nur noch bei ca.
+// 12-18% - ein weicher, aber deutlich unauffaelligerer Crossfade statt
+// zwei gleichzeitig lesbaren Headlines.
 const STORY_CENTERS = [0.07, 0.35, 0.64, 0.91];
-const STORY_WIDTH = 0.24;
+const STORY_WIDTH = 0.185;
 const DOT_POSITIONS = [8, 36, 64, 92];
 
 const CHAPTER_VH = 420;
