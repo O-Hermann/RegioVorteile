@@ -9,7 +9,7 @@ import {
   dataImportStatusBadgeClass,
   dataImportStatusDotClass,
 } from "@/lib/data-import";
-import { importPanelClass, importIconBadgeClass } from "@/lib/import-ui";
+import { importPanelClass } from "@/lib/import-ui";
 import {
   EyeIcon,
   RefreshIcon,
@@ -123,7 +123,7 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
       <div className={`overflow-hidden ${importPanelClass}`}>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-card-border/70 dark:border-white/5 p-5">
           <div className="flex items-center gap-3">
-            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${importIconBadgeClass}`}>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-600 text-white dark:bg-cockpit-accent-light dark:text-cockpit-card">
               <FileTextIcon className="h-4 w-4" />
             </span>
             <div>
@@ -155,7 +155,7 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                 aria-expanded={filterOpen}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
                   filterActive
-                    ? "border-ink-400 bg-ink-50 text-ink-700 dark:border-cockpit-accent-light/40 dark:bg-cockpit-accent-light/10 dark:text-cockpit-accent-light"
+                    ? "border-cockpit-accent-light/50 bg-ink-50 text-ink-700 dark:border-cockpit-accent-light/50 dark:bg-cockpit-accent-light/20 dark:text-cockpit-accent-light"
                     : "border-card-border bg-card text-sand-700 hover:bg-sand-100 dark:border-white/15 dark:text-cockpit-text dark:hover:bg-white/5"
                 }`}
               >
@@ -211,11 +211,11 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                   <button
                     type="button"
                     onClick={() => toggleSort("period")}
-                    className="inline-flex items-center gap-1 hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
                   >
                     Zeitraum
                     <SortIcon
-                      className={`h-3 w-3 ${sort?.key === "period" ? "text-ink-600 dark:text-cockpit-accent-light" : "opacity-50"}`}
+                      className={`h-3.5 w-3.5 ${sort?.key === "period" ? "text-ink-600 dark:text-cockpit-accent-light" : "text-sand-400 dark:text-cockpit-text-secondary"}`}
                     />
                   </button>
                 </th>
@@ -227,11 +227,11 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                   <button
                     type="button"
                     onClick={() => toggleSort("date")}
-                    className="inline-flex items-center gap-1 hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
                   >
                     Datum
                     <SortIcon
-                      className={`h-3 w-3 ${sort?.key === "date" ? "text-ink-600 dark:text-cockpit-accent-light" : "opacity-50"}`}
+                      className={`h-3.5 w-3.5 ${sort?.key === "date" ? "text-ink-600 dark:text-cockpit-accent-light" : "text-sand-400 dark:text-cockpit-text-secondary"}`}
                     />
                   </button>
                 </th>
@@ -284,8 +284,8 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                       <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">
                         {row.uploaderName}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">{row.dateLabel}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">{row.sizeLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">{row.dateLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">{row.sizeLabel}</td>
                       <td className="whitespace-nowrap px-4 py-3.5 text-right">
                         <KebabMenu>
                           <Link href={`/arbeitgeber/dashboard/datenimporte/${row.id}`} className={menuItemClass}>
