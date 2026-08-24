@@ -203,6 +203,14 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
           </div>
         </div>
 
+        {/* overflow-x-auto ist ein reines Sicherheitsnetz fuer sehr schmale
+            Viewports (Tabelle hat min-w-[880px]). Das je Zeile nach unten
+            aufklappende KebabMenu wird davon NICHT mehr abgeschnitten, da es
+            per Portal in document.body rendert (siehe kebab-menu.tsx) - ein
+            Versuch, das ueber "overflow-y-visible" auf diesem Wrapper zu
+            loesen, WIRKT NICHT: per CSS-Spezifikation zwingt jeder overflow-x
+            != visible automatisch auch overflow-y auf "auto", unabhaengig
+            davon, was overflow-y explizit gesetzt wird. */}
         <div className="mx-5 mb-5 overflow-x-auto rounded-xl border border-card-border dark:border-[#132e49]">
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="bg-sand-50 dark:bg-import-card-header">
