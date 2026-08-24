@@ -24,13 +24,32 @@ export const DATA_IMPORT_STATUS_LABELS: Record<DataImportStatus, string> = {
 };
 
 export function dataImportStatusBadgeClass(status: DataImportStatus) {
+  if (status === "PROCESSED") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
   if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") {
-    return "bg-gold-100 text-gold-700";
+    return "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300";
   }
-  if (status === "PROCESSED") return "bg-ink-100 text-ink-800";
-  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-100 text-rose-700";
-  return "bg-sand-200 text-sand-700";
+  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300";
+  return "bg-sand-100 text-sand-600 dark:bg-white/5 dark:text-cockpit-text-weak";
 }
+
+// Farbpunkt passend zu dataImportStatusBadgeClass - eigene Funktion statt
+// Farbe aus der Badge-Klasse zu parsen, da beide unabhaengig gebraucht
+// werden (Punkt sitzt VOR dem Label in der Pille).
+export function dataImportStatusDotClass(status: DataImportStatus): string {
+  if (status === "PROCESSED") return "bg-emerald-500";
+  if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") return "bg-blue-500";
+  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-500";
+  return "bg-sand-400 dark:bg-cockpit-text-weak";
+}
+
+// Farbige Icon-Badges pro Kategorie (Listenansicht) - rein visuelle
+// Unterscheidungshilfe, keine neue Kategorie erfunden, nur Farbe/Icon pro
+// bereits bestehendem DataImportCategory-Wert.
+export const DATA_IMPORT_CATEGORY_BADGE_CLASS: Record<DataImportCategory, string> = {
+  FINANCE: "bg-ink-100 text-ink-700 dark:bg-cockpit-accent-light/10 dark:text-cockpit-accent-light",
+  ORDERS: "bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-300",
+  CUSTOMERS: "bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300",
+};
 
 export const MONTH_LABELS_DE = [
   "Januar",

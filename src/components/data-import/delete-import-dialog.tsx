@@ -85,7 +85,7 @@ export function DeleteImportDialog({
               <XIcon className="h-4 w-4" />
             </button>
 
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
               <TrashIcon className="h-5 w-5" />
             </span>
 

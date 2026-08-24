@@ -2,19 +2,12 @@ import Link from "next/link";
 import { requireCompanyMember } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
-import {
-  DATA_IMPORT_CATEGORY_LABELS,
-  DATA_IMPORT_STATUS_LABELS,
-  dataImportStatusBadgeClass,
-  periodLabel,
-  formatFileSize,
-} from "@/lib/data-import";
+import { DATA_IMPORT_CATEGORY_LABELS, DATA_IMPORT_STATUS_LABELS, periodLabel, formatFileSize } from "@/lib/data-import";
 import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from "@/lib/import-ui";
 import { primaryButtonClass } from "@/lib/ui";
-import { UploadIcon, EyeIcon } from "@/components/icons";
+import { UploadIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
-import { KebabMenu } from "@/components/kebab-menu";
-import { DeleteImportDialog } from "@/components/data-import/delete-import-dialog";
+import { ImportHistoryTable, type ImportRow } from "@/components/data-import/import-history-table";
 
 export default async function DatenimportePage({
   searchParams,
@@ -30,6 +23,21 @@ export default async function DatenimportePage({
     orderBy: { createdAt: "desc" },
     include: { uploadedByUser: true },
   });
+
+  const rows: ImportRow[] = imports.map((i) => ({
+    id: i.id,
+    period: periodLabel(i.periodMonth, i.periodYear),
+    category: i.category,
+    categoryLabel: DATA_IMPORT_CATEGORY_LABELS[i.category],
+    fileName: i.fileName,
+    status: i.status,
+    statusLabel: DATA_IMPORT_STATUS_LABELS[i.status],
+    uploaderName:
+      [i.uploadedByUser.firstName, i.uploadedByUser.lastName].filter(Boolean).join(" ") || i.uploadedByUser.email,
+    dateLabel: `${i.createdAt.toLocaleDateString("de-DE")} · ${i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`,
+    sizeLabel: formatFileSize(i.fileSize),
+    isProcessed: i.status === "PROCESSED",
+  }));
 
   return (
     <div>
@@ -87,80 +95,7 @@ export default async function DatenimportePage({
           <p className={`relative mt-4 text-xs ${importSecondaryTextClass}`}>XLSX und CSV · maximal 10 MB</p>
         </div>
       ) : (
-        <div className="mt-8">
-          <h2 className="font-display text-lg font-semibold text-sand-900">Importhistorie</h2>
-          <div className={`mt-3 overflow-x-auto !p-0 ${importPanelClass}`}>
-            <table className="w-full min-w-[880px] text-left text-sm">
-              <thead className="bg-sand-50 dark:bg-white/5">
-                <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
-                  <th className="px-4 py-3 font-semibold">Zeitraum</th>
-                  <th className="px-4 py-3 font-semibold">Kategorie</th>
-                  <th className="px-4 py-3 font-semibold">Dateiname</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Hochgeladen von</th>
-                  <th className="px-4 py-3 font-semibold">Datum</th>
-                  <th className="px-4 py-3 font-semibold">Größe</th>
-                  <th className="px-4 py-3 font-semibold" />
-                </tr>
-              </thead>
-              <tbody>
-                {imports.map((i) => {
-                  const uploaderName =
-                    [i.uploadedByUser.firstName, i.uploadedByUser.lastName].filter(Boolean).join(" ") ||
-                    i.uploadedByUser.email;
-                  return (
-                    <tr
-                      key={i.id}
-                      className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
-                    >
-                      <td className="whitespace-nowrap px-4 py-3.5 font-medium text-sand-900 dark:text-cockpit-text">
-                        {periodLabel(i.periodMonth, i.periodYear)}
-                      </td>
-                      <td className={`whitespace-nowrap px-4 py-3.5 ${importSecondaryTextClass}`}>
-                        {DATA_IMPORT_CATEGORY_LABELS[i.category]}
-                      </td>
-                      <td className={`max-w-[220px] truncate px-4 py-3.5 ${importSecondaryTextClass}`}>{i.fileName}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${dataImportStatusBadgeClass(i.status)}`}>
-                          {DATA_IMPORT_STATUS_LABELS[i.status]}
-                        </span>
-                      </td>
-                      <td className={`whitespace-nowrap px-4 py-3.5 ${importSecondaryTextClass}`}>{uploaderName}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">
-                        {i.createdAt.toLocaleDateString("de-DE")} ·{" "}
-                        {i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">
-                        {formatFileSize(i.fileSize)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3.5">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/arbeitgeber/dashboard/datenimporte/${i.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
-                          >
-                            <EyeIcon className="h-3.5 w-3.5" />
-                            Ansehen
-                          </Link>
-                          {canUpload && (
-                            <KebabMenu>
-                              <DeleteImportDialog
-                                dataImportId={i.id}
-                                fileName={i.fileName}
-                                period={periodLabel(i.periodMonth, i.periodYear)}
-                                isProcessed={i.status === "PROCESSED"}
-                              />
-                            </KebabMenu>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <ImportHistoryTable rows={rows} canUpload={canUpload} />
       )}
     </div>
   );
