@@ -123,7 +123,7 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
       <div className={`overflow-hidden ${importPanelClass}`}>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-card-border/70 dark:border-white/5 p-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-600 text-white dark:bg-cockpit-accent-light dark:text-cockpit-card">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-600 text-white dark:bg-cockpit-accent-light dark:text-white">
               <FileTextIcon className="h-4 w-4" />
             </span>
             <div>
