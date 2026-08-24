@@ -13,14 +13,16 @@ import { importPanelClass, importSecondaryTextClass, importIconGlowClass } from 
 import { primaryButtonClass } from "@/lib/ui";
 import { UploadIcon, EyeIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
+import { KebabMenu } from "@/components/kebab-menu";
+import { DeleteImportDialog } from "@/components/data-import/delete-import-dialog";
 
 export default async function DatenimportePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string }>;
 }) {
   const { company, membership } = await requireCompanyMember();
-  const { error } = await searchParams;
+  const { error, deleted } = await searchParams;
   const canUpload = COMPANY_IMPORT_UPLOAD_ROLES.includes(membership.role);
 
   const imports = await prisma.dataImport.findMany({
@@ -48,7 +50,17 @@ export default async function DatenimportePage({
 
       {error === "forbidden" && (
         <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
-          Für den Datenimport-Upload fehlt Ihnen die notwendige Berechtigung.
+          Für diese Aktion fehlt Ihnen die notwendige Berechtigung.
+        </p>
+      )}
+      {error === "not-found" && (
+        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+          Dieser Datenimport wurde nicht gefunden. Möglicherweise wurde er bereits gelöscht.
+        </p>
+      )}
+      {deleted === "1" && (
+        <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          Der Datenimport wurde gelöscht.
         </p>
       )}
 
@@ -121,14 +133,26 @@ export default async function DatenimportePage({
                       <td className="whitespace-nowrap px-4 py-3.5 text-sand-500 dark:text-cockpit-text-weak">
                         {formatFileSize(i.fileSize)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                        <Link
-                          href={`/arbeitgeber/dashboard/datenimporte/${i.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
-                        >
-                          <EyeIcon className="h-3.5 w-3.5" />
-                          Ansehen
-                        </Link>
+                      <td className="whitespace-nowrap px-4 py-3.5">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/arbeitgeber/dashboard/datenimporte/${i.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 px-3 py-1.5 text-xs font-semibold text-sand-800 dark:text-cockpit-text hover:border-ink-400 dark:hover:border-cockpit-accent-light/50 hover:text-ink-700 dark:hover:text-cockpit-accent-light transition-colors"
+                          >
+                            <EyeIcon className="h-3.5 w-3.5" />
+                            Ansehen
+                          </Link>
+                          {canUpload && (
+                            <KebabMenu>
+                              <DeleteImportDialog
+                                dataImportId={i.id}
+                                fileName={i.fileName}
+                                period={periodLabel(i.periodMonth, i.periodYear)}
+                                isProcessed={i.status === "PROCESSED"}
+                              />
+                            </KebabMenu>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

@@ -17,6 +17,8 @@ import { importPanelClass, importSecondaryTextClass, importIconBadgeClass, impor
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 import { ArrowLeftIcon, TargetIcon, CheckCircleIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
+import { KebabMenu } from "@/components/kebab-menu";
+import { DeleteImportDialog } from "@/components/data-import/delete-import-dialog";
 
 export default async function DatenimportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,9 +76,21 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
             {DATA_IMPORT_CATEGORY_LABELS[dataImport.category]}
           </p>
         </div>
-        <span className={`rounded-full px-3 py-1.5 text-sm font-medium ${dataImportStatusBadgeClass(dataImport.status)}`}>
-          {DATA_IMPORT_STATUS_LABELS[dataImport.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-3 py-1.5 text-sm font-medium ${dataImportStatusBadgeClass(dataImport.status)}`}>
+            {DATA_IMPORT_STATUS_LABELS[dataImport.status]}
+          </span>
+          {canEdit && (
+            <KebabMenu>
+              <DeleteImportDialog
+                dataImportId={dataImport.id}
+                fileName={dataImport.fileName}
+                period={periodLabel(dataImport.periodMonth, dataImport.periodYear)}
+                isProcessed={dataImport.status === "PROCESSED"}
+              />
+            </KebabMenu>
+          )}
+        </div>
       </div>
 
       <div className={`mt-6 !p-6 ${importPanelClass}`}>

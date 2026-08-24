@@ -182,3 +182,27 @@ export async function createDataImport(
   revalidatePath("/admin/datenimporte");
   redirect(`/arbeitgeber/dashboard/datenimporte/${createdId}`);
 }
+
+// Gleiches Muster wie deleteCustomer (actions/customers.ts): companyId wird
+// bewusst NICHT aus dem Formular vertraut, sondern erst nach dem Laden des
+// Imports aus der DB ermittelt, bevor die eigentliche Berechtigungspruefung
+// laeuft. Anders als bei Customer->Order (onDelete: Restrict) sind
+// DataImportMapping/DataImportRecord im Schema bewusst per onDelete: Cascade
+// an DataImport gebunden - ein geloeschter Import nimmt seine abgeleiteten
+// Zuordnungs-/Datensatz-Zeilen also automatisch mit, kein manuelles Aufraeumen
+// noetig und kein Blockieren wie bei Kunden mit vorhandenen Auftraegen.
+export async function deleteDataImport(formData: FormData) {
+  const dataImportId = String(formData.get("dataImportId") ?? "");
+  const existing = await prisma.dataImport.findUnique({ where: { id: dataImportId } });
+  if (!existing) redirect("/arbeitgeber/dashboard/datenimporte?error=not-found");
+
+  await assertCanUploadDataImport(existing.companyId);
+
+  await prisma.dataImport.delete({ where: { id: existing.id } });
+
+  revalidatePath("/arbeitgeber/dashboard");
+  revalidatePath("/arbeitgeber/dashboard/datenimporte");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/datenimporte");
+  redirect("/arbeitgeber/dashboard/datenimporte?deleted=1");
+}
