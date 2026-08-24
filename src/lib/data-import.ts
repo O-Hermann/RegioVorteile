@@ -23,18 +23,24 @@ export const DATA_IMPORT_STATUS_LABELS: Record<DataImportStatus, string> = {
   CANCELED: "Abgebrochen",
 };
 
-// Feinschliff Runde 2: dark:-Werte nutzen jetzt die eigene, kraeftigere
-// --color-import-success/-info/-danger-Palette statt generischer Tailwind-
-// Farben, fuer klarere, "hochwertigere" Statusfarben passend zum Referenz-
-// Design-Brief. Light Mode bewusst unveraendert (emerald/blue/rose bleiben
-// dort gut lesbar und sind nicht Teil dieser Anpassung).
+// Feinschliff Runde 3: exakte Werte aus der HTML/CSS-Designreferenz - jede
+// Status-Pille hat dort einen EIGENEN, unabhaengig gewaehlten Rahmen (nicht
+// nur Hintergrund+Text wie in Runde 2), z.B. .ok{color:#3addad;
+// border-color:#116e60;background:rgba(22,123,99,.15)}. "border" muss hier
+// mit ausgeliefert werden, da Tailwind ohne die border-width-Utility keine
+// sichtbare border-color rendert. Light Mode bewusst unveraendert (emerald/
+// blue/rose bleiben dort gut lesbar und sind nicht Teil dieser Anpassung).
 export function dataImportStatusBadgeClass(status: DataImportStatus) {
-  if (status === "PROCESSED") return "bg-emerald-50 text-emerald-700 dark:bg-import-success/20 dark:text-import-success";
-  if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") {
-    return "bg-blue-50 text-blue-700 dark:bg-import-info/20 dark:text-import-info";
+  if (status === "PROCESSED") {
+    return "bg-emerald-50 text-emerald-700 dark:border dark:border-[#116e60] dark:bg-[#167b63]/15 dark:text-import-success";
   }
-  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-50 text-rose-700 dark:bg-import-danger/20 dark:text-import-danger";
-  return "bg-sand-100 text-sand-600 dark:bg-white/10 dark:text-import-text-secondary";
+  if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") {
+    return "bg-blue-50 text-blue-700 dark:border dark:border-[#1d6aae] dark:bg-[#1e61a0]/15 dark:text-import-info";
+  }
+  if (status === "FAILED" || status === "VALIDATION_FAILED") {
+    return "bg-rose-50 text-rose-700 dark:border dark:border-[#8a2b37] dark:bg-[#6b1d26]/16 dark:text-[#ff5961]";
+  }
+  return "bg-sand-100 text-sand-600 dark:border dark:border-import-border dark:bg-white/5 dark:text-import-text-secondary";
 }
 
 // Farbpunkt passend zu dataImportStatusBadgeClass - eigene Funktion statt
@@ -43,18 +49,21 @@ export function dataImportStatusBadgeClass(status: DataImportStatus) {
 export function dataImportStatusDotClass(status: DataImportStatus): string {
   if (status === "PROCESSED") return "bg-emerald-500 dark:bg-import-success";
   if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") return "bg-blue-500 dark:bg-import-info";
-  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-500 dark:bg-import-danger";
+  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-500 dark:bg-[#ff5961]";
   return "bg-sand-400 dark:bg-import-text-muted";
 }
 
 // Farbige Icon-Badges pro Kategorie (Listenansicht) - rein visuelle
 // Unterscheidungshilfe, keine neue Kategorie erfunden, nur Farbe/Icon pro
 // bereits bestehendem DataImportCategory-Wert. FINANCE nutzt denselben
-// Primary-Akzent wie der Rest der Seite (--color-import-accent).
+// Primary-Akzent wie der Rest der Seite (--color-import-accent). CUSTOMERS
+// uebernimmt exakt die "Personal"-Referenzfarbe (.cat-ico.purple:
+// background rgba(140,108,255,.18); color:#a792ff) - naechstliegende
+// bestehende Kategorie zur Referenz, da "Personal" im Schema nicht existiert.
 export const DATA_IMPORT_CATEGORY_BADGE_CLASS: Record<DataImportCategory, string> = {
-  FINANCE: "bg-ink-100 text-ink-700 dark:bg-import-accent/25 dark:text-import-accent",
+  FINANCE: "bg-ink-100 text-ink-700 dark:bg-import-accent/15 dark:text-import-accent",
   ORDERS: "bg-gold-100 text-gold-700 dark:bg-gold-500/20 dark:text-gold-300",
-  CUSTOMERS: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300",
+  CUSTOMERS: "bg-purple-100 text-purple-700 dark:bg-import-purple/18 dark:text-import-purple-light",
 };
 
 export const MONTH_LABELS_DE = [

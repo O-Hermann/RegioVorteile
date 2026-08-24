@@ -207,20 +207,29 @@
      gesamten Arbeitgeber-/Admin-Dashboard verwendet werden - diese Palette
      ist deutlich heller/gesaettigter gedacht und wuerde dort zu unerwartet
      hoher Kontrast-/Farbaenderung an unbeteiligten Seiten (Kunden, Auftraege,
-     Benutzer, ...) fuehren. Werte direkt aus dem Referenz-Design-Brief
-     uebernommen (Datenimporte-Feinschliff). Nur ueber dark:-Utilities
-     genutzt, wie beim uebrigen Cockpit-System auch - kein Light-Mode-Zweig
-     noetig, da diese Seite bewusst als Dark-Mode-Produkt gestaltet wird. */
-  --color-import-card: #122743;
-  --color-import-card-header: #0c1e35;
-  --color-import-border: #254261;
-  --color-import-accent: #1ed6c8;
-  --color-import-text: #f4f7fb;
-  --color-import-text-secondary: #9fb0c7;
-  --color-import-text-muted: #7e93af;
-  --color-import-danger: #ff5e5e;
-  --color-import-success: #2dd4a6;
-  --color-import-info: #4c8dff;
+     Benutzer, ...) fuehren. Nur ueber dark:-Utilities genutzt, wie beim
+     uebrigen Cockpit-System auch - kein Light-Mode-Zweig noetig, da diese
+     Seite bewusst als Dark-Mode-Produkt gestaltet wird.
+     Feinschliff Runde 3: exakte Werte aus einer vom Nutzer gelieferten
+     HTML/CSS-Designreferenz uebernommen (nicht mehr aus einem Text-Brief
+     angenaehert) - Namen aus Runde 2 beibehalten, nur die Werte korrigiert,
+     damit bestehende Aufrufer nicht umbenannt werden mussten. */
+  --color-import-bg: #061426;
+  --color-import-bg-deep: #04101f;
+  --color-import-card: #0a1b2f;
+  --color-import-card-header: #10243b;
+  --color-import-border: #1d3856;
+  --color-import-border-soft: #152c46;
+  --color-import-accent: #17c8c3;
+  --color-import-accent-hover: #0f9f9b;
+  --color-import-text: #f7fbff;
+  --color-import-text-secondary: #9bb0c7;
+  --color-import-text-muted: #6f86a1;
+  --color-import-danger: #ff4d57;
+  --color-import-success: #3addad;
+  --color-import-info: #54a6ff;
+  --color-import-purple: #8c6cff;
+  --color-import-purple-light: #a792ff;
 }
 
 @theme inline {
