@@ -23,30 +23,36 @@ export const DATA_IMPORT_STATUS_LABELS: Record<DataImportStatus, string> = {
   CANCELED: "Abgebrochen",
 };
 
+// Feinschliff Runde 2: dark:-Werte nutzen jetzt die eigene, kraeftigere
+// --color-import-success/-info/-danger-Palette statt generischer Tailwind-
+// Farben, fuer klarere, "hochwertigere" Statusfarben passend zum Referenz-
+// Design-Brief. Light Mode bewusst unveraendert (emerald/blue/rose bleiben
+// dort gut lesbar und sind nicht Teil dieser Anpassung).
 export function dataImportStatusBadgeClass(status: DataImportStatus) {
-  if (status === "PROCESSED") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300";
+  if (status === "PROCESSED") return "bg-emerald-50 text-emerald-700 dark:bg-import-success/20 dark:text-import-success";
   if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") {
-    return "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300";
+    return "bg-blue-50 text-blue-700 dark:bg-import-info/20 dark:text-import-info";
   }
-  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300";
-  return "bg-sand-100 text-sand-600 dark:bg-white/10 dark:text-cockpit-text-secondary";
+  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-50 text-rose-700 dark:bg-import-danger/20 dark:text-import-danger";
+  return "bg-sand-100 text-sand-600 dark:bg-white/10 dark:text-import-text-secondary";
 }
 
 // Farbpunkt passend zu dataImportStatusBadgeClass - eigene Funktion statt
 // Farbe aus der Badge-Klasse zu parsen, da beide unabhaengig gebraucht
 // werden (Punkt sitzt VOR dem Label in der Pille).
 export function dataImportStatusDotClass(status: DataImportStatus): string {
-  if (status === "PROCESSED") return "bg-emerald-500";
-  if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") return "bg-blue-500";
-  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-500";
-  return "bg-sand-400 dark:bg-cockpit-text-weak";
+  if (status === "PROCESSED") return "bg-emerald-500 dark:bg-import-success";
+  if (status === "READY_FOR_MAPPING" || status === "READY_FOR_PROCESSING") return "bg-blue-500 dark:bg-import-info";
+  if (status === "FAILED" || status === "VALIDATION_FAILED") return "bg-rose-500 dark:bg-import-danger";
+  return "bg-sand-400 dark:bg-import-text-muted";
 }
 
 // Farbige Icon-Badges pro Kategorie (Listenansicht) - rein visuelle
 // Unterscheidungshilfe, keine neue Kategorie erfunden, nur Farbe/Icon pro
-// bereits bestehendem DataImportCategory-Wert.
+// bereits bestehendem DataImportCategory-Wert. FINANCE nutzt denselben
+// Primary-Akzent wie der Rest der Seite (--color-import-accent).
 export const DATA_IMPORT_CATEGORY_BADGE_CLASS: Record<DataImportCategory, string> = {
-  FINANCE: "bg-ink-100 text-ink-700 dark:bg-cockpit-accent-light/25 dark:text-cockpit-accent-light",
+  FINANCE: "bg-ink-100 text-ink-700 dark:bg-import-accent/25 dark:text-import-accent",
   ORDERS: "bg-gold-100 text-gold-700 dark:bg-gold-500/20 dark:text-gold-300",
   CUSTOMERS: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300",
 };

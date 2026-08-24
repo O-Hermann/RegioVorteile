@@ -56,8 +56,8 @@ export function DeleteImportDialog({
         }}
         className={
           variant === "button"
-            ? "inline-flex items-center gap-1.5 rounded-full border border-rose-200 dark:border-rose-500/30 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-            : "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10 transition-colors"
+            ? "inline-flex items-center gap-1.5 rounded-full border border-rose-200 dark:border-import-danger/30 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-import-danger hover:bg-rose-50 dark:hover:bg-import-danger/10 transition-colors"
+            : "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:text-import-danger dark:hover:bg-import-danger/10 transition-colors"
         }
       >
         <TrashIcon className="h-3.5 w-3.5" />
@@ -80,32 +80,32 @@ export function DeleteImportDialog({
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Schließen"
-              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-sand-400 hover:bg-sand-100 hover:text-sand-700 dark:text-cockpit-text-weak dark:hover:bg-white/5 dark:hover:text-cockpit-text transition-colors"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-sand-400 hover:bg-sand-100 hover:text-sand-700 dark:text-import-text-muted dark:hover:bg-import-card-header dark:hover:text-import-text transition-colors"
             >
               <XIcon className="h-4 w-4" />
             </button>
 
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-import-danger/15 dark:text-import-danger">
               <TrashIcon className="h-5 w-5" />
             </span>
 
-            <h2 id="delete-import-title" className="mt-4 font-display text-lg font-semibold text-sand-900 dark:text-cockpit-text">
+            <h2 id="delete-import-title" className="mt-4 font-display text-lg font-semibold text-sand-900 dark:text-import-text">
               Dateiimport löschen?
             </h2>
-            <p className="mt-2 text-sm text-sand-600 dark:text-cockpit-text-secondary">
+            <p className="mt-2 text-sm text-sand-600 dark:text-import-text-secondary">
               Möchten Sie diesen Dateiimport wirklich löschen? Der Eintrag wird aus der Historie entfernt. Diese Aktion kann
               nicht rückgängig gemacht werden.
               {isProcessed && " Die daraus abgeleiteten Auswertungsdaten werden dabei ebenfalls entfernt."}
             </p>
 
-            <dl className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-card-border dark:border-white/10 bg-sand-50 dark:bg-white/5 p-4 text-sm">
+            <dl className="mt-4 grid grid-cols-2 gap-4 rounded-xl border border-card-border dark:border-import-border bg-sand-50 dark:bg-import-card-header p-4 text-sm">
               <div>
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Zeitraum</dt>
-                <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{period}</dd>
+                <dt className="text-sand-500 dark:text-import-text-muted">Zeitraum</dt>
+                <dd className="mt-0.5 font-medium text-sand-900 dark:text-import-text">{period}</dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Dateiname</dt>
-                <dd className="mt-0.5 truncate font-medium text-sand-900 dark:text-cockpit-text" title={fileName}>
+                <dt className="text-sand-500 dark:text-import-text-muted">Dateiname</dt>
+                <dd className="mt-0.5 truncate font-medium text-sand-900 dark:text-import-text" title={fileName}>
                   {fileName}
                 </dd>
               </div>
@@ -118,7 +118,7 @@ export function DeleteImportDialog({
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700 active:bg-rose-800 transition-colors"
+                className="inline-flex items-center justify-center rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700 active:bg-rose-800 dark:bg-import-danger dark:hover:bg-import-danger/85 transition-colors"
               >
                 Löschen
               </button>

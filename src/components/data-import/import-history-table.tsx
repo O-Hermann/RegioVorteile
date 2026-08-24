@@ -9,7 +9,7 @@ import {
   dataImportStatusBadgeClass,
   dataImportStatusDotClass,
 } from "@/lib/data-import";
-import { importPanelClass } from "@/lib/import-ui";
+import { importPanelClass, importKebabPanelClass, importKebabTriggerClass } from "@/lib/import-ui";
 import {
   EyeIcon,
   RefreshIcon,
@@ -50,7 +50,7 @@ const CATEGORY_ICON: Record<DataImportCategory, typeof TrendingUpIcon> = {
 };
 
 const menuItemClass =
-  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-sand-700 hover:bg-sand-100 dark:text-cockpit-text dark:hover:bg-white/5 transition-colors";
+  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-semibold text-sand-700 hover:bg-sand-100 dark:text-import-text dark:hover:bg-import-card-header transition-colors";
 
 // Suche und Statusfilter laufen bewusst rein clientseitig ueber die bereits
 // geladenen Zeilen (typische Importhistorie einer KMU ist klein genug, kein
@@ -123,12 +123,12 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
       <div className={`overflow-hidden ${importPanelClass}`}>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-card-border/70 dark:border-white/5 p-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-600 text-white dark:bg-cockpit-accent-light dark:text-white">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink-600 text-white dark:bg-import-accent dark:text-white">
               <FileTextIcon className="h-4 w-4" />
             </span>
             <div>
-              <h2 className="font-display text-lg font-semibold text-sand-900 dark:text-cockpit-text">Importhistorie</h2>
-              <p className="mt-0.5 text-sm text-sand-500 dark:text-cockpit-text-weak">
+              <h2 className="font-display text-lg font-semibold text-sand-900 dark:text-import-text">Importhistorie</h2>
+              <p className="mt-0.5 text-sm text-sand-500 dark:text-import-text-secondary">
                 Übersicht aller hochgeladenen Dateien und ihres Bearbeitungsstatus.
               </p>
             </div>
@@ -136,14 +136,14 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
 
           <div className="flex items-center gap-2">
             <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sand-400 dark:text-cockpit-text-weak" />
+              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sand-400 dark:text-import-text-muted" />
               <input
                 type="text"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Suchen..."
                 aria-label="Datenimporte durchsuchen"
-                className="w-48 rounded-full border border-card-border bg-card py-2 pl-9 pr-3 text-sm text-sand-900 placeholder:text-sand-400 focus:outline-none focus:ring-2 focus:ring-ink-500 dark:border-white/15 dark:text-cockpit-text dark:placeholder:text-cockpit-text-weak sm:w-56"
+                className="w-48 rounded-full border border-card-border bg-card py-2 pl-9 pr-3 text-sm text-sand-900 placeholder:text-sand-400 focus:outline-none focus:ring-2 focus:ring-ink-500 dark:border-import-border dark:bg-import-card-header dark:text-import-text dark:placeholder:text-import-text-muted dark:focus:ring-import-accent sm:w-56"
               />
             </div>
 
@@ -155,8 +155,8 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                 aria-expanded={filterOpen}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
                   filterActive
-                    ? "border-cockpit-accent-light/50 bg-ink-50 text-ink-700 dark:border-cockpit-accent-light/50 dark:bg-cockpit-accent-light/20 dark:text-cockpit-accent-light"
-                    : "border-card-border bg-card text-sand-700 hover:bg-sand-100 dark:border-white/15 dark:text-cockpit-text dark:hover:bg-white/5"
+                    ? "border-cockpit-accent-light/50 bg-ink-50 text-ink-700 dark:border-import-accent/50 dark:bg-import-accent/20 dark:text-import-accent"
+                    : "border-card-border bg-card text-sand-700 hover:bg-sand-100 dark:border-import-border dark:bg-import-card-header dark:text-import-text dark:hover:border-import-accent/40"
                 }`}
               >
                 <FilterIcon className="h-3.5 w-3.5" />
@@ -164,24 +164,21 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
               </button>
 
               {filterOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-[calc(100%+8px)] z-30 w-56 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40"
-                >
+                <div role="menu" className={importKebabPanelClass}>
                   <div className="p-3">
-                    <p className="px-1.5 pb-2 text-xs font-semibold uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
+                    <p className="px-1.5 pb-2 text-xs font-semibold uppercase tracking-wide text-sand-500 dark:text-import-text-muted">
                       Status
                     </p>
                     {statusOptions.map((status) => (
                       <label
                         key={status}
-                        className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-sm text-sand-800 hover:bg-sand-50 dark:text-cockpit-text dark:hover:bg-white/5"
+                        className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-sm text-sand-800 hover:bg-sand-50 dark:text-import-text dark:hover:bg-import-card-header"
                       >
                         <input
                           type="checkbox"
                           checked={activeStatuses.has(status)}
                           onChange={() => toggleStatus(status)}
-                          className="h-4 w-4 rounded border-card-border text-ink-600 focus:ring-ink-500 dark:border-white/20"
+                          className="h-4 w-4 rounded border-card-border text-ink-600 focus:ring-ink-500 dark:border-import-border"
                         />
                         <span aria-hidden className={`h-2 w-2 rounded-full ${dataImportStatusDotClass(status)}`} />
                         {DATA_IMPORT_STATUS_LABELS[status]}
@@ -191,7 +188,7 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                       <button
                         type="button"
                         onClick={() => setActiveStatuses(new Set(statusOptions))}
-                        className="mt-2 w-full rounded-lg px-1.5 py-1.5 text-left text-xs font-semibold text-ink-600 hover:bg-sand-50 dark:text-cockpit-accent-light dark:hover:bg-white/5"
+                        className="mt-2 w-full rounded-lg px-1.5 py-1.5 text-left text-xs font-semibold text-ink-600 hover:bg-sand-50 dark:text-import-accent dark:hover:bg-import-card-header"
                       >
                         Filter zurücksetzen
                       </button>
@@ -205,17 +202,17 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-left text-sm">
-            <thead className="bg-sand-50 dark:bg-white/5">
-              <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
+            <thead className="bg-sand-50 dark:bg-import-card-header">
+              <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-import-text-muted">
                 <th className="px-4 py-3 font-semibold">
                   <button
                     type="button"
                     onClick={() => toggleSort("period")}
-                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-import-text transition-colors"
                   >
                     Zeitraum
                     <SortIcon
-                      className={`h-3.5 w-3.5 ${sort?.key === "period" ? "text-ink-600 dark:text-cockpit-accent-light" : "text-sand-400 dark:text-cockpit-text-secondary"}`}
+                      className={`h-3.5 w-3.5 ${sort?.key === "period" ? "text-ink-600 dark:text-import-accent" : "text-sand-400 dark:text-import-text-muted"}`}
                     />
                   </button>
                 </th>
@@ -227,11 +224,11 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                   <button
                     type="button"
                     onClick={() => toggleSort("date")}
-                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-sand-700 dark:hover:text-import-text transition-colors"
                   >
                     Datum
                     <SortIcon
-                      className={`h-3.5 w-3.5 ${sort?.key === "date" ? "text-ink-600 dark:text-cockpit-accent-light" : "text-sand-400 dark:text-cockpit-text-secondary"}`}
+                      className={`h-3.5 w-3.5 ${sort?.key === "date" ? "text-ink-600 dark:text-import-accent" : "text-sand-400 dark:text-import-text-muted"}`}
                     />
                   </button>
                 </th>
@@ -242,7 +239,7 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
             <tbody>
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-sand-500 dark:text-cockpit-text-weak">
+                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-sand-500 dark:text-import-text-secondary">
                     {search ? `Keine Datenimporte gefunden für „${search}“.` : "Keine Datenimporte für die gewählten Filter."}
                   </td>
                 </tr>
@@ -252,9 +249,9 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                   return (
                     <tr
                       key={row.id}
-                      className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]"
+                      className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-import-border/50 dark:hover:bg-white/[0.03]"
                     >
-                      <td className="whitespace-nowrap px-4 py-3.5 font-medium text-sand-900 dark:text-cockpit-text">
+                      <td className="whitespace-nowrap px-4 py-3.5 font-medium text-sand-900 dark:text-import-text">
                         {row.period}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5">
@@ -264,11 +261,11 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                           >
                             <CategoryIcon className="h-3.5 w-3.5" />
                           </span>
-                          <span className="text-sand-700 dark:text-cockpit-text-secondary">{row.categoryLabel}</span>
+                          <span className="text-sand-700 dark:text-import-text-secondary">{row.categoryLabel}</span>
                         </div>
                       </td>
                       <td
-                        className="max-w-[220px] truncate px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary"
+                        className="max-w-[220px] truncate px-4 py-3.5 text-sand-600 dark:text-import-text-secondary"
                         title={row.fileName}
                       >
                         {row.fileName}
@@ -281,13 +278,13 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                           {row.statusLabel}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-import-text-secondary">
                         {row.uploaderName}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">{row.dateLabel}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary">{row.sizeLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-import-text-secondary">{row.dateLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sand-600 dark:text-import-text-secondary">{row.sizeLabel}</td>
                       <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                        <KebabMenu>
+                        <KebabMenu panelClassName={importKebabPanelClass} triggerClassName={importKebabTriggerClass}>
                           <Link href={`/arbeitgeber/dashboard/datenimporte/${row.id}`} className={menuItemClass}>
                             <EyeIcon className="h-3.5 w-3.5" />
                             Ansehen

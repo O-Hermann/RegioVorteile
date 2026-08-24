@@ -13,7 +13,14 @@ import {
   periodLabel,
   formatFileSize,
 } from "@/lib/data-import";
-import { importPanelClass, importSecondaryTextClass, importIconBadgeClass, importIconGlowClass } from "@/lib/import-ui";
+import {
+  importPanelClass,
+  importSecondaryTextClass,
+  importIconBadgeClass,
+  importIconGlowClass,
+  importKebabPanelClass,
+  importKebabTriggerClass,
+} from "@/lib/import-ui";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 import { ArrowLeftIcon, TargetIcon, CheckCircleIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
@@ -81,7 +88,7 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
             {DATA_IMPORT_STATUS_LABELS[dataImport.status]}
           </span>
           {canEdit && (
-            <KebabMenu>
+            <KebabMenu panelClassName={importKebabPanelClass} triggerClassName={importKebabTriggerClass}>
               <DeleteImportDialog
                 dataImportId={dataImport.id}
                 fileName={dataImport.fileName}

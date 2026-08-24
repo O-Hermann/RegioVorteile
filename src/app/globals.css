@@ -199,6 +199,28 @@
 
   --color-cockpit-bar: #096a69;
   --color-cockpit-bar-highlight: #15918d;
+
+  /* Import - eigenstaendige, kraeftigere Dark-Mode-Palette ausschliesslich
+     fuer die Datenimporte-Feature-Flaeche (src/components/data-import/*,
+     src/lib/import-ui.ts, src/lib/data-import.ts). Bewusst NICHT die
+     bestehenden --color-cockpit-*-Werte veraendert, da jene app-weit im
+     gesamten Arbeitgeber-/Admin-Dashboard verwendet werden - diese Palette
+     ist deutlich heller/gesaettigter gedacht und wuerde dort zu unerwartet
+     hoher Kontrast-/Farbaenderung an unbeteiligten Seiten (Kunden, Auftraege,
+     Benutzer, ...) fuehren. Werte direkt aus dem Referenz-Design-Brief
+     uebernommen (Datenimporte-Feinschliff). Nur ueber dark:-Utilities
+     genutzt, wie beim uebrigen Cockpit-System auch - kein Light-Mode-Zweig
+     noetig, da diese Seite bewusst als Dark-Mode-Produkt gestaltet wird. */
+  --color-import-card: #122743;
+  --color-import-card-header: #0c1e35;
+  --color-import-border: #254261;
+  --color-import-accent: #1ed6c8;
+  --color-import-text: #f4f7fb;
+  --color-import-text-secondary: #9fb0c7;
+  --color-import-text-muted: #7e93af;
+  --color-import-danger: #ff5e5e;
+  --color-import-success: #2dd4a6;
+  --color-import-info: #4c8dff;
 }
 
 @theme inline {
