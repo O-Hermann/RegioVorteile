@@ -15,7 +15,7 @@ export function FutureSection() {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <section className="border-y border-landing-border/60 bg-landing-bg-alt/72 py-24 text-center sm:py-28">
+    <section className="border-y border-landing-border/60 bg-landing-bg-alt/95 dark:bg-landing-bg-alt/72 py-24 text-center sm:py-28">
       <motion.div
         className="mx-auto max-w-2xl px-4 sm:px-6"
         initial={prefersReducedMotion ? undefined : { opacity: 0, y: 14 }}

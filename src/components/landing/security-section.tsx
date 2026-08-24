@@ -43,7 +43,7 @@ export function SecuritySection() {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <section id="sicherheit" className="scroll-mt-20 bg-landing-bg/72 py-24 sm:py-28">
+    <section id="sicherheit" className="scroll-mt-20 bg-landing-bg/95 dark:bg-landing-bg/72 py-24 sm:py-28">
       <motion.div
         className="mx-auto max-w-6xl px-4 sm:px-6"
         initial={prefersReducedMotion ? undefined : { opacity: 0, y: 14 }}
@@ -59,9 +59,12 @@ export function SecuritySection() {
         </div>
 
         <div className="mt-10 rounded-3xl border border-landing-border bg-landing-card px-6 py-8 sm:px-10">
-          <div className="grid gap-x-10 gap-y-7 sm:grid-cols-2 sm:divide-x sm:divide-landing-border">
-            {POINTS.map(({ icon: Icon, title, text }) => (
-              <div key={title} className="flex items-start gap-4 sm:odd:pr-10 sm:even:pl-10">
+          <div className="grid gap-x-10 gap-y-7 sm:grid-cols-2">
+            {POINTS.map(({ icon: Icon, title, text }, index) => (
+              <div
+                key={title}
+                className={`flex items-start gap-4 sm:odd:pr-10 sm:even:pl-10 ${index % 2 === 1 ? "sm:border-l sm:border-landing-border" : ""}`}
+              >
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-landing-accent-subtle text-landing-accent-light">
                   <Icon className="h-4 w-4" />
                 </span>

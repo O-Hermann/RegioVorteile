@@ -5,7 +5,7 @@ import { SectionNavLink } from "@/components/landing/section-nav-link";
 
 export function Hero() {
   return (
-    <section className="relative bg-landing-bg/72">
+    <section className="relative bg-landing-bg/95 dark:bg-landing-bg/72">
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>

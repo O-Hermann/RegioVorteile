@@ -68,7 +68,7 @@ export function MoreLeaksSection() {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <section id="findet" className="scroll-mt-20 border-y border-landing-border/60 bg-landing-bg/72 py-24 sm:py-28">
+    <section id="findet" className="scroll-mt-20 border-y border-landing-border/60 bg-landing-bg/95 dark:bg-landing-bg/72 py-24 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           className="max-w-2xl"
