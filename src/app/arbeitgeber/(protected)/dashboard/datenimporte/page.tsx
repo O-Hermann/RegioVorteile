@@ -27,6 +27,7 @@ export default async function DatenimportePage({
   const rows: ImportRow[] = imports.map((i) => ({
     id: i.id,
     period: periodLabel(i.periodMonth, i.periodYear),
+    periodSortKey: i.periodYear * 12 + i.periodMonth,
     category: i.category,
     categoryLabel: DATA_IMPORT_CATEGORY_LABELS[i.category],
     fileName: i.fileName,
@@ -35,6 +36,7 @@ export default async function DatenimportePage({
     uploaderName:
       [i.uploadedByUser.firstName, i.uploadedByUser.lastName].filter(Boolean).join(" ") || i.uploadedByUser.email,
     dateLabel: `${i.createdAt.toLocaleDateString("de-DE")} · ${i.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`,
+    createdAtMs: i.createdAt.getTime(),
     sizeLabel: formatFileSize(i.fileSize),
     isProcessed: i.status === "PROCESSED",
   }));

@@ -10,13 +10,24 @@ import {
   dataImportStatusDotClass,
 } from "@/lib/data-import";
 import { importPanelClass, importIconBadgeClass } from "@/lib/import-ui";
-import { EyeIcon, RefreshIcon, SearchIcon, FilterIcon, TrendingUpIcon, BriefcaseIcon, UsersIcon, FileTextIcon } from "@/components/icons";
+import {
+  EyeIcon,
+  RefreshIcon,
+  SearchIcon,
+  FilterIcon,
+  SortIcon,
+  TrendingUpIcon,
+  BriefcaseIcon,
+  UsersIcon,
+  FileTextIcon,
+} from "@/components/icons";
 import { KebabMenu } from "@/components/kebab-menu";
 import { DeleteImportDialog } from "./delete-import-dialog";
 
 export type ImportRow = {
   id: string;
   period: string;
+  periodSortKey: number;
   category: DataImportCategory;
   categoryLabel: string;
   fileName: string;
@@ -24,9 +35,13 @@ export type ImportRow = {
   statusLabel: string;
   uploaderName: string;
   dateLabel: string;
+  createdAtMs: number;
   sizeLabel: string;
   isProcessed: boolean;
 };
+
+type SortKey = "period" | "date";
+type SortState = { key: SortKey; direction: "asc" | "desc" };
 
 const CATEGORY_ICON: Record<DataImportCategory, typeof TrendingUpIcon> = {
   FINANCE: TrendingUpIcon,
@@ -47,6 +62,10 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
   const [search, setSearch] = useState("");
   const [activeStatuses, setActiveStatuses] = useState<Set<DataImportStatus>>(() => new Set(statusOptions));
   const [filterOpen, setFilterOpen] = useState(false);
+  // Kein Sortier-Status = Standardreihenfolge wie vom Server geladen
+  // (createdAt absteigend), passend zur bisherigen, unveraenderten Query in
+  // page.tsx.
+  const [sort, setSort] = useState<SortState | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,12 +92,27 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
     });
   }, [rows, search, activeStatuses]);
 
+  const sorted = useMemo(() => {
+    if (!sort) return filtered;
+    const factor = sort.direction === "asc" ? 1 : -1;
+    const key = sort.key === "period" ? "periodSortKey" : "createdAtMs";
+    return [...filtered].sort((a, b) => (a[key] - b[key]) * factor);
+  }, [filtered, sort]);
+
   function toggleStatus(status: DataImportStatus) {
     setActiveStatuses((prev) => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status);
       else next.add(status);
       return next;
+    });
+  }
+
+  function toggleSort(key: SortKey) {
+    setSort((prev) => {
+      if (!prev || prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      return null;
     });
   }
 
@@ -173,25 +207,47 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="bg-sand-50 dark:bg-white/5">
               <tr className="text-xs uppercase tracking-wide text-sand-500 dark:text-cockpit-text-weak">
-                <th className="px-4 py-3 font-semibold">Zeitraum</th>
+                <th className="px-4 py-3 font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => toggleSort("period")}
+                    className="inline-flex items-center gap-1 hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                  >
+                    Zeitraum
+                    <SortIcon
+                      className={`h-3 w-3 ${sort?.key === "period" ? "text-ink-600 dark:text-cockpit-accent-light" : "opacity-50"}`}
+                    />
+                  </button>
+                </th>
                 <th className="px-4 py-3 font-semibold">Kategorie</th>
                 <th className="px-4 py-3 font-semibold">Dateiname</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Hochgeladen von</th>
-                <th className="px-4 py-3 font-semibold">Datum</th>
+                <th className="px-4 py-3 font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => toggleSort("date")}
+                    className="inline-flex items-center gap-1 hover:text-sand-700 dark:hover:text-cockpit-text transition-colors"
+                  >
+                    Datum
+                    <SortIcon
+                      className={`h-3 w-3 ${sort?.key === "date" ? "text-ink-600 dark:text-cockpit-accent-light" : "opacity-50"}`}
+                    />
+                  </button>
+                </th>
                 <th className="px-4 py-3 font-semibold">Größe</th>
-                <th className="px-4 py-3 text-right font-semibold">Aktionen</th>
+                <th className="px-4 py-3 font-semibold" />
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {sorted.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-sm text-sand-500 dark:text-cockpit-text-weak">
                     {search ? `Keine Datenimporte gefunden für „${search}“.` : "Keine Datenimporte für die gewählten Filter."}
                   </td>
                 </tr>
               ) : (
-                filtered.map((row) => {
+                sorted.map((row) => {
                   const CategoryIcon = CATEGORY_ICON[row.category];
                   return (
                     <tr
@@ -202,12 +258,14 @@ export function ImportHistoryTable({ rows, canUpload }: { rows: ImportRow[]; can
                         {row.period}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${DATA_IMPORT_CATEGORY_BADGE_CLASS[row.category]}`}
-                        >
-                          <CategoryIcon className="h-3.5 w-3.5" />
-                          {row.categoryLabel}
-                        </span>
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${DATA_IMPORT_CATEGORY_BADGE_CLASS[row.category]}`}
+                          >
+                            <CategoryIcon className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="text-sand-700 dark:text-cockpit-text-secondary">{row.categoryLabel}</span>
+                        </div>
                       </td>
                       <td
                         className="max-w-[220px] truncate px-4 py-3.5 text-sand-600 dark:text-cockpit-text-secondary"

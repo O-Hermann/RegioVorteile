@@ -616,6 +616,22 @@ export function PhoneIcon({ className }: { className?: string }) {
   );
 }
 
+export function SortIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M7 15l5 5 5-5M7 9l5-5 5 5" />
+    </svg>
+  );
+}
+
 export function RefreshIcon({ className }: { className?: string }) {
   return (
     <svg
