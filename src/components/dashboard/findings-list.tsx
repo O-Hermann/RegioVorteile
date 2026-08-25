@@ -1,4 +1,12 @@
-import { DASH_ACCENT_HEX, type DashAccent } from "@/components/dashboard/dash-ui";
+import {
+  DASH_ACCENT_HEX,
+  type DashAccent,
+  dashTextTitle,
+  dashTextBody,
+  dashTextSectionHeading,
+  dashTextSecondary,
+  dashTextSecondarySm,
+} from "@/components/dashboard/dash-ui";
 
 // "Funde & Prüfung"-Karte, optisch 1:1 die V12-".v10-findings"-Karte. Wie
 // ReviewDonut bewusst mit den Referenz-Demowerten befuellt, da es dafuer
@@ -17,7 +25,7 @@ export function FindingsList() {
       style={{ gridTemplateRows: "auto auto minmax(0, 1fr) auto" }}
     >
       <div className="flex shrink-0 items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-sand-900 dark:text-dash-text">
+        <div className={`flex items-center gap-2 ${dashTextTitle} font-extrabold text-sand-900 dark:text-dash-text`}>
           <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-3.5 w-3.5">
               <path d="M5 6h14M5 12h14M5 18h14" />
@@ -26,19 +34,19 @@ export function FindingsList() {
           </span>
           Funde &amp; Prüfung
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 text-[10.5px] font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.18)] dark:bg-white/[0.025] dark:text-[#abc2d6]">
+        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondary} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.18)] dark:bg-white/[0.025] dark:text-[#abc2d6]`}>
           4 Kategorien
         </span>
       </div>
 
       <div className="mt-1.5 flex shrink-0 items-center justify-between gap-2 rounded-[10px] border border-card-border/60 bg-sand-50/60 px-2.5 py-1.5 dark:border-[rgba(71,108,140,0.19)] dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.62),rgba(7,25,44,0.44))]">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-[9.5px] font-bold uppercase tracking-wide text-sand-400 dark:text-[#718fa8]">Potenzial · 4 Kategorien</span>
-          <strong className="truncate text-[15px] font-bold tabular-nums text-sand-900 dark:text-[#f5fbff]">74.350 €</strong>
+          <span className={`${dashTextSecondarySm} font-bold uppercase tracking-wide text-sand-400 dark:text-[#718fa8]`}>Potenzial · 4 Kategorien</span>
+          <strong className={`truncate ${dashTextSectionHeading} font-bold tabular-nums text-sand-900 dark:text-[#f5fbff]`}>74.350 €</strong>
         </div>
-        <span className="shrink-0 whitespace-nowrap text-right text-[9.5px] text-sand-500 dark:text-[#758fa7]">
+        <span className={`shrink-0 whitespace-nowrap text-right ${dashTextSecondarySm} text-sand-500 dark:text-[#758fa7]`}>
           Top-Kategorie
-          <b className="block text-[11px] font-bold text-sand-900 dark:text-[#dbe9f3]">Doppelzahlungen</b>
+          <b className={`block ${dashTextBody} font-bold text-sand-900 dark:text-[#dbe9f3]`}>Doppelzahlungen</b>
         </span>
       </div>
 
@@ -72,21 +80,21 @@ export function FindingsList() {
                 ⊙
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[11px] font-semibold text-sand-900 dark:text-[#edf6fc]">{f.name}</p>
-                <p className="truncate text-[9px] text-sand-400 dark:text-[#89a3bb]">{f.desc}</p>
+                <p className={`truncate ${dashTextBody} font-semibold text-sand-900 dark:text-[#edf6fc]`}>{f.name}</p>
+                <p className={`truncate ${dashTextSecondarySm} text-sand-400 dark:text-[#89a3bb]`}>{f.desc}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <span className="whitespace-nowrap rounded-full border border-card-border/60 bg-sand-50 px-1.5 py-0.5 text-[9px] text-sand-500 dark:border-[rgba(83,121,151,0.24)] dark:bg-[rgba(5,23,41,0.55)] dark:text-[#c9dde9]">
+              <span className={`whitespace-nowrap rounded-full border border-card-border/60 bg-sand-50 px-1.5 py-0.5 ${dashTextSecondarySm} text-sand-500 dark:border-[rgba(83,121,151,0.24)] dark:bg-[rgba(5,23,41,0.55)] dark:text-[#c9dde9]`}>
                 {f.amount}
               </span>
-              <span className="text-[11px] font-extrabold text-sand-900 dark:text-dash-text">{f.count}</span>
+              <span className={`${dashTextBody} font-extrabold text-sand-900 dark:text-dash-text`}>{f.count}</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-1.5 flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 text-[11px] text-ink-600 dark:text-dash-teal">
+      <div className={`mt-1.5 flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 ${dashTextBody} text-ink-600 dark:text-dash-teal`}>
         <span>Alle Fundkategorien</span>
         <span>→</span>
       </div>

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { TrendingUpIcon } from "@/components/icons";
 import { formatEuroCompact, formatChange, changeTone, shortMonthLabel, type MetricChange, type MonthPeriod } from "@/lib/company-metrics";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  dashTextTitle,
+  dashTextBody,
+  dashTextBodyLg,
+  dashTextSectionHeading,
+  dashTextSecondary,
+  dashTextSecondarySm,
+} from "@/components/dashboard/dash-ui";
 
 // "Entwicklung"-Karte, optisch 1:1 der V12-".trend-card" (Flaechendiagramm
 // mit Gradient-Fuellung, hervorgehobenem letzten Punkt mit Halo, Achsen-
@@ -44,7 +52,7 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
       className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3.5 shadow-warm-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(71,119,156,0.78)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_15px_34px_rgba(0,0,0,0.18)]"
     >
       <div className="flex shrink-0 items-start justify-between gap-2">
-        <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-sand-900 dark:text-dash-text">
+        <div className={`flex items-center gap-2 ${dashTextTitle} font-extrabold text-sand-900 dark:text-dash-text`}>
           <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
             <TrendingUpIcon className="h-3.5 w-3.5" />
           </span>
@@ -52,10 +60,10 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
         </div>
         {hasData && (
           <div className="text-right leading-tight">
-            <p className="text-[8.8px] uppercase tracking-wide text-sand-400 dark:text-[#7897af]">Aktuell</p>
-            <p className="text-[15px] font-extrabold tabular-nums text-ink-700 dark:text-[#68eee6]">{formatEuroCompact(current!)}</p>
+            <p className={`${dashTextSecondarySm} uppercase tracking-wide text-sand-400 dark:text-[#7897af]`}>Aktuell</p>
+            <p className={`${dashTextSectionHeading} font-extrabold tabular-nums text-ink-700 dark:text-[#68eee6]`}>{formatEuroCompact(current!)}</p>
             <p
-              className={`text-[9.5px] font-bold tabular-nums ${tone === "positive" ? "text-emerald-600 dark:text-[#68dca7]" : tone === "negative" ? "text-rose-600 dark:text-dash-red" : "text-sand-400 dark:text-dash-text-muted"}`}
+              className={`${dashTextSecondarySm} font-bold tabular-nums ${tone === "positive" ? "text-emerald-600 dark:text-[#68dca7]" : tone === "negative" ? "text-rose-600 dark:text-dash-red" : "text-sand-400 dark:text-dash-text-muted"}`}
             >
               {formatChange(change)}
             </p>
@@ -65,13 +73,13 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
 
       {!hasData ? (
         <div className="flex flex-1 min-h-0 items-center justify-center text-center">
-          <p className="text-[13px] leading-snug text-sand-500 dark:text-dash-text-secondary">
+          <p className={`${dashTextBodyLg} leading-snug text-sand-500 dark:text-dash-text-secondary`}>
             Nach dem ersten Datenimport wird hier die Unternehmensentwicklung dargestellt.
           </p>
         </div>
       ) : (
         <>
-          <p className="mb-1 mt-1 text-[10px] text-sand-500 dark:text-[#92abc4]">
+          <p className={`mb-1 mt-1 ${dashTextSecondary} text-sand-500 dark:text-[#92abc4]`}>
             Umsatz · letzte {history.length} {history.length === 1 ? "Monat" : "Monate"}
           </p>
           <div className="min-h-[94px] flex-1 overflow-hidden rounded-[10px] border border-card-border/60 dark:border-[rgba(68,103,133,0.12)] dark:bg-[linear-gradient(180deg,rgba(6,24,43,0.20),rgba(6,24,43,0.02))]">
@@ -118,7 +126,7 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
         </>
       )}
 
-      <div className="mt-2 flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 text-[11px] text-ink-600 dark:text-dash-teal">
+      <div className={`mt-2 flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 ${dashTextBody} text-ink-600 dark:text-dash-teal`}>
         <span>Trend anzeigen</span>
         <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
       </div>

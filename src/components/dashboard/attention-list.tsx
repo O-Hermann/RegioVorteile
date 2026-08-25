@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { CheckCircleIcon } from "@/components/icons";
-import { DASH_ACCENT_HEX, type DashAccent } from "@/components/dashboard/dash-ui";
+import {
+  DASH_ACCENT_HEX,
+  type DashAccent,
+  dashTextSectionHeading,
+  dashTextBody,
+  dashTextBodyLg,
+  dashTextSecondary,
+} from "@/components/dashboard/dash-ui";
 
 export type AttentionItem = {
   id: string;
@@ -66,8 +73,8 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
       className="flex min-h-[var(--attention-min-h)] flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0"
     >
       <div className="mb-2 shrink-0">
-        <h3 className="font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">Handlungsbedarf</h3>
-        <p className="mt-0.5 text-[11px] leading-snug text-sand-500 dark:text-[#7fa1bd]">
+        <h3 className={`font-display ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Handlungsbedarf</h3>
+        <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-[#7fa1bd]`}>
           Priorisierte Punkte, die heute Aufmerksamkeit brauchen.
         </p>
       </div>
@@ -110,13 +117,13 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
                       Priorität
                     </span>
                   )}
-                  <span className="truncate text-[12.5px] font-bold text-sand-900 dark:text-dash-text">{item.title}</span>
+                  <span className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>{item.title}</span>
                 </span>
                 {item.subtitle && (
-                  <span className="truncate text-[10.5px] text-sand-500 dark:text-[#7897b3]">{item.subtitle}</span>
+                  <span className={`truncate ${dashTextSecondary} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>
                 )}
               </div>
-              <span className="shrink-0 text-[10.5px] font-semibold text-ink-600 dark:text-[#8db2ca]">{item.cta} →</span>
+              <span className={`shrink-0 ${dashTextSecondary} font-semibold text-ink-600 dark:text-[#8db2ca]`}>{item.cta} →</span>
             </Link>
           ))}
         </div>

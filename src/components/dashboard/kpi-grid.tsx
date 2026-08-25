@@ -1,5 +1,6 @@
 import type { MetricChange } from "@/lib/company-metrics";
 import { formatChange, changeTone } from "@/lib/company-metrics";
+import { dashTextValue, dashTextKpiLabel, dashTextSecondary } from "@/components/dashboard/dash-ui";
 
 export type KpiAccent = "highlight" | "teal" | "orange" | "green" | "blue" | "purple";
 
@@ -88,17 +89,17 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
           >
             <span className={`absolute left-0 top-[13px] bottom-[13px] w-[2px] rounded-r-[2px] opacity-70 ${ACCENT_BAR[tile.accent]}`} />
             <div className={tile.wide ? "min-w-0" : ""}>
-              <div className="flex items-center gap-2 text-[11px] font-medium text-sand-700 dark:text-[#d8e7f2]">
+              <div className={`flex items-center gap-2 ${dashTextKpiLabel} font-medium text-sand-700 dark:text-[#d8e7f2]`}>
                 <span className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full ${ACCENT_BUBBLE[tile.accent]}`}>
                   <tile.icon className="h-3.5 w-3.5" />
                 </span>
                 <span className="truncate">{tile.label}</span>
               </div>
-              <p className="mt-0.5 font-display text-[19px] font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text">
+              <p className={`mt-0.5 font-display ${dashTextValue} font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text`}>
                 {tile.value}
               </p>
               {change && (
-                <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px]">
+                <div className={`mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
                   <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
                   {tile.changeContext && (
                     <span className={`truncate ${dashSecondary}`}>{tile.changeContext}</span>
@@ -107,7 +108,7 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
               )}
             </div>
             {tile.wide && (
-              <span className="shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 text-[10.5px] font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text">
+              <span className={`shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 ${dashTextSecondary} font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text`}>
                 Details ansehen →
               </span>
             )}

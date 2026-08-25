@@ -39,3 +39,37 @@ export const DASH_ACCENT_HEX = {
 } as const;
 
 export type DashAccent = keyof typeof DASH_ACCENT_HEX;
+
+// Viewport-abhaengige Schriftgroessen (Readability-/Scale-Pass): auf hohen
+// Desktop-Viewports (z.B. 1920x1080) bleibt unterhalb des fest auf
+// "100dvh - 9rem" limitierten Grids sonst ungenutzter Raum uebrig - dieser
+// wird hier gezielt fuer groessere, besser lesbare Typografie genutzt, statt
+// als Leerflaeche zu verschenken. "clamp()" ist bewusst an "dvh" gekoppelt
+// (nicht an die Breite) und nicht an einen festen Breakpoint: dieselbe Hoehe
+// (z.B. 900px bei 1672 UND 1920 Breite) ergibt dieselbe Groesse, und kurze
+// Displays wie 1366x768 bleiben automatisch bei der kompakten Basisgroesse
+// (= der bisherige, bereits freigegebene Wert - clamp() unterschreitet ihn
+// nie). Ein Wert pro Text-Rolle (Titel/Wert/Fliesstext/Sekundaertext) statt
+// pro einzelner Komponente, damit die Skalierung app-weit konsistent bleibt.
+//
+// WICHTIG: jede Konstante haelt hier bewusst die VOLLSTAENDIGE, woertliche
+// Tailwind-Klasse (z.B. "text-[clamp(...)]"), nicht nur den rohen clamp()-
+// Wert. Tailwinds Build-Scanner wertet kein JavaScript aus - er sucht nur
+// nach woertlich im Quelltext vorkommenden Klassennamen. Ein Ausdruck wie
+// `text-[${dashTextValue}]` in einer Komponente wuerde NICHT erkannt, weil
+// im Scan dieser Datei nur "text-[" + Platzhalter sichtbar waere. Die volle
+// Klasse muss daher bereits HIER woertlich stehen (Tailwind scannt auch
+// diese .ts-Datei) und wird an der Verwendungsstelle unveraendert
+// eingesetzt, nicht erneut in "text-[...]" eingepackt.
+export const dashTextTitle = "text-[clamp(13.5px,6.112px+0.962dvh,16.5px)]"; // Kartentitel (Analysevergleich, Entwicklung, Prüfübersicht, Funde & Prüfung)
+export const dashTextSectionHeading = "text-[clamp(15px,7.612px+0.962dvh,18px)]"; // Handlungsbedarf/Letzte Aktivitäten h3
+export const dashTextValue = "text-[clamp(19px,9.154px+1.282dvh,23px)]"; // KPI-Hauptwerte
+export const dashTextDonutNumber = "text-[clamp(23px,10.689px+1.603dvh,28px)]"; // "46" im Prüfübersicht-Donut
+export const dashTextBody = "text-[clamp(11.5px,7.192px+0.561dvh,13.25px)]"; // Fliesstext: Legende, Funde-Namen, Aktivitätstitel, Fallzeilen
+export const dashTextBodyLg = "text-[clamp(12.5px,7.577px+0.641dvh,14.5px)]"; // etwas groesserer Fliesstext (Fallbeträge, Statuszeilen)
+export const dashTextKpiLabel = "text-[clamp(11px,6.692px+0.561dvh,12.75px)]"; // KPI-Bezeichnungen
+export const dashTextSecondary = "text-[clamp(10px,6.92px+0.401dvh,11.25px)]"; // Sekundärtext (bleibt bewusst kleiner als Fliesstext)
+export const dashTextSecondarySm = "text-[clamp(9px,5.92px+0.401dvh,10.25px)]"; // kleinste Labels/Eyebrows
+export const dashDonutSizeClass = "h-[clamp(104px,54.771px+6.41dvh,124px)] w-[clamp(104px,54.771px+6.41dvh,124px)]"; // Durchmesser Prüfübersicht-Donut
+export const dashDonutInsetClass = "inset-[clamp(16px,11.077px+0.641dvh,18px)]"; // Ringbreite des Donuts (skaliert mit dashDonutSizeClass mit)
+export const dashDonutColClass = "grid-cols-[clamp(108px,58.771px+6.41dvh,128px)_1fr]"; // Spaltenbreite fuer den Donut-Bereich - muss mit dashDonutSizeClass mitwachsen, sonst wuerde der groessere Donut seine Spalte ueberragen

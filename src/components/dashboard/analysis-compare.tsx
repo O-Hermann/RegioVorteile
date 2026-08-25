@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ActivityIcon } from "@/components/icons";
 import { periodLabel } from "@/lib/data-import";
 import { shortMonthLabel, formatChange, changeTone, formatEuroDetailed, type MetricChange, type MonthPeriod } from "@/lib/company-metrics";
+import { dashTextTitle, dashTextBody, dashTextBodyLg, dashTextSecondary, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 type Row = {
   label: string;
@@ -82,13 +83,13 @@ export function AnalysisCompare({
       className="group flex min-h-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3.5 shadow-warm-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(71,119,156,0.78)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_15px_34px_rgba(0,0,0,0.18)]"
     >
       <div className="flex shrink-0 items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-sand-900 dark:text-dash-text">
+        <div className={`flex items-center gap-2 ${dashTextTitle} font-extrabold text-sand-900 dark:text-dash-text`}>
           <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
             <ActivityIcon className="h-3.5 w-3.5" />
           </span>
           Analysevergleich
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 text-[9.8px] font-semibold text-sand-500 dark:border-[rgba(85,125,156,0.20)] dark:bg-[rgba(5,23,41,0.45)] dark:text-[#91a9bf]">
+        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondarySm} font-semibold text-sand-500 dark:border-[rgba(85,125,156,0.20)] dark:bg-[rgba(5,23,41,0.45)] dark:text-[#91a9bf]`}>
           <i className="h-[5px] w-[5px] rounded-full bg-emerald-400 dark:bg-[#59e1a5]" />
           Vormonat
         </span>
@@ -96,20 +97,20 @@ export function AnalysisCompare({
 
       {!hasData ? (
         <div className="flex flex-1 min-h-0 items-center justify-center text-center">
-          <p className="text-[13px] leading-snug text-sand-500 dark:text-dash-text-secondary">
+          <p className={`${dashTextBodyLg} leading-snug text-sand-500 dark:text-dash-text-secondary`}>
             Für einen Monatsvergleich werden mindestens zwei verarbeitete Monatsimporte benötigt.
           </p>
         </div>
       ) : (
         <>
-          <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-sand-500 dark:text-[#8ea8bf]">
+          <div className={`mt-1.5 flex items-center justify-between gap-2 ${dashTextBody} text-sand-500 dark:text-[#8ea8bf]`}>
             <span>
               {periodLabel(currentPeriod!.periodMonth, currentPeriod!.periodYear)} ggü.{" "}
               {periodLabel(previousPeriod!.periodMonth, previousPeriod!.periodYear)}
             </span>
             {headlineRow && (
               <b
-                className={`whitespace-nowrap text-[10.5px] font-bold ${
+                className={`whitespace-nowrap ${dashTextSecondary} font-bold ${
                   headlineTone === "positive"
                     ? "text-emerald-600 dark:text-[#70e4ad]"
                     : headlineTone === "negative"
@@ -134,7 +135,7 @@ export function AnalysisCompare({
               return (
                 <div
                   key={row.label}
-                  className={`relative grid grid-cols-[1.12fr_.86fr_.86fr_.98fr] items-center gap-1 border-b border-card-border/40 px-2 py-2 text-[11px] last:border-0 dark:border-white/[0.045] ${
+                  className={`relative grid grid-cols-[1.12fr_.86fr_.86fr_.98fr] items-center gap-1 border-b border-card-border/40 px-2 py-2 ${dashTextBody} last:border-0 dark:border-white/[0.045] ${
                     row.emphasis === "highlight"
                       ? "bg-emerald-50/50 dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.055),rgba(37,216,206,0.02))]"
                       : ""
@@ -158,7 +159,7 @@ export function AnalysisCompare({
                   <b className="text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{row.current}</b>
                   <b className="text-right font-bold tabular-nums text-sand-500 dark:text-[#a5bbcf]">{row.previous}</b>
                   <b
-                    className={`text-right text-[10.5px] font-bold tabular-nums whitespace-nowrap ${
+                    className={`text-right ${dashTextSecondary} font-bold tabular-nums whitespace-nowrap ${
                       tone === "positive"
                         ? "text-emerald-600 dark:text-dash-green"
                         : tone === "negative"
@@ -175,7 +176,7 @@ export function AnalysisCompare({
         </>
       )}
 
-      <div className="mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 text-[11px] text-ink-600 dark:text-dash-teal">
+      <div className={`mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 ${dashTextBody} text-ink-600 dark:text-dash-teal`}>
         <span>Zum Monatsvergleich</span>
         <span className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
       </div>
