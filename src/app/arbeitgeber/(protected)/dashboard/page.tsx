@@ -89,13 +89,11 @@ export default async function ArbeitgeberDashboardPage() {
   // Acht echte Kennzahlen (Kosten/Ergebnis/Offene Aufträge bleiben "—", da
   // dafuer weiterhin keine verlaessliche Datenquelle existiert - Ergebnis !=
   // Umsatz, offene Rechnungen != offene Auftraege). Veraenderungswerte nur,
-  // wo eine echte Vormonatsberechnung existiert. Kosten und Ergebnis teilen
-  // sich bewusst EINE Kachel (siehe "secondary" in KpiGrid): beide haben
-  // ohnehin dauerhaft keinen Wert, und teilen sich statt einer siebten,
-  // einzeln herausstehenden Kachel eine gemeinsame - dadurch bleibt die
-  // 2-Spalten-Matrix bei einer geraden Kachelzahl (6 + 1 breite Abschluss-
-  // kachel), ohne eine echte Kennzahl zu entfernen oder eine erfundene
-  // hinzuzufuegen.
+  // wo eine echte Vormonatsberechnung existiert. Jede Kennzahl hat ihre
+  // eigene Kachel (kein Zusammenfassen, keine breite Sonderkachel) - festes
+  // 2x4-Raster in der Reihenfolge Umsatz/Kosten, Ergebnis/Offene
+  // Forderungen, Offene Aufträge/Kunden mit Umsatz, Importierte Monate/
+  // Offene Datenfehler.
   const kpiTiles: KpiTile[] = [
     {
       key: "revenue",
@@ -107,14 +105,8 @@ export default async function ArbeitgeberDashboardPage() {
       changeDirection: "up-good",
       changeContext: "vs. Vormonat",
     },
-    {
-      key: "costs",
-      label: "Kosten",
-      value: "—",
-      icon: TagIcon,
-      accent: "teal",
-      secondary: { label: "Ergebnis", value: "—", icon: ActivityIcon, accent: "purple" },
-    },
+    { key: "costs", label: "Kosten", value: "—", icon: TagIcon, accent: "teal" },
+    { key: "result", label: "Ergebnis", value: "—", icon: ActivityIcon, accent: "purple" },
     {
       key: "receivables",
       label: "Offene Forderungen",
@@ -149,7 +141,7 @@ export default async function ArbeitgeberDashboardPage() {
       value: String(metrics.openImportErrorCount),
       icon: AlertTriangleIcon,
       accent: "orange",
-      wide: true,
+      detailsLabel: "Details ansehen →",
     },
   ];
 

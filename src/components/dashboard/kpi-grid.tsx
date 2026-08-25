@@ -10,25 +10,15 @@ export type KpiTile = {
   value: string;
   icon: (props: { className?: string }) => React.ReactElement;
   accent: KpiAccent;
-  wide?: boolean;
   change?: MetricChange | null;
   changeDirection?: "up-good" | "down-good";
   changeContext?: string;
-  // Fasst zwei eng verwandte Kennzahlen ohne eigenen Vormonatswert (aktuell
-  // Kosten + Ergebnis, beide dauerhaft "—" bis es dafuer eine echte
-  // Datenquelle gibt) in EINER Kachel zusammen. Grund: die Referenz hat 6
-  // normale + 1 breite Kachel (gerade Anzahl, passt exakt in ein 2-Spalten-
-  // Raster); dieses Projekt hat 8 echte Kennzahlen (7 normale + 1 breite -
-  // ungerade). Statt eine echte Kennzahl allein eine volle Zeile einnehmen
-  // zu lassen (wirkt unausgewogen) oder eine erfundene Platzhalter-Kachel
-  // zu ergaenzen, teilen sich zwei ohnehin leere Kennzahlen eine Kachel -
-  // keine Daten gehen dadurch verloren, beide bleiben vollstaendig sichtbar.
-  secondary?: {
-    label: string;
-    value: string;
-    icon: (props: { className?: string }) => React.ReactElement;
-    accent: KpiAccent;
-  };
+  // Nur fuer "Offene Datenfehler": zeigt statt einer Veraenderungszeile (die
+  // es fuer diese Kennzahl nicht gibt) eine kompakte "Details ansehen"-
+  // Kennzeichnung neben dem Wert, ohne eine eigene breite Kachel zu
+  // benoetigen - passt dadurch in dasselbe 2x4-Raster wie alle anderen
+  // Kennzahlen.
+  detailsLabel?: string;
 };
 
 const ACCENT_BAR: Record<KpiAccent, string> = {
@@ -59,76 +49,67 @@ const CHANGE_TONE_CLASSES: Record<"positive" | "negative" | "neutral", string> =
   neutral: "text-sand-500 dark:text-[#8bcfc9]",
 };
 
-// KPI-Kacheln der linken Spalte, optisch 1:1 die V12-".kpi"-Karten (Akzent-
-// leiste links, Icon-Bubble, grosser Wert, kleine Veraenderungszeile).
-// Anders als die Demo-Referenz sind es hier bewusst 8 statt 7 Kacheln, weil
-// 8 echte Kennzahlen existieren (siehe ArbeitgeberDashboardPage) - die letzte
-// ("Offene Datenfehler") bleibt wie im Original die volle Breite spannende
-// "wide"-Kachel. Veraenderungswerte werden NUR angezeigt, wenn dafuer eine
-// echte Vormonats-Berechnung existiert (Umsatz/Offene Forderungen/Kunden mit
-// Umsatz) - fuer die uebrigen Kennzahlen gibt es keine echte Vormonatsgroesse,
-// ein erfundener Prozentwert waere hier Platzhalter-Content ohne Datenbasis.
-export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
-  // Bei einer ungeraden Anzahl regulaerer (nicht-"wide") Kacheln bliebe sonst
-  // eine halbe Grid-Zelle leer (z.B. eine einzelne Kachel vor der breiten
-  // Abschlusskachel) - das faengt hier ab, statt eine feste Anzahl von acht
-  // Kacheln vorauszusetzen, damit es auch funktioniert, wenn spaeter mehr
-  // oder weniger echte Kennzahlen existieren.
-  const nonWideCount = tiles.filter((t) => !t.wide).length;
-  let seenNonWide = 0;
+const dashSecondary = "text-sand-500 dark:text-[#89a7c0]";
 
-  // "auto-rows-fr" wuerde hier alle Zeilen auf dieselbe Hoehe zwingen -
-  // problematisch, weil nicht jede Kachel eine Veraenderungszeile zeigt
-  // (siehe changeContext oben): Kacheln MIT Vormonatswert brauchen dadurch
-  // eine Zeile mehr als Kacheln ohne. Bei "auto-rows-fr" haetten dann ALLE
-  // Zeilen die Hoehe der hoechsten (mit Veraenderungszeile) uebernommen -
-  // das liess das Grid sichtbar ueber die Kartenkante hinauswachsen. Mit
-  // "auto"-Zeilen behaelt jede Zeile ihre eigene, tatsaechlich benoetigte
-  // Hoehe; uebrige Reststhoehe verteilt "content-between" gleichmaessig als
-  // zusaetzlichen Zeilenabstand statt als eine einzelne "leere" Flaeche.
+// KPI-Kacheln der linken Spalte, optisch 1:1 die V12-".kpi"-Karten (Akzent-
+// leiste links, Icon-Bubble, grosser Wert, kleine Veraenderungszeile, Pfeil
+// oben rechts). Acht echte Kennzahlen in einem sauberen 2x4-Raster - jede
+// Kennzahl hat ihre eigene physische Kachel (keine Zusammenfuehrung, keine
+// breite Sonderkachel mehr): "Offene Datenfehler" zeigt statt der bei ihr
+// nicht vorhandenen Veraenderungszeile stattdessen kompakt "Details ansehen"
+// neben dem Wert (siehe "detailsLabel").
+//
+// Gleiche Kartenhoehe fuer alle acht Kacheln: bewusst NICHT ueber eine
+// geschaetzte feste/clamp-basierte Mindesthoehe geloest (ein erster Versuch
+// devon lief bei mittleren Viewport-Hoehen ueber die Kartenkante hinaus, da
+// die Text-Groessen selbst schon nichtlinear per clamp() skalieren - ein
+// linearer Hoehen-Schaetzwert trifft die tatsaechlich benoetigte Hoehe dann
+// nicht mehr exakt). Stattdessen bekommt JEDE Kachel exakt dieselben drei
+// Zeilen (Icon/Label, Wert, dritte Zeile) - Kacheln ohne echte Veraenderung
+// oder CTA rendern die dritte Zeile unsichtbar (aber layoutwirksam, gleiche
+// Schriftgroessen-Klasse). Dadurch ist die natuerliche Inhaltshoehe aller
+// Kacheln bei jeder Viewport-Hoehe identisch, ohne eine eigene Annaeherung
+// pflegen zu muessen.
+export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
   return (
-    <div className="grid flex-1 grid-cols-2 content-between gap-2">
+    <div className="grid flex-1 grid-cols-2 gap-2">
       {tiles.map((tile) => {
         const change =
           tile.change !== undefined && tile.change !== null && tile.changeDirection
             ? { text: formatChange(tile.change), tone: changeTone(tile.change, tile.changeDirection) }
             : null;
-        const isDanglingLast = !tile.wide && nonWideCount % 2 === 1 && ++seenNonWide === nonWideCount;
 
         return (
           <div
             key={tile.key}
-            className={`relative flex min-h-[68px] flex-col justify-center overflow-hidden rounded-[13px] border border-card-border dark:border-[rgba(45,79,111,0.65)] bg-card dark:bg-[linear-gradient(180deg,rgba(13,35,59,0.84),rgba(9,29,50,0.78))] px-3 py-2 shadow-warm-sm transition-[transform,border-color,background,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(63,129,166,0.75)] dark:hover:bg-[linear-gradient(180deg,rgba(17,43,70,0.92),rgba(10,33,56,0.88))] ${
-              tile.wide || isDanglingLast ? "col-span-2" : ""
-            } ${tile.wide ? "grid grid-cols-[1fr_auto] items-center" : ""}`}
+            className="relative flex flex-col justify-center overflow-hidden rounded-[13px] border border-card-border dark:border-[rgba(45,79,111,0.65)] bg-card dark:bg-[linear-gradient(180deg,rgba(13,35,59,0.84),rgba(9,29,50,0.78))] px-3 py-2 shadow-warm-sm transition-[transform,border-color,background,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(63,129,166,0.75)] dark:hover:bg-[linear-gradient(180deg,rgba(17,43,70,0.92),rgba(10,33,56,0.88))]"
           >
-            {!tile.wide && <span className="absolute right-2.5 top-2.5 text-[13px] leading-none text-[#7f96ab] dark:text-[#44617e]">›</span>}
+            <span className="absolute right-2.5 top-2.5 text-[13px] leading-none text-[#7f96ab] dark:text-[#44617e]">›</span>
             <span className={`absolute left-0 top-[13px] bottom-[13px] w-[2px] rounded-r-[2px] opacity-70 ${ACCENT_BAR[tile.accent]}`} />
-            {tile.secondary ? (
-              <div className="grid grid-cols-2 items-center gap-2">
-                <div className="min-w-0">
-                  <KpiTileContent label={tile.label} value={tile.value} icon={tile.icon} accent={tile.accent} change={change} changeContext={tile.changeContext} compact />
-                </div>
-                <div className="min-w-0 border-l border-card-border/70 pl-2 dark:border-white/[0.07]">
-                  <KpiTileContent
-                    label={tile.secondary.label}
-                    value={tile.secondary.value}
-                    icon={tile.secondary.icon}
-                    accent={tile.secondary.accent}
-                    change={null}
-                    compact
-                  />
-                </div>
+            <div className={`flex items-center gap-2 ${dashTextKpiLabel} font-medium text-sand-700 dark:text-[#d8e7f2]`}>
+              <span className={`flex h-[33px] w-[33px] shrink-0 items-center justify-center rounded-full ${ACCENT_BUBBLE[tile.accent]}`}>
+                <tile.icon className="h-4 w-4" />
+              </span>
+              <span className="truncate">{tile.label}</span>
+            </div>
+
+            <p className={`mt-0.5 font-display ${dashTextValue} font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text`}>
+              {tile.value}
+            </p>
+
+            {tile.detailsLabel ? (
+              <div className={`mt-0.5 flex min-w-0 items-center ${dashTextSecondary}`}>
+                <span className="truncate font-bold text-ink-600 dark:text-dash-teal">{tile.detailsLabel}</span>
+              </div>
+            ) : change ? (
+              <div className={`mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
+                <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
+                {tile.changeContext && <span className={`truncate ${dashSecondary}`}>{tile.changeContext}</span>}
               </div>
             ) : (
-              <div className={tile.wide ? "min-w-0" : ""}>
-                <KpiTileContent label={tile.label} value={tile.value} icon={tile.icon} accent={tile.accent} change={change} changeContext={tile.changeContext} />
+              <div aria-hidden className={`invisible mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
+                <span className="font-bold tabular-nums whitespace-nowrap">—</span>
               </div>
-            )}
-            {tile.wide && (
-              <span className={`shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 ${dashTextSecondary} font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text`}>
-                Details ansehen →
-              </span>
             )}
           </div>
         );
@@ -136,52 +117,3 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
     </div>
   );
 }
-
-// Gemeinsamer Inhalt einer Kachel (Icon/Label/Wert/Delta) - sowohl fuer
-// normale Kacheln als auch fuer beide Haelften einer kombinierten Kachel
-// (siehe "secondary" oben), damit beide optisch identisch aufgebaut sind.
-function KpiTileContent({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  change,
-  changeContext,
-  compact,
-}: {
-  label: string;
-  value: string;
-  icon: (props: { className?: string }) => React.ReactElement;
-  accent: KpiAccent;
-  change: { text: string; tone: "positive" | "negative" | "neutral" } | null;
-  changeContext?: string;
-  // Fuer beide Haelften einer kombinierten Kachel (siehe "secondary" oben):
-  // dort steht durch den Grenzstrich zwischen beiden Haelften weniger Breite
-  // zur Verfuegung, daher etwas kleinere Icon-Bubble/Abstand statt einer
-  // gequetschten Beschriftung.
-  compact?: boolean;
-}) {
-  return (
-    <>
-      <div className={`flex items-center ${compact ? "gap-1.5" : "gap-2"} ${dashTextKpiLabel} font-medium text-sand-700 dark:text-[#d8e7f2]`}>
-        <span
-          className={`flex ${compact ? "h-[26px] w-[26px]" : "h-[33px] w-[33px]"} shrink-0 items-center justify-center rounded-full ${ACCENT_BUBBLE[accent]}`}
-        >
-          <Icon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
-        </span>
-        <span className="truncate">{label}</span>
-      </div>
-      <p className={`mt-0.5 font-display ${dashTextValue} font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text`}>
-        {value}
-      </p>
-      {change && (
-        <div className={`mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
-          <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
-          {changeContext && <span className={`truncate ${dashSecondary}`}>{changeContext}</span>}
-        </div>
-      )}
-    </>
-  );
-}
-
-const dashSecondary = "text-sand-500 dark:text-[#89a7c0]";
