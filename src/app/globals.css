@@ -230,6 +230,30 @@
   --color-import-info: #54a6ff;
   --color-import-purple: #8c6cff;
   --color-import-purple-light: #a792ff;
+
+  /* Effivo-Übersicht (V12): eigener Namensraum aus demselben Grund wie
+     --color-import-* oben - exakte Werte aus der vom Nutzer freigegebenen
+     "Effivo_V12_Dashboard_Final.html"-Designreferenz, bewusst NICHT in
+     --color-import-* oder --color-cockpit-* eingebaut. Aehnliche, aber nicht
+     identische Farbwelt wie import-* (beide dunkle Effivo-Flaechen, aus
+     unterschiedlichen Referenzdateien) - eigene Konstanten verhindern, dass
+     eine Anpassung an der einen Seite ungefragt die andere mitveraendert.
+     Nur ueber dark:-Utilities genutzt; kein Light-Mode-Gegenstueck, da V12
+     ausschliesslich als Dark-Mode-Layout freigegeben wurde. */
+  --color-dash-bg: #061426;
+  --color-dash-panel: #0e223b;
+  --color-dash-panel-soft: #112a46;
+  --color-dash-line: #20415f;
+  --color-dash-text: #f5f9ff;
+  --color-dash-text-secondary: #8fa8c2;
+  --color-dash-text-muted: #6f8ba7;
+  --color-dash-teal: #25d8ce;
+  --color-dash-teal-hover: #0f9f99;
+  --color-dash-green: #32d79a;
+  --color-dash-orange: #f0a23e;
+  --color-dash-red: #ff625d;
+  --color-dash-blue: #4f9fff;
+  --color-dash-purple: #aa76ff;
 }
 
 @theme inline {
