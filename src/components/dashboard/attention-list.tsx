@@ -43,8 +43,26 @@ const BUBBLE_CLASS: Record<DashAccent, string> = {
 // zukuenftige Arbeit) - erfundene Zahlen waeren Platzhalter-Content anstelle
 // echter Werte.
 export function AttentionList({ items }: { items: AttentionItem[] }) {
+  const hasItems = items.length > 0;
+  // Unterhalb von 1400px hat die Seite bewusst KEINE feste Viewport-Hoehe
+  // (siehe page.tsx, "min-[1400px]:h-[calc(100dvh-9rem)]") - Inhalt darf dort
+  // natuerlich wachsen und die Seite scrollen. Ohne diese explizite Mindest-
+  // hoehe kollabiert "flex-1 basis-0" in Kombination mit "overflow-hidden"
+  // auf den Kind-Zeilen dort jedoch auf beinahe 0px (Grid-/Flex-Autosizing
+  // hat ohne bestimmte Vorfahrenhoehe keine Referenzgroesse), wodurch Zeilen
+  // sich gegenseitig ueberlappen statt lesbar untereinander zu stehen. Die
+  // Mindesthoehe skaliert mit der echten Anzahl an Punkten, damit weder ein
+  // einzelner Punkt unnoetig viel Leerraum erzwingt noch vier Punkte zu wenig
+  // Platz bekommen; ab 1400px uebernimmt wieder die feste 50/50-Aufteilung
+  // aus der V12-Vorgabe.
+  const minHeightPx = hasItems ? 56 + items.length * 58 : 104;
   return (
-    <div className="flex flex-1 basis-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0">
+    <div
+      style={{ "--attention-min-h": `${minHeightPx}px` } as React.CSSProperties}
+      className={`flex min-h-[var(--attention-min-h)] flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[901px]:flex-1 min-[1400px]:min-h-0 ${
+        hasItems ? "flex-1 basis-0" : "min-[1536px]:flex-none"
+      }`}
+    >
       <div className="mb-2 shrink-0">
         <h3 className="font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">Handlungsbedarf</h3>
         <p className="mt-0.5 text-[11px] leading-snug text-sand-500 dark:text-[#7fa1bd]">
@@ -52,8 +70,8 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
         </p>
       </div>
 
-      {items.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2.5 text-center">
+      {!hasItems ? (
+        <div className="flex min-h-[104px] flex-1 flex-col items-center justify-center gap-2.5 py-4 text-center">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/30 to-emerald-500/10 text-emerald-600 dark:text-emerald-200 border border-emerald-400/30 dark:border-emerald-300/25 ring-1 ring-inset ring-white/10">
             <CheckCircleIcon className="h-5 w-5" />
           </span>
@@ -71,7 +89,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
               style={{ "--case-accent": DASH_ACCENT_HEX[item.accent] } as React.CSSProperties}
               className={`relative grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-xl border px-2.5 py-1 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-px ${
                 item.priority
-                  ? "border-rose-300/60 bg-rose-50/60 dark:border-[rgba(255,98,93,0.24)] dark:bg-[linear-gradient(90deg,rgba(82,33,40,0.28),rgba(8,29,50,0.72)_34%,rgba(7,25,44,0.66))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_8px_18px_rgba(42,10,13,0.09)]"
+                  ? "border-rose-300/60 bg-rose-50/60 dark:border-[rgba(255,98,93,0.24)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(82,33,40,0.28),rgba(8,29,50,0.72)_34%,rgba(7,25,44,0.66))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_8px_18px_rgba(42,10,13,0.09)]"
                   : "border-card-border dark:border-[rgba(39,71,101,0.5)] bg-sand-50/60 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.68),rgba(7,25,44,0.62))]"
               }`}
             >

@@ -34,8 +34,15 @@ const ICON_CLASS: Record<DashAccent, string> = {
 // Link, da es noch keine eigene Aktivitaetsprotokoll-Seite gibt, auf die er
 // echt verweisen koennte.
 export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
+  // Gleiche Begruendung wie in AttentionList: ohne diese Mindesthoehe
+  // kollabiert die Karte unterhalb von 1400px (keine feste Viewport-Hoehe
+  // dort) auf beinahe 0px, wodurch sich die Aktivitaets-Zeilen gegenseitig
+  // ueberlappen statt lesbar untereinander zu stehen.
+  const minHeightPx = 96 + Math.max(items.length, 1) * 58;
   return (
-    <div className="flex flex-1 basis-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0">
+    <div
+      style={{ "--activity-min-h": `${minHeightPx}px` } as React.CSSProperties}
+      className="flex min-h-[var(--activity-min-h)] flex-1 basis-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0">
       <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
         <div>
           <h3 className="font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">Letzte Aktivitäten</h3>
@@ -61,7 +68,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
               key={item.id}
               className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 overflow-hidden rounded-xl border px-2 py-1 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
                 item.highlight
-                  ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(50,215,154,0.19)] dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
+                  ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(50,215,154,0.19)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
                   : "border-card-border dark:border-[rgba(45,81,112,0.49)] bg-sand-50/50 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.66),rgba(7,25,44,0.58))]"
               }`}
             >

@@ -16,7 +16,7 @@ export type KpiTile = {
 };
 
 const ACCENT_BAR: Record<KpiAccent, string> = {
-  highlight: "dark:bg-[linear-gradient(180deg,#5ff2e8,#2bcf9c)] bg-emerald-500",
+  highlight: "bg-emerald-500 dark:bg-transparent dark:bg-[linear-gradient(180deg,#5ff2e8,#2bcf9c)]",
   teal: "bg-ink-500 dark:bg-dash-teal/70",
   orange: "bg-amber-500 dark:bg-dash-orange/70",
   green: "bg-emerald-500 dark:bg-dash-green/70",
@@ -53,6 +53,14 @@ const CHANGE_TONE_CLASSES: Record<"positive" | "negative" | "neutral", string> =
 // Umsatz) - fuer die uebrigen Kennzahlen gibt es keine echte Vormonatsgroesse,
 // ein erfundener Prozentwert waere hier Platzhalter-Content ohne Datenbasis.
 export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
+  // Bei einer ungeraden Anzahl regulaerer (nicht-"wide") Kacheln bliebe sonst
+  // eine halbe Grid-Zelle leer (z.B. eine einzelne Kachel vor der breiten
+  // Abschlusskachel) - das faengt hier ab, statt eine feste Anzahl von acht
+  // Kacheln vorauszusetzen, damit es auch funktioniert, wenn spaeter mehr
+  // oder weniger echte Kennzahlen existieren.
+  const nonWideCount = tiles.filter((t) => !t.wide).length;
+  let seenNonWide = 0;
+
   return (
     <div className="grid flex-1 grid-cols-2 auto-rows-fr gap-2">
       {tiles.map((tile) => {
@@ -60,13 +68,14 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
           tile.change !== undefined && tile.change !== null && tile.changeDirection
             ? { text: formatChange(tile.change), tone: changeTone(tile.change, tile.changeDirection) }
             : null;
+        const isDanglingLast = !tile.wide && nonWideCount % 2 === 1 && ++seenNonWide === nonWideCount;
 
         return (
           <div
             key={tile.key}
             className={`relative flex min-h-[74px] flex-col justify-center overflow-hidden rounded-[13px] border border-card-border dark:border-[rgba(45,79,111,0.65)] bg-card dark:bg-[linear-gradient(180deg,rgba(13,35,59,0.84),rgba(9,29,50,0.78))] px-3 py-2.5 shadow-warm-sm transition-[transform,border-color,background,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(63,129,166,0.75)] dark:hover:bg-[linear-gradient(180deg,rgba(17,43,70,0.92),rgba(10,33,56,0.88))] ${
-              tile.wide ? "col-span-2 grid grid-cols-[1fr_auto] items-center" : ""
-            }`}
+              tile.wide || isDanglingLast ? "col-span-2" : ""
+            } ${tile.wide ? "grid grid-cols-[1fr_auto] items-center" : ""}`}
           >
             <span className={`absolute left-0 top-[13px] bottom-[13px] w-[2px] rounded-r-[2px] opacity-70 ${ACCENT_BAR[tile.accent]}`} />
             <div className={tile.wide ? "min-w-0" : ""}>
@@ -89,7 +98,7 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
               )}
             </div>
             {tile.wide && (
-              <span className="shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 text-[10.5px] font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text">
+              <span className="shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 text-[10.5px] font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text">
                 Details ansehen →
               </span>
             )}

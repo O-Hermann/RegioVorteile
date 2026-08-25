@@ -35,7 +35,7 @@ export function Pagehead({
           )}
         </div>
         {currentPeriodLabel && (
-          <div className="mt-1.5 flex items-center gap-1.5 rounded-full border border-ink-400/30 bg-ink-50 px-2.5 py-1.5 text-[11px] text-ink-700 dark:border-dash-teal/20 dark:bg-[linear-gradient(180deg,rgba(14,47,64,0.72),rgba(8,30,47,0.78))] dark:text-[#88a2bb] w-fit">
+          <div className="mt-1.5 flex items-center gap-1.5 rounded-full border border-ink-400/30 bg-ink-50 px-2.5 py-1.5 text-[11px] text-ink-700 dark:border-dash-teal/20 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(14,47,64,0.72),rgba(8,30,47,0.78))] dark:text-[#88a2bb] w-fit">
             <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-ink-500 dark:text-dash-teal" />
             <span className="text-sand-500 dark:text-[#88a2bb]">Analysezeitraum</span>
             <b className="font-semibold text-sand-900 dark:text-white">{currentPeriodLabel}</b>

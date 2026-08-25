@@ -83,7 +83,7 @@ export function AnalysisCompare({
     >
       <div className="flex shrink-0 items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[13.5px] font-extrabold text-sand-900 dark:text-dash-text">
-          <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
+          <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
             <ActivityIcon className="h-3.5 w-3.5" />
           </span>
           Analysevergleich
@@ -135,7 +135,9 @@ export function AnalysisCompare({
                 <div
                   key={row.label}
                   className={`relative grid grid-cols-[1.12fr_.86fr_.86fr_.98fr] items-center gap-1 border-b border-card-border/40 px-2 py-2 text-[11px] last:border-0 dark:border-white/[0.045] ${
-                    row.emphasis === "highlight" ? "bg-emerald-50/50 dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.055),rgba(37,216,206,0.02))]" : ""
+                    row.emphasis === "highlight"
+                      ? "bg-emerald-50/50 dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.055),rgba(37,216,206,0.02))]"
+                      : ""
                   }`}
                 >
                   <span
