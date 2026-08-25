@@ -89,7 +89,13 @@ export default async function ArbeitgeberDashboardPage() {
   // Acht echte Kennzahlen (Kosten/Ergebnis/Offene Aufträge bleiben "—", da
   // dafuer weiterhin keine verlaessliche Datenquelle existiert - Ergebnis !=
   // Umsatz, offene Rechnungen != offene Auftraege). Veraenderungswerte nur,
-  // wo eine echte Vormonatsberechnung existiert.
+  // wo eine echte Vormonatsberechnung existiert. Kosten und Ergebnis teilen
+  // sich bewusst EINE Kachel (siehe "secondary" in KpiGrid): beide haben
+  // ohnehin dauerhaft keinen Wert, und teilen sich statt einer siebten,
+  // einzeln herausstehenden Kachel eine gemeinsame - dadurch bleibt die
+  // 2-Spalten-Matrix bei einer geraden Kachelzahl (6 + 1 breite Abschluss-
+  // kachel), ohne eine echte Kennzahl zu entfernen oder eine erfundene
+  // hinzuzufuegen.
   const kpiTiles: KpiTile[] = [
     {
       key: "revenue",
@@ -101,8 +107,14 @@ export default async function ArbeitgeberDashboardPage() {
       changeDirection: "up-good",
       changeContext: "vs. Vormonat",
     },
-    { key: "costs", label: "Kosten", value: "—", icon: TagIcon, accent: "teal" },
-    { key: "result", label: "Ergebnis", value: "—", icon: ActivityIcon, accent: "purple" },
+    {
+      key: "costs",
+      label: "Kosten",
+      value: "—",
+      icon: TagIcon,
+      accent: "teal",
+      secondary: { label: "Ergebnis", value: "—", icon: ActivityIcon, accent: "purple" },
+    },
     {
       key: "receivables",
       label: "Offene Forderungen",
@@ -250,17 +262,18 @@ export default async function ArbeitgeberDashboardPage() {
       <div className="grid grid-cols-1 gap-3 min-[1400px]:min-h-0 min-[1400px]:flex-1 min-[901px]:grid-cols-2 min-[1536px]:grid-cols-[1.08fr_1.52fr_.96fr] min-[1536px]:items-stretch">
         {/* Linke Spalte: Begrüßung, Datenstatus, KPI-Kacheln */}
         <div className="flex min-w-0 flex-col rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_15px_34px_rgba(0,0,0,0.18)] min-[1400px]:min-h-0">
-          <div className="mb-2 flex items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:from-[#34d5cb] dark:to-[#128c87] font-display text-base font-bold text-white shadow-md shadow-ink-900/20">
+          <div className="mb-2.5 flex items-center gap-2.5">
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:bg-[radial-gradient(circle_at_28%_20%,rgba(218,255,252,0.2),transparent_36%),linear-gradient(145deg,#31cfc6,#117d7a_72%)] font-display text-base font-bold text-white shadow-md shadow-ink-900/20 dark:border dark:border-[rgba(118,241,233,0.2)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_18px_rgba(4,94,91,0.17)]">
               {avatarInitial}
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-card bg-emerald-400 shadow-[0_0_8px_rgba(88,227,166,0.42)] dark:border-[#0e223b] dark:bg-[#58e3a6]" />
             </div>
             <div className="min-w-0">
-              <b className="block truncate font-display text-[14.5px] font-bold text-sand-900 dark:text-dash-text">{greeting}</b>
-              <div className="mt-0.5 flex items-center gap-1.5">
-                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[9px] font-bold text-gold-700 dark:bg-white/[0.06] dark:text-dash-text">
+              <b className="block truncate font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">{greeting}</b>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[9px] font-bold text-gold-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] dark:bg-[linear-gradient(180deg,rgba(45,69,95,0.92),rgba(34,54,78,0.92))] dark:text-[#f2f7fb] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] dark:border dark:border-[rgba(113,150,181,0.13)]">
                   {roleLabel}
                 </span>
-                <span className="truncate text-[10px] text-sand-500 dark:text-[#85a8cc]">{company.name}</span>
+                <span className="truncate text-[10px] text-sand-500 dark:text-[#9eb8cf]">{company.name}</span>
               </div>
             </div>
           </div>

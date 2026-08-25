@@ -14,6 +14,21 @@ export type KpiTile = {
   change?: MetricChange | null;
   changeDirection?: "up-good" | "down-good";
   changeContext?: string;
+  // Fasst zwei eng verwandte Kennzahlen ohne eigenen Vormonatswert (aktuell
+  // Kosten + Ergebnis, beide dauerhaft "—" bis es dafuer eine echte
+  // Datenquelle gibt) in EINER Kachel zusammen. Grund: die Referenz hat 6
+  // normale + 1 breite Kachel (gerade Anzahl, passt exakt in ein 2-Spalten-
+  // Raster); dieses Projekt hat 8 echte Kennzahlen (7 normale + 1 breite -
+  // ungerade). Statt eine echte Kennzahl allein eine volle Zeile einnehmen
+  // zu lassen (wirkt unausgewogen) oder eine erfundene Platzhalter-Kachel
+  // zu ergaenzen, teilen sich zwei ohnehin leere Kennzahlen eine Kachel -
+  // keine Daten gehen dadurch verloren, beide bleiben vollstaendig sichtbar.
+  secondary?: {
+    label: string;
+    value: string;
+    icon: (props: { className?: string }) => React.ReactElement;
+    accent: KpiAccent;
+  };
 };
 
 const ACCENT_BAR: Record<KpiAccent, string> = {
@@ -87,26 +102,29 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
               tile.wide || isDanglingLast ? "col-span-2" : ""
             } ${tile.wide ? "grid grid-cols-[1fr_auto] items-center" : ""}`}
           >
+            {!tile.wide && <span className="absolute right-2.5 top-2.5 text-[13px] leading-none text-[#7f96ab] dark:text-[#44617e]">›</span>}
             <span className={`absolute left-0 top-[13px] bottom-[13px] w-[2px] rounded-r-[2px] opacity-70 ${ACCENT_BAR[tile.accent]}`} />
-            <div className={tile.wide ? "min-w-0" : ""}>
-              <div className={`flex items-center gap-2 ${dashTextKpiLabel} font-medium text-sand-700 dark:text-[#d8e7f2]`}>
-                <span className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full ${ACCENT_BUBBLE[tile.accent]}`}>
-                  <tile.icon className="h-3.5 w-3.5" />
-                </span>
-                <span className="truncate">{tile.label}</span>
-              </div>
-              <p className={`mt-0.5 font-display ${dashTextValue} font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text`}>
-                {tile.value}
-              </p>
-              {change && (
-                <div className={`mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
-                  <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
-                  {tile.changeContext && (
-                    <span className={`truncate ${dashSecondary}`}>{tile.changeContext}</span>
-                  )}
+            {tile.secondary ? (
+              <div className="grid grid-cols-2 items-center gap-2">
+                <div className="min-w-0">
+                  <KpiTileContent label={tile.label} value={tile.value} icon={tile.icon} accent={tile.accent} change={change} changeContext={tile.changeContext} compact />
                 </div>
-              )}
-            </div>
+                <div className="min-w-0 border-l border-card-border/70 pl-2 dark:border-white/[0.07]">
+                  <KpiTileContent
+                    label={tile.secondary.label}
+                    value={tile.secondary.value}
+                    icon={tile.secondary.icon}
+                    accent={tile.secondary.accent}
+                    change={null}
+                    compact
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className={tile.wide ? "min-w-0" : ""}>
+                <KpiTileContent label={tile.label} value={tile.value} icon={tile.icon} accent={tile.accent} change={change} changeContext={tile.changeContext} />
+              </div>
+            )}
             {tile.wide && (
               <span className={`shrink-0 rounded-full border border-ink-400/30 bg-ink-50 px-3 py-1.5 ${dashTextSecondary} font-bold text-ink-700 dark:border-dash-teal/25 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(29,97,106,0.75),rgba(10,56,71,0.78))] dark:text-dash-text`}>
                 Details ansehen →
@@ -116,6 +134,53 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
         );
       })}
     </div>
+  );
+}
+
+// Gemeinsamer Inhalt einer Kachel (Icon/Label/Wert/Delta) - sowohl fuer
+// normale Kacheln als auch fuer beide Haelften einer kombinierten Kachel
+// (siehe "secondary" oben), damit beide optisch identisch aufgebaut sind.
+function KpiTileContent({
+  label,
+  value,
+  icon: Icon,
+  accent,
+  change,
+  changeContext,
+  compact,
+}: {
+  label: string;
+  value: string;
+  icon: (props: { className?: string }) => React.ReactElement;
+  accent: KpiAccent;
+  change: { text: string; tone: "positive" | "negative" | "neutral" } | null;
+  changeContext?: string;
+  // Fuer beide Haelften einer kombinierten Kachel (siehe "secondary" oben):
+  // dort steht durch den Grenzstrich zwischen beiden Haelften weniger Breite
+  // zur Verfuegung, daher etwas kleinere Icon-Bubble/Abstand statt einer
+  // gequetschten Beschriftung.
+  compact?: boolean;
+}) {
+  return (
+    <>
+      <div className={`flex items-center ${compact ? "gap-1.5" : "gap-2"} ${dashTextKpiLabel} font-medium text-sand-700 dark:text-[#d8e7f2]`}>
+        <span
+          className={`flex ${compact ? "h-[26px] w-[26px]" : "h-[33px] w-[33px]"} shrink-0 items-center justify-center rounded-full ${ACCENT_BUBBLE[accent]}`}
+        >
+          <Icon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
+        </span>
+        <span className="truncate">{label}</span>
+      </div>
+      <p className={`mt-0.5 font-display ${dashTextValue} font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text`}>
+        {value}
+      </p>
+      {change && (
+        <div className={`mt-0.5 flex min-w-0 items-center gap-1.5 ${dashTextSecondary}`}>
+          <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
+          {changeContext && <span className={`truncate ${dashSecondary}`}>{changeContext}</span>}
+        </div>
+      )}
+    </>
   );
 }
 
