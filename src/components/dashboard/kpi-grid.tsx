@@ -61,8 +61,17 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
   const nonWideCount = tiles.filter((t) => !t.wide).length;
   let seenNonWide = 0;
 
+  // "auto-rows-fr" wuerde hier alle Zeilen auf dieselbe Hoehe zwingen -
+  // problematisch, weil nicht jede Kachel eine Veraenderungszeile zeigt
+  // (siehe changeContext oben): Kacheln MIT Vormonatswert brauchen dadurch
+  // eine Zeile mehr als Kacheln ohne. Bei "auto-rows-fr" haetten dann ALLE
+  // Zeilen die Hoehe der hoechsten (mit Veraenderungszeile) uebernommen -
+  // das liess das Grid sichtbar ueber die Kartenkante hinauswachsen. Mit
+  // "auto"-Zeilen behaelt jede Zeile ihre eigene, tatsaechlich benoetigte
+  // Hoehe; uebrige Reststhoehe verteilt "content-between" gleichmaessig als
+  // zusaetzlichen Zeilenabstand statt als eine einzelne "leere" Flaeche.
   return (
-    <div className="grid flex-1 grid-cols-2 auto-rows-fr gap-2">
+    <div className="grid flex-1 grid-cols-2 content-between gap-2">
       {tiles.map((tile) => {
         const change =
           tile.change !== undefined && tile.change !== null && tile.changeDirection
@@ -73,7 +82,7 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
         return (
           <div
             key={tile.key}
-            className={`relative flex min-h-[74px] flex-col justify-center overflow-hidden rounded-[13px] border border-card-border dark:border-[rgba(45,79,111,0.65)] bg-card dark:bg-[linear-gradient(180deg,rgba(13,35,59,0.84),rgba(9,29,50,0.78))] px-3 py-2.5 shadow-warm-sm transition-[transform,border-color,background,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(63,129,166,0.75)] dark:hover:bg-[linear-gradient(180deg,rgba(17,43,70,0.92),rgba(10,33,56,0.88))] ${
+            className={`relative flex min-h-[68px] flex-col justify-center overflow-hidden rounded-[13px] border border-card-border dark:border-[rgba(45,79,111,0.65)] bg-card dark:bg-[linear-gradient(180deg,rgba(13,35,59,0.84),rgba(9,29,50,0.78))] px-3 py-2 shadow-warm-sm transition-[transform,border-color,background,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-ink-400 dark:hover:border-[rgba(63,129,166,0.75)] dark:hover:bg-[linear-gradient(180deg,rgba(17,43,70,0.92),rgba(10,33,56,0.88))] ${
               tile.wide || isDanglingLast ? "col-span-2" : ""
             } ${tile.wide ? "grid grid-cols-[1fr_auto] items-center" : ""}`}
           >
@@ -85,11 +94,11 @@ export function KpiGrid({ tiles }: { tiles: KpiTile[] }) {
                 </span>
                 <span className="truncate">{tile.label}</span>
               </div>
-              <p className="mt-1 font-display text-[19px] font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text">
+              <p className="mt-0.5 font-display text-[19px] font-bold leading-none tracking-tight tabular-nums text-sand-900 dark:text-dash-text">
                 {tile.value}
               </p>
               {change && (
-                <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[10px]">
+                <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px]">
                   <span className={`font-bold tabular-nums whitespace-nowrap ${CHANGE_TONE_CLASSES[change.tone]}`}>{change.text}</span>
                   {tile.changeContext && (
                     <span className={`truncate ${dashSecondary}`}>{tile.changeContext}</span>

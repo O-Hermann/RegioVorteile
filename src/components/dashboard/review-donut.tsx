@@ -41,7 +41,7 @@ export function ReviewDonut() {
         </span>
       </div>
 
-      <div className="mt-2 grid flex-1 min-h-0 grid-cols-[108px_1fr] items-center gap-3.5">
+      <div className="mt-1.5 grid grid-cols-[108px_1fr] items-center gap-3">
         <div className="flex flex-col items-center gap-1">
           <div className="relative mx-auto h-[104px] w-[104px] rounded-full bg-[conic-gradient(#0f766e_0_39%,#55df9c_39%_48%,#4f9fff_48%_66%,#ffd05c_66%_100%)] shadow-warm-sm dark:bg-[conic-gradient(#25d8ce_0_39%,#55df9c_39%_48%,#4f9fff_48%_66%,#ffd05c_66%_100%)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045),0_10px_22px_rgba(0,0,0,0.14)]">
             <div className="absolute inset-4 rounded-full bg-sand-50 dark:bg-[radial-gradient(circle,rgba(14,41,68,0.99),rgba(9,29,50,0.99))]" />
@@ -71,7 +71,7 @@ export function ReviewDonut() {
         </div>
       </div>
 
-      <div className="mt-2 flex shrink-0 items-center justify-between gap-2 rounded-[9px] border border-ink-400/20 bg-ink-50/60 px-2.5 py-2 text-[11.5px] text-ink-700 dark:border-[rgba(37,216,206,0.14)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(37,216,206,0.07),rgba(37,216,206,0.018))] dark:text-[#9df8f2]">
+      <div className="mt-auto flex shrink-0 items-center justify-between gap-2 rounded-[9px] border border-ink-400/20 bg-ink-50/60 px-2.5 py-2 text-[11.5px] text-ink-700 dark:border-[rgba(37,216,206,0.14)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(37,216,206,0.07),rgba(37,216,206,0.018))] dark:text-[#9df8f2]">
         <span className="flex items-center gap-1.5">
           <i className="h-1.5 w-1.5 rounded-full bg-ink-500 dark:bg-dash-teal" />
           <b>18 neue Fälle zuerst prüfen</b>

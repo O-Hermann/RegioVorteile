@@ -44,24 +44,26 @@ const BUBBLE_CLASS: Record<DashAccent, string> = {
 // echter Werte.
 export function AttentionList({ items }: { items: AttentionItem[] }) {
   const hasItems = items.length > 0;
+  // Handlungsbedarf ist der zentrale operative Bereich und bekommt bewusst
+  // mehr Gewicht als die unterstuetzende "Letzte Aktivitäten"-Historie
+  // (ca. 57/43 statt starrer 50/50-Aufteilung) - in BEIDEN Zustaenden
+  // (leer/gefuellt), damit die Karte im Empty State ruhig wirkt, aber nicht
+  // zu einem nebensaechlichen kleinen Modul schrumpft.
+  //
   // Unterhalb von 1400px hat die Seite bewusst KEINE feste Viewport-Hoehe
   // (siehe page.tsx, "min-[1400px]:h-[calc(100dvh-9rem)]") - Inhalt darf dort
   // natuerlich wachsen und die Seite scrollen. Ohne diese explizite Mindest-
-  // hoehe kollabiert "flex-1 basis-0" in Kombination mit "overflow-hidden"
-  // auf den Kind-Zeilen dort jedoch auf beinahe 0px (Grid-/Flex-Autosizing
-  // hat ohne bestimmte Vorfahrenhoehe keine Referenzgroesse), wodurch Zeilen
+  // hoehe kollabiert "flex-grow" in Kombination mit "overflow-hidden" auf
+  // den Kind-Zeilen dort jedoch auf beinahe 0px (Grid-/Flex-Autosizing hat
+  // ohne bestimmte Vorfahrenhoehe keine Referenzgroesse), wodurch Zeilen
   // sich gegenseitig ueberlappen statt lesbar untereinander zu stehen. Die
-  // Mindesthoehe skaliert mit der echten Anzahl an Punkten, damit weder ein
-  // einzelner Punkt unnoetig viel Leerraum erzwingt noch vier Punkte zu wenig
-  // Platz bekommen; ab 1400px uebernimmt wieder die feste 50/50-Aufteilung
-  // aus der V12-Vorgabe.
-  const minHeightPx = hasItems ? 56 + items.length * 58 : 104;
+  // Mindesthoehe skaliert mit der echten Anzahl an Punkten; ab 1400px
+  // uebernimmt wieder die gewichtete Aufteilung.
+  const minHeightPx = hasItems ? 56 + items.length * 58 : 220;
   return (
     <div
-      style={{ "--attention-min-h": `${minHeightPx}px` } as React.CSSProperties}
-      className={`flex min-h-[var(--attention-min-h)] flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[901px]:flex-1 min-[1400px]:min-h-0 ${
-        hasItems ? "flex-1 basis-0" : "min-[1536px]:flex-none"
-      }`}
+      style={{ "--attention-min-h": `${minHeightPx}px`, flex: "1.35 1 0%" } as React.CSSProperties}
+      className="flex min-h-[var(--attention-min-h)] flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0"
     >
       <div className="mb-2 shrink-0">
         <h3 className="font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">Handlungsbedarf</h3>
