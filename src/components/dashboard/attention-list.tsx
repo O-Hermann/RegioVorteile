@@ -6,7 +6,7 @@ import {
   dashTextSectionHeading,
   dashTextBody,
   dashTextBodyLg,
-  dashTextSecondary,
+  dashTextSecondaryLg,
 } from "@/components/dashboard/dash-ui";
 
 export type AttentionItem = {
@@ -120,10 +120,10 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
                   <span className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>{item.title}</span>
                 </span>
                 {item.subtitle && (
-                  <span className={`truncate ${dashTextSecondary} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>
+                  <span className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>
                 )}
               </div>
-              <span className={`shrink-0 ${dashTextSecondary} font-semibold text-ink-600 dark:text-[#8db2ca]`}>{item.cta} →</span>
+              <span className={`shrink-0 ${dashTextSecondaryLg} font-semibold text-ink-600 dark:text-[#8db2ca]`}>{item.cta} →</span>
             </Link>
           ))}
         </div>

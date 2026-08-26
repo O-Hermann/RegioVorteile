@@ -7,7 +7,7 @@ import {
   dashTextBody,
   dashTextBodyLg,
   dashTextSectionHeading,
-  dashTextSecondary,
+  dashTextSecondaryLg,
   dashTextSecondarySm,
 } from "@/components/dashboard/dash-ui";
 
@@ -79,7 +79,7 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
         </div>
       ) : (
         <>
-          <p className={`mb-1 mt-1 ${dashTextSecondary} text-sand-500 dark:text-[#92abc4]`}>
+          <p className={`mb-1 mt-1 ${dashTextSecondaryLg} text-sand-500 dark:text-[#92abc4]`}>
             Umsatz · letzte {history.length} {history.length === 1 ? "Monat" : "Monate"}
           </p>
           <div className="min-h-[94px] flex-1 overflow-hidden rounded-[10px] border border-card-border/60 dark:border-[rgba(68,103,133,0.12)] dark:bg-[linear-gradient(180deg,rgba(6,24,43,0.20),rgba(6,24,43,0.02))]">
@@ -113,7 +113,7 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
               )}
             </svg>
           </div>
-          <div className="mt-1 flex justify-between text-[8px] text-sand-400 dark:text-[#6685a2]">
+          <div className="mt-1 flex justify-between text-[8.5px] text-sand-400 dark:text-[#6685a2]">
             {history.map((h, i) => (
               <span
                 key={i}

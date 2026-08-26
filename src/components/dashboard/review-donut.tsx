@@ -2,7 +2,7 @@ import {
   dashTextTitle,
   dashTextBody,
   dashTextBodyLg,
-  dashTextSecondary,
+  dashTextSecondaryLg,
   dashTextSecondarySm,
   dashTextDonutNumber,
   dashDonutSizeClass,
@@ -37,7 +37,7 @@ export function ReviewDonut() {
           </span>
           Prüfübersicht
         </div>
-        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondary} font-semibold text-sand-500 dark:border-[rgba(37,216,206,0.16)] dark:bg-[rgba(37,216,206,0.055)] dark:text-[#b9f9f5]`}>
+        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(37,216,206,0.16)] dark:bg-[rgba(37,216,206,0.055)] dark:text-[#b9f9f5]`}>
           <i className="h-1.5 w-1.5 rounded-full bg-ink-500 dark:bg-dash-teal" />
           46 Fälle gesamt
         </span>
@@ -77,7 +77,7 @@ export function ReviewDonut() {
                 <span className="truncate">{leg.label}</span>
               </span>
               <b className="text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{leg.value}</b>
-              <em className={`text-right ${dashTextSecondary} not-italic text-sand-400 tabular-nums dark:text-[#7f9ab2]`}>{leg.share}</em>
+              <em className={`text-right ${dashTextSecondaryLg} not-italic text-sand-400 tabular-nums dark:text-[#7f9ab2]`}>{leg.share}</em>
             </div>
           ))}
         </div>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ActivityIcon } from "@/components/icons";
 import { periodLabel } from "@/lib/data-import";
-import { shortMonthLabel, formatChange, changeTone, formatEuroDetailed, type MetricChange, type MonthPeriod } from "@/lib/company-metrics";
-import { dashTextTitle, dashTextBody, dashTextBodyLg, dashTextSecondary, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
+import { shortMonthLabel, formatChange, changeTone, formatEuroCompact, type MetricChange, type MonthPeriod } from "@/lib/company-metrics";
+import { dashTextTitle, dashTextBody, dashTextBodyLg, dashTextSecondaryLg, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 type Row = {
   label: string;
@@ -34,11 +34,11 @@ export function AnalysisCompare({
 }: {
   currentPeriod: MonthPeriod | null;
   previousPeriod: MonthPeriod | null;
-  revenueCurrent: Parameters<typeof formatEuroDetailed>[0];
-  revenuePrevious: Parameters<typeof formatEuroDetailed>[0];
+  revenueCurrent: Parameters<typeof formatEuroCompact>[0];
+  revenuePrevious: Parameters<typeof formatEuroCompact>[0];
   revenueChange: MetricChange | null;
-  openReceivablesCurrent: Parameters<typeof formatEuroDetailed>[0];
-  openReceivablesPrevious: Parameters<typeof formatEuroDetailed>[0];
+  openReceivablesCurrent: Parameters<typeof formatEuroCompact>[0];
+  openReceivablesPrevious: Parameters<typeof formatEuroCompact>[0];
   openReceivablesChange: MetricChange | null;
   customersWithRevenueCurrent: number | null;
   customersWithRevenuePrevious: number | null;
@@ -50,16 +50,16 @@ export function AnalysisCompare({
     ? [
         {
           label: "Umsatz",
-          current: formatEuroDetailed(revenueCurrent),
-          previous: formatEuroDetailed(revenuePrevious),
+          current: formatEuroCompact(revenueCurrent),
+          previous: formatEuroCompact(revenuePrevious),
           change: revenueChange,
           direction: "up-good",
           emphasis: "highlight",
         },
         {
           label: "Offene Forderungen",
-          current: formatEuroDetailed(openReceivablesCurrent),
-          previous: formatEuroDetailed(openReceivablesPrevious),
+          current: formatEuroCompact(openReceivablesCurrent),
+          previous: formatEuroCompact(openReceivablesPrevious),
           change: openReceivablesChange,
           direction: "down-good",
           emphasis: "warning",
@@ -110,7 +110,7 @@ export function AnalysisCompare({
             </span>
             {headlineRow && (
               <b
-                className={`whitespace-nowrap ${dashTextSecondary} font-bold ${
+                className={`whitespace-nowrap ${dashTextSecondaryLg} font-bold ${
                   headlineTone === "positive"
                     ? "text-emerald-600 dark:text-[#70e4ad]"
                     : headlineTone === "negative"
@@ -124,7 +124,7 @@ export function AnalysisCompare({
           </div>
 
           <div className="mt-1.5 overflow-hidden rounded-[10px] border border-card-border/70 dark:border-[rgba(64,101,132,0.18)]">
-            <div className="grid grid-cols-[1.12fr_.86fr_.86fr_.98fr] gap-1 border-b border-card-border/50 px-2 py-1.5 text-[8px] font-semibold uppercase tracking-wide text-sand-400 dark:border-white/[0.045] dark:text-[#6f91af]">
+            <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,.82fr)_minmax(0,.82fr)_minmax(0,.8fr)] gap-0.5 border-b border-card-border/50 px-1 py-1.5 text-[8.5px] font-semibold uppercase tracking-wide text-sand-400 dark:border-white/[0.045] dark:text-[#6f91af]">
               <span />
               <span className="text-right">{shortMonthLabel(currentPeriod!)}</span>
               <span className="text-right">{shortMonthLabel(previousPeriod!)}</span>
@@ -135,7 +135,7 @@ export function AnalysisCompare({
               return (
                 <div
                   key={row.label}
-                  className={`relative grid grid-cols-[1.12fr_.86fr_.86fr_.98fr] items-center gap-1 border-b border-card-border/40 px-2 py-2 ${dashTextBody} last:border-0 dark:border-white/[0.045] ${
+                  className={`relative grid grid-cols-[minmax(0,1.5fr)_minmax(0,.82fr)_minmax(0,.82fr)_minmax(0,.8fr)] items-center gap-0.5 border-b border-card-border/40 px-1 py-2 ${dashTextBody} last:border-0 dark:border-white/[0.045] ${
                     row.emphasis === "highlight"
                       ? "bg-emerald-50/50 dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.055),rgba(37,216,206,0.02))]"
                       : ""
@@ -159,7 +159,7 @@ export function AnalysisCompare({
                   <b className="text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{row.current}</b>
                   <b className="text-right font-bold tabular-nums text-sand-500 dark:text-[#a5bbcf]">{row.previous}</b>
                   <b
-                    className={`text-right ${dashTextSecondary} font-bold tabular-nums whitespace-nowrap ${
+                    className={`text-right ${dashTextSecondaryLg} font-bold tabular-nums whitespace-nowrap ${
                       tone === "positive"
                         ? "text-emerald-600 dark:text-dash-green"
                         : tone === "negative"

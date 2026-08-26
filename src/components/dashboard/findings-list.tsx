@@ -4,7 +4,7 @@ import {
   dashTextTitle,
   dashTextBody,
   dashTextSectionHeading,
-  dashTextSecondary,
+  dashTextSecondaryLg,
   dashTextSecondarySm,
 } from "@/components/dashboard/dash-ui";
 
@@ -34,7 +34,7 @@ export function FindingsList() {
           </span>
           Funde &amp; Prüfung
         </div>
-        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondary} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.18)] dark:bg-white/[0.025] dark:text-[#abc2d6]`}>
+        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.18)] dark:bg-white/[0.025] dark:text-[#abc2d6]`}>
           4 Kategorien
         </span>
       </div>

@@ -61,15 +61,22 @@ export type DashAccent = keyof typeof DASH_ACCENT_HEX;
 // Klasse muss daher bereits HIER woertlich stehen (Tailwind scannt auch
 // diese .ts-Datei) und wird an der Verwendungsstelle unveraendert
 // eingesetzt, nicht erneut in "text-[...]" eingepackt.
+// dashTextValue/dashTextKpiLabel/dashTextSecondary werden auch von der jetzt
+// eingefrorenen linken Spalte (kpi-grid.tsx) genutzt - bewusst NICHT mehr
+// veraendert, auch nicht fuer den Readability-Pass der mittleren/rechten
+// Spalte. Fuer "sekundaeren" Text dort, der etwas grosszuegiger werden soll,
+// gibt es stattdessen "dashTextSecondaryLg" (siehe unten) statt den
+// gemeinsam genutzten Wert zu verschieben.
 export const dashTextTitle = "text-[clamp(13.5px,6.112px+0.962dvh,16.5px)]"; // Kartentitel (Analysevergleich, Entwicklung, Prüfübersicht, Funde & Prüfung)
-export const dashTextSectionHeading = "text-[clamp(15px,7.612px+0.962dvh,18px)]"; // Handlungsbedarf/Letzte Aktivitäten h3
-export const dashTextValue = "text-[clamp(19px,9.154px+1.282dvh,23px)]"; // KPI-Hauptwerte
+export const dashTextSectionHeading = "text-[clamp(15.5px,8.112px+0.962dvh,18.5px)]"; // Handlungsbedarf/Letzte Aktivitäten h3, Entwicklung-Aktuellwert, Funde-Potenzialwert
+export const dashTextValue = "text-[clamp(19px,9.154px+1.282dvh,23px)]"; // KPI-Hauptwerte (linke Spalte, eingefroren)
 export const dashTextDonutNumber = "text-[clamp(23px,10.689px+1.603dvh,28px)]"; // "46" im Prüfübersicht-Donut
-export const dashTextBody = "text-[clamp(11.5px,7.192px+0.561dvh,13.25px)]"; // Fliesstext: Legende, Funde-Namen, Aktivitätstitel, Fallzeilen
-export const dashTextBodyLg = "text-[clamp(12.5px,7.577px+0.641dvh,14.5px)]"; // etwas groesserer Fliesstext (Fallbeträge, Statuszeilen)
-export const dashTextKpiLabel = "text-[clamp(11px,6.692px+0.561dvh,12.75px)]"; // KPI-Bezeichnungen
-export const dashTextSecondary = "text-[clamp(10px,6.92px+0.401dvh,11.25px)]"; // Sekundärtext (bleibt bewusst kleiner als Fliesstext)
-export const dashTextSecondarySm = "text-[clamp(9px,5.92px+0.401dvh,10.25px)]"; // kleinste Labels/Eyebrows
+export const dashTextBody = "text-[clamp(12px,7.692px+0.561dvh,13.75px)]"; // Fliesstext: Legende, Funde-Namen, Aktivitätstitel, Fallzeilen
+export const dashTextBodyLg = "text-[clamp(13px,8.077px+0.641dvh,15px)]"; // etwas groesserer Fliesstext (Fallbeträge, Statuszeilen)
+export const dashTextKpiLabel = "text-[clamp(11px,6.692px+0.561dvh,12.75px)]"; // KPI-Bezeichnungen (linke Spalte, eingefroren)
+export const dashTextSecondary = "text-[clamp(10px,6.92px+0.401dvh,11.25px)]"; // Sekundärtext (linke Spalte, eingefroren - siehe dashTextSecondaryLg fuer Mitte/rechts)
+export const dashTextSecondaryLg = "text-[clamp(10.5px,6.806px+0.481dvh,12px)]"; // Sekundärtext ausschliesslich fuer Mitte/rechts (Deltas, Zeitstempel, Beschreibungen) - bewusst eigener Wert statt dashTextSecondary, damit die KPI-Kacheln unveraendert bleiben
+export const dashTextSecondarySm = "text-[clamp(9.5px,6.42px+0.401dvh,10.75px)]"; // kleinste Labels/Eyebrows
 export const dashDonutSizeClass = "h-[clamp(104px,54.771px+6.41dvh,124px)] w-[clamp(104px,54.771px+6.41dvh,124px)]"; // Durchmesser Prüfübersicht-Donut
 export const dashDonutInsetClass = "inset-[clamp(16px,11.077px+0.641dvh,18px)]"; // Ringbreite des Donuts (skaliert mit dashDonutSizeClass mit)
 export const dashDonutColClass = "grid-cols-[clamp(108px,58.771px+6.41dvh,128px)_1fr]"; // Spaltenbreite fuer den Donut-Bereich - muss mit dashDonutSizeClass mitwachsen, sonst wuerde der groessere Donut seine Spalte ueberragen

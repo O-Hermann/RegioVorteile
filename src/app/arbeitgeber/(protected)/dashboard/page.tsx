@@ -281,7 +281,7 @@ export default async function ArbeitgeberDashboardPage() {
 
         {/* Mittlere Spalte: Analysevergleich/Entwicklung, Prüfübersicht/Funde, Schnellaktion */}
         <div className="flex min-w-0 flex-col gap-3 min-[1400px]:min-h-0">
-          <div className="grid min-h-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1400px]:flex-[0.84_0.84_0%]">
+          <div className="grid min-h-0 grid-cols-1 gap-3 sm:grid-cols-[1.15fr_.85fr] min-[1400px]:flex-[0.84_0.84_0%]">
             <AnalysisCompare
               currentPeriod={metrics.currentPeriod}
               previousPeriod={metrics.previousPeriod}

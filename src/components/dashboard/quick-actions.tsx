@@ -34,8 +34,8 @@ export function QuickActions({ hint }: { hint?: string }) {
         >
           <ArrowSplitIcon className="h-[22px] w-[22px] shrink-0 text-white/85" />
           <span className="min-w-0">
-            <b className="block text-[11px] font-bold">Fälle prüfen</b>
-            <small className="block text-[8.8px] text-white/75">Priorisierte Fälle direkt bearbeiten</small>
+            <b className="block text-[12px] font-bold">Fälle prüfen</b>
+            <small className="block text-[9.5px] text-white/75">Priorisierte Fälle direkt bearbeiten</small>
           </span>
         </span>
 
@@ -45,8 +45,8 @@ export function QuickActions({ hint }: { hint?: string }) {
         >
           <UploadArrowIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
           <span className="min-w-0">
-            <b className="block text-[11px] font-bold">Daten importieren</b>
-            <small className="block text-[8.8px] text-sand-500 dark:text-[#89a9c3]">Neue Datei hinzufügen</small>
+            <b className="block text-[12px] font-bold">Daten importieren</b>
+            <small className="block text-[9.5px] text-sand-500 dark:text-[#89a9c3]">Neue Datei hinzufügen</small>
           </span>
         </Link>
 
@@ -56,8 +56,8 @@ export function QuickActions({ hint }: { hint?: string }) {
         >
           <PulseIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
           <span className="min-w-0">
-            <b className="block text-[11px] font-bold">Analyse starten</b>
-            <small className="block text-[8.8px] text-sand-500 dark:text-[#89a9c3]">Aktuelle Daten erneut prüfen</small>
+            <b className="block text-[12px] font-bold">Analyse starten</b>
+            <small className="block text-[9.5px] text-sand-500 dark:text-[#89a9c3]">Aktuelle Daten erneut prüfen</small>
           </span>
         </Link>
       </div>
