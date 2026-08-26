@@ -123,19 +123,26 @@ export function AnalysisCompare({
             )}
           </div>
 
-          <div className="mt-1.5 overflow-hidden rounded-[10px] border border-card-border/70 dark:border-[rgba(64,101,132,0.18)]">
-            <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,.82fr)_minmax(0,.82fr)_minmax(0,.8fr)] gap-0.5 border-b border-card-border/50 px-1 py-1.5 text-[8.5px] font-semibold uppercase tracking-wide text-sand-400 dark:border-white/[0.045] dark:text-[#6f91af]">
+          {/* Ein gemeinsames Subgrid statt vier unabhaengiger Zeilen-Grids: nur so
+              teilen sich Kopf- und alle Datenzeilen exakt dieselben Spalten-
+              breiten (wie bei einer echten <table>). Mit separaten Zeilen-Grids
+              (frueherer Stand) berechnete jede "auto"-Spalte ihre Breite nur aus
+              dem Inhalt DIESER EINEN Zeile - dadurch standen die Betragsspalten
+              zeilenweise unterschiedlich breit und die Zahlen liefen nicht mehr
+              sauber untereinander. */}
+          <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_auto_auto_auto] overflow-hidden rounded-[10px] border border-card-border/70 dark:border-[rgba(64,101,132,0.18)]">
+            <div className="col-span-4 grid grid-cols-subgrid gap-0.5 border-b border-card-border/50 px-1 py-1.5 text-[8.5px] font-semibold uppercase tracking-wide text-sand-400 dark:border-white/[0.045] dark:text-[#6f91af]">
               <span />
-              <span className="text-right">{shortMonthLabel(currentPeriod!)}</span>
-              <span className="text-right">{shortMonthLabel(previousPeriod!)}</span>
-              <span className="text-right">Änderung</span>
+              <span className="whitespace-nowrap text-right">{shortMonthLabel(currentPeriod!)}</span>
+              <span className="whitespace-nowrap text-right">{shortMonthLabel(previousPeriod!)}</span>
+              <span className="whitespace-nowrap text-right">Änderung</span>
             </div>
             {rows.map((row) => {
               const tone = changeTone(row.change, row.direction);
               return (
                 <div
                   key={row.label}
-                  className={`relative grid grid-cols-[minmax(0,1.5fr)_minmax(0,.82fr)_minmax(0,.82fr)_minmax(0,.8fr)] items-center gap-0.5 border-b border-card-border/40 px-1 py-2 ${dashTextBody} last:border-0 dark:border-white/[0.045] ${
+                  className={`relative col-span-4 grid grid-cols-subgrid items-center gap-0.5 border-b border-card-border/40 px-1 py-2 ${dashTextBody} last:border-0 dark:border-white/[0.045] ${
                     row.emphasis === "highlight"
                       ? "bg-emerald-50/50 dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.055),rgba(37,216,206,0.02))]"
                       : ""
@@ -156,8 +163,8 @@ export function AnalysisCompare({
                   >
                     {row.label}
                   </span>
-                  <b className="text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{row.current}</b>
-                  <b className="text-right font-bold tabular-nums text-sand-500 dark:text-[#a5bbcf]">{row.previous}</b>
+                  <b className="whitespace-nowrap text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{row.current}</b>
+                  <b className="whitespace-nowrap text-right font-bold tabular-nums text-sand-500 dark:text-[#a5bbcf]">{row.previous}</b>
                   <b
                     className={`text-right ${dashTextSecondaryLg} font-bold tabular-nums whitespace-nowrap ${
                       tone === "positive"
