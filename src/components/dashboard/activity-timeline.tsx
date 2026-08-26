@@ -50,7 +50,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
     <div
       style={{ "--activity-min-h": `${minHeightPx}px` } as React.CSSProperties}
       className="flex min-h-[var(--activity-min-h)] flex-1 basis-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0">
-      <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
+      <div className="mb-1 flex shrink-0 items-start justify-between gap-2">
         <div>
           <h3 className={`font-display ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Letzte Aktivitäten</h3>
           <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-[#88a5bd]`}>Chronologisches Protokoll deiner Aktivitäten.</p>
@@ -67,7 +67,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
         </div>
       ) : (
         <div
-          className="relative grid flex-1 gap-1 overflow-hidden before:absolute before:left-[19px] before:top-[18px] before:bottom-[18px] before:w-px before:content-[''] before:bg-sand-200 dark:before:bg-[linear-gradient(180deg,rgba(37,216,206,0.22),rgba(92,126,155,0.16)_58%,rgba(170,118,255,0.16))]"
+          className="relative grid flex-1 gap-0.5 overflow-hidden before:absolute before:left-[19px] before:top-[18px] before:bottom-[18px] before:w-px before:content-[''] before:bg-sand-200 dark:before:bg-[linear-gradient(180deg,rgba(37,216,206,0.22),rgba(92,126,155,0.16)_58%,rgba(170,118,255,0.16))]"
           style={{ gridTemplateRows: `repeat(${items.length}, minmax(0, 1fr))` }}
         >
           {items.map((item) => (
@@ -77,9 +77,20 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
             // Icon-Kachel (0px Abstand zur Zeilen-Innenkante) sichtbar in den
             // Kreis + dessen "Ausstanz"-Ring hinein. Entfernt, zusaetzlich
             // etwas mehr Innenabstand (px-2.5 statt px-2) als Sicherheitsrand.
+            // "py-1" wurde bewusst auf "py-0.5" reduziert: der 3-zeilige
+            // Textblock (Kategorie/Zeit, Titel, Beschreibung) braucht bei den
+            // im Readability-Pass vergroesserten Schriftgroessen mehr
+            // Innenhoehe als die feste Zeilenhoehe hergab - dadurch war der
+            // Textblock real hoeher als die Zeile, "items-center" zentrierte
+            // ihn also innerhalb eines ueberlaufenden (nicht des sichtbaren)
+            // Bereichs, wodurch Icon/Text optisch nach unten bzw. oben
+            // verrutscht wirkten statt wirklich mittig zu sitzen. Gewonnene
+            // Innenhoehe zusammen mit dem strafferen Leading unten (siehe
+            // Text-Zeilen) schliesst diese Luecke, ohne Kartenhoehe oder
+            // Schriftgroesse anzufassen.
             <div
               key={item.id}
-              className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 rounded-xl border px-2.5 py-1 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
+              className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 rounded-xl border px-2.5 py-0.5 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
                 item.highlight
                   ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(50,215,154,0.19)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
                   : "border-card-border dark:border-[rgba(45,81,112,0.49)] bg-sand-50/50 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.66),rgba(7,25,44,0.58))]"
@@ -91,16 +102,16 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
                 <item.icon className="h-3.5 w-3.5" />
               </span>
               <div className="min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`truncate ${dashTextSecondarySm} font-bold uppercase tracking-wide text-sand-400 dark:text-[#7391aa]`}>
+                <div className="flex items-center justify-between gap-2 leading-none">
+                  <span className={`truncate ${dashTextSecondarySm} font-bold uppercase tracking-wide leading-none text-sand-400 dark:text-[#7391aa]`}>
                     {item.category}
                   </span>
-                  <time className={`shrink-0 ${dashTextSecondaryLg} tabular-nums text-sand-400 dark:text-[#8fa7bc]`}>
+                  <time className={`shrink-0 ${dashTextSecondaryLg} leading-none tabular-nums text-sand-400 dark:text-[#8fa7bc]`}>
                     {relativeTimeDe(item.createdAt)}
                   </time>
                 </div>
                 <p className={`truncate ${dashTextBodyLg} font-bold leading-tight text-sand-900 dark:text-dash-text`}>{item.title}</p>
-                <p className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-[#829db5]`}>{item.detail}</p>
+                <p className={`truncate ${dashTextSecondaryLg} leading-none text-sand-500 dark:text-[#829db5]`}>{item.detail}</p>
               </div>
               <span className="justify-self-end text-[12px] text-sand-300 dark:text-[#66849f]">→</span>
             </div>
@@ -108,7 +119,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
         </div>
       )}
 
-      <div className={`mt-1.5 flex shrink-0 items-center justify-between border-t border-card-border/70 dark:border-white/[0.055] pt-1.5 ${dashTextSecondaryLg}`}>
+      <div className={`mt-1 flex shrink-0 items-center justify-between border-t border-card-border/70 dark:border-white/[0.055] pt-1 ${dashTextSecondaryLg}`}>
         <span className="text-sand-400 dark:text-[#8099af]">Vollständiges Aktivitätsprotokoll</span>
         <span className="font-semibold text-ink-600 dark:text-[#72eee6]">Bald verfügbar</span>
       </div>
