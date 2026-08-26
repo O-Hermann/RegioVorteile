@@ -71,9 +71,15 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
           style={{ gridTemplateRows: `repeat(${items.length}, minmax(0, 1fr))` }}
         >
           {items.map((item) => (
+            // "overflow-hidden" hier war unnoetig (border-radius clippt
+            // background/border bereits nativ, ohne dass Inhalt beschnitten
+            // wird) und schnitt bei der links buendig sitzenden 27px-
+            // Icon-Kachel (0px Abstand zur Zeilen-Innenkante) sichtbar in den
+            // Kreis + dessen "Ausstanz"-Ring hinein. Entfernt, zusaetzlich
+            // etwas mehr Innenabstand (px-2.5 statt px-2) als Sicherheitsrand.
             <div
               key={item.id}
-              className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 overflow-hidden rounded-xl border px-2 py-1 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
+              className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 rounded-xl border px-2.5 py-1 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
                 item.highlight
                   ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(50,215,154,0.19)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
                   : "border-card-border dark:border-[rgba(45,81,112,0.49)] bg-sand-50/50 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.66),rgba(7,25,44,0.58))]"
