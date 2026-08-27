@@ -2,39 +2,36 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { COMPANY_ROLE_LABELS } from "@/lib/company";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
-import { getCompanyMetrics, formatEuroCompact } from "@/lib/company-metrics";
-import {
-  TrendingUpIcon,
-  TagIcon,
-  ActivityIcon,
-  FileTextIcon,
-  BriefcaseIcon,
-  UsersIcon,
-  UploadIcon,
-  AlertTriangleIcon,
-} from "@/components/icons";
+import { getCompanyMetrics } from "@/lib/company-metrics";
+import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { StatusHero } from "@/components/dashboard/status-hero";
-import { KpiGrid, type KpiTile } from "@/components/dashboard/kpi-grid";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
-import { AnalysisCompare } from "@/components/dashboard/analysis-compare";
-import { TrendChart } from "@/components/dashboard/trend-chart";
+import { FindingsHero } from "@/components/dashboard/findings-hero";
 import { ReviewDonut } from "@/components/dashboard/review-donut";
 import { FindingsList } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Pagehead } from "@/components/dashboard/pagehead";
 import type { DashAccent } from "@/components/dashboard/dash-ui";
 
-// V12-Stand der Effivo-Übersicht (freigegebene Designreferenz
-// "Effivo_V12_Dashboard_Final.html"). Jedes V12-Modul lebt als eigene,
-// einzeln verantwortliche Komponente unter components/dashboard/ - bewusst
-// KEINE gestapelten CSS-Versionsebenen wie im Referenz-HTML selbst (dort
-// ueberschreiben sich ca. 12 "V2 fix"/"V11.11 fix"-Bloecke gegenseitig).
-// Datenermittlung unveraendert gegenueber dem bisherigen Stand: nur die
-// Darstellung wurde auf V12 portiert, keine echte Logik durch Platzhalter-
-// werte aus der Referenz ersetzt (siehe Kommentare in den einzelnen
-// Komponenten fuer die Stellen, an denen es noch kein echtes Datenmodell
-// gibt - Faelle/Funde/Pruefung, siehe ReviewDonut/FindingsList).
+// MVP-Stand der Effivo-Übersicht: bewusster Fokus auf die vier Fund-
+// Kategorien (Doppelzahlungen/Skonto/Gutschriften/Überzahlung, siehe
+// findings-list.tsx) statt der bisherigen Umsatz/Kosten-Kennzahlenuebersicht
+// - Kundenvorgabe: "erstmal dem Kunden zeigen, wo Geld liegen bleibt", eine
+// Umsatz/Kosten-Uebersicht kommt explizit erst spaeter. Die dafuer bisher
+// gebauten, echten-Daten-basierten Komponenten (KpiGrid, AnalysisCompare,
+// TrendChart) werden daher NICHT mehr gerendert, aber bewusst NICHT
+// geloescht - inklusive der zugehoerigen, bereits korrekten
+// getCompanyMetrics()-Aggregation - damit sie spaeter ohne Neubau wieder
+// eingehaengt werden koennen.
+//
+// Die vorherige Drei-Spalten-Seite war fest auf "100dvh - 9rem" begrenzt
+// (kein Scrollen), was den grossen Teil der Layout-Fehler dieser Seite
+// verursacht hat (Text-Truncation, Spalten-Fluchtung, vertikale
+// Zentrierung - siehe Kommentare in den einzelnen Komponenten). Die MVP-
+// Seite fliesst stattdessen natuerlich wie jede andere Seite der App und
+// scrollt bei Bedarf - dadurch entfallen die meisten dieser Hacks komplett,
+// statt sie fuer die neue Struktur erneut nachbauen zu muessen.
 const ACCENT_MAP: Record<string, DashAccent> = {
   sky: "blue",
   emerald: "green",
@@ -68,8 +65,6 @@ export default async function ArbeitgeberDashboardPage() {
       orderBy: { processedAt: "desc" },
       take: 5,
     }),
-    // Phase 5.1: zentrale, company-gescopte Kennzahlenaggregation - "Importierte
-    // Monate" lebt hier (unveraendert gegenueber dem bisherigen Stand).
     getCompanyMetrics(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
@@ -86,92 +81,44 @@ export default async function ArbeitgeberDashboardPage() {
   });
   const currentPeriodLabel = metrics.currentPeriod ? periodLabel(metrics.currentPeriod.periodMonth, metrics.currentPeriod.periodYear) : null;
 
-  // Acht echte Kennzahlen (Kosten/Ergebnis/Offene Aufträge bleiben "—", da
-  // dafuer weiterhin keine verlaessliche Datenquelle existiert - Ergebnis !=
-  // Umsatz, offene Rechnungen != offene Auftraege). Veraenderungswerte nur,
-  // wo eine echte Vormonatsberechnung existiert. Jede Kennzahl hat ihre
-  // eigene Kachel (kein Zusammenfassen, keine breite Sonderkachel) - festes
-  // 2x4-Raster in der Reihenfolge Umsatz/Kosten, Ergebnis/Offene
-  // Forderungen, Offene Aufträge/Kunden mit Umsatz, Importierte Monate/
-  // Offene Datenfehler.
-  const kpiTiles: KpiTile[] = [
-    {
-      key: "revenue",
-      label: "Umsatz",
-      value: formatEuroCompact(metrics.revenueCurrent),
-      icon: TrendingUpIcon,
-      accent: "highlight",
-      change: metrics.revenueChange,
-      changeDirection: "up-good",
-      changeContext: "vs. Vormonat",
-    },
-    { key: "costs", label: "Kosten", value: "—", icon: TagIcon, accent: "teal" },
-    { key: "result", label: "Ergebnis", value: "—", icon: ActivityIcon, accent: "purple" },
-    {
-      key: "receivables",
-      label: "Offene Forderungen",
-      value: formatEuroCompact(metrics.openReceivablesCurrent),
-      icon: FileTextIcon,
-      accent: "orange",
-      change: metrics.openReceivablesChange,
-      changeDirection: "down-good",
-      changeContext: "vs. Vormonat",
-    },
-    { key: "orders", label: "Offene Aufträge", value: "—", icon: BriefcaseIcon, accent: "blue" },
-    {
-      key: "customers",
-      label: "Kunden mit Umsatz",
-      value: metrics.customersWithRevenueCurrent === null ? "—" : String(metrics.customersWithRevenueCurrent),
-      icon: UsersIcon,
-      accent: "green",
-      change: metrics.customersWithRevenueChange,
-      changeDirection: "up-good",
-      changeContext: "vs. Vormonat",
-    },
-    {
-      key: "months",
-      label: "Importierte Monate",
-      value: processedMonthCount > 0 ? String(processedMonthCount) : "—",
-      icon: UploadIcon,
-      accent: "teal",
-    },
-    {
-      key: "errors",
-      label: "Offene Datenfehler",
-      value: String(metrics.openImportErrorCount),
-      icon: AlertTriangleIcon,
-      accent: "orange",
-      detailsLabel: "Details ansehen →",
-    },
-  ];
-
   // Handlungsbedarf: solange kein Import existiert, auf den Upload
   // hinweisen; sobald mindestens einer wartet, auf die noch ausstehende
-  // Spaltenzuordnung - beides aus echten DataImport-Zahlen abgeleitet.
-  const actionItems: AttentionItem[] =
-    dataImportCount === 0
-      ? [
-          {
-            id: "no-import",
-            title: "Noch keine Unternehmensdaten importiert",
-            icon: UploadIcon,
-            accent: ACCENT_MAP.amber,
-            href: "/arbeitgeber/dashboard/datenimporte/neu",
-            cta: "Import starten",
-          },
-        ]
-      : pendingMappingCount > 0
-        ? [
-            {
-              id: "pending-mapping",
-              title: `${pendingMappingCount} ${pendingMappingCount === 1 ? "Datenimport wartet" : "Datenimporte warten"} auf Zuordnung`,
-              icon: UploadIcon,
-              accent: ACCENT_MAP.amber,
-              href: "/arbeitgeber/dashboard/datenimporte",
-              cta: "Ansehen",
-            },
-          ]
-        : [];
+  // Spaltenzuordnung; zusaetzlich - sobald Daten verarbeitet sind - ein
+  // Hinweis auf die neuen Fund-Faelle (Neu-Anteil aus review-donut.tsx,
+  // hier als eigene Konstante gehalten statt importiert, da beide Karten
+  // laut Kommentar dort bewusst unabhaengige Referenz-Demowerte tragen).
+  const actionItems: AttentionItem[] = [];
+  if (dataImportCount === 0) {
+    actionItems.push({
+      id: "no-import",
+      title: "Noch keine Unternehmensdaten importiert",
+      icon: UploadIcon,
+      accent: ACCENT_MAP.amber,
+      href: "/arbeitgeber/dashboard/datenimporte/neu",
+      cta: "Import starten",
+    });
+  } else if (pendingMappingCount > 0) {
+    actionItems.push({
+      id: "pending-mapping",
+      title: `${pendingMappingCount} ${pendingMappingCount === 1 ? "Datenimport wartet" : "Datenimporte warten"} auf Zuordnung`,
+      icon: UploadIcon,
+      accent: ACCENT_MAP.amber,
+      href: "/arbeitgeber/dashboard/datenimporte",
+      cta: "Ansehen",
+    });
+  }
+  if (processedMonthCount > 0) {
+    actionItems.push({
+      id: "pending-findings",
+      title: "16 neue Fälle warten auf Prüfung",
+      subtitle: "Ø Prüfzeit 11 Minuten",
+      icon: SearchIcon,
+      accent: ACCENT_MAP.slate,
+      href: "/arbeitgeber/dashboard/datenimporte",
+      cta: "Prüfen",
+      priority: true,
+    });
+  }
 
   type ActivityItem = {
     id: string;
@@ -243,78 +190,33 @@ export default async function ArbeitgeberDashboardPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-3 min-[1400px]:h-[calc(100dvh-9rem)]">
+    <div className="flex flex-col gap-3">
       <Pagehead
+        greeting={greeting}
+        avatarInitial={avatarInitial}
+        roleLabel={roleLabel}
+        companyName={company.name}
         today={today}
         currentPeriodLabel={currentPeriodLabel}
         dataStatusReady={processedMonthCount > 0}
         pendingMappingCount={pendingMappingCount}
       />
 
-      <div className="grid grid-cols-1 gap-3 min-[1400px]:min-h-0 min-[1400px]:flex-1 min-[901px]:grid-cols-2 min-[1536px]:grid-cols-[1.08fr_1.52fr_.96fr] min-[1536px]:items-stretch">
-        {/* Linke Spalte: Begrüßung, Datenstatus, KPI-Kacheln */}
-        <div className="flex min-w-0 flex-col rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_15px_34px_rgba(0,0,0,0.18)] min-[1400px]:min-h-0">
-          <div className="mb-2.5 flex items-center gap-2.5">
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:bg-[radial-gradient(circle_at_28%_20%,rgba(218,255,252,0.2),transparent_36%),linear-gradient(145deg,#31cfc6,#117d7a_72%)] font-display text-base font-bold text-white shadow-md shadow-ink-900/20 dark:border dark:border-[rgba(118,241,233,0.2)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_18px_rgba(4,94,91,0.17)]">
-              {avatarInitial}
-              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-card bg-emerald-400 shadow-[0_0_8px_rgba(88,227,166,0.42)] dark:border-[#0e223b] dark:bg-[#58e3a6]" />
-            </div>
-            <div className="min-w-0">
-              <b className="block truncate font-display text-[15px] font-bold tracking-tight text-sand-900 dark:text-dash-text">{greeting}</b>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[9px] font-bold text-gold-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] dark:bg-[linear-gradient(180deg,rgba(45,69,95,0.92),rgba(34,54,78,0.92))] dark:text-[#f2f7fb] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] dark:border dark:border-[rgba(113,150,181,0.13)]">
-                  {roleLabel}
-                </span>
-                <span className="truncate text-[10px] text-sand-500 dark:text-[#9eb8cf]">{company.name}</span>
-              </div>
-            </div>
-          </div>
+      <AttentionList items={actionItems} />
 
-          <StatusHero
-            dataImportCount={dataImportCount}
-            processedMonthCount={processedMonthCount}
-            currentPeriodLabel={currentPeriodLabel ?? ""}
-          />
-
-          <KpiGrid tiles={kpiTiles} />
-        </div>
-
-        {/* Mittlere Spalte: Analysevergleich/Entwicklung, Prüfübersicht/Funde, Schnellaktion */}
-        <div className="flex min-w-0 flex-col gap-3 min-[1400px]:min-h-0">
-          <div className="grid min-h-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1400px]:flex-[0.84_0.84_0%]">
-            <AnalysisCompare
-              currentPeriod={metrics.currentPeriod}
-              previousPeriod={metrics.previousPeriod}
-              revenueCurrent={metrics.revenueCurrent}
-              revenuePrevious={metrics.revenuePrevious}
-              revenueChange={metrics.revenueChange}
-              openReceivablesCurrent={metrics.openReceivablesCurrent}
-              openReceivablesPrevious={metrics.openReceivablesPrevious}
-              openReceivablesChange={metrics.openReceivablesChange}
-              customersWithRevenueCurrent={metrics.customersWithRevenueCurrent}
-              customersWithRevenuePrevious={metrics.customersWithRevenuePrevious}
-              customersWithRevenueChange={metrics.customersWithRevenueChange}
-            />
-            <TrendChart history={metrics.revenueHistory} />
-          </div>
-          <div className="grid min-h-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1400px]:flex-[0.9_0.9_0%]">
-            <ReviewDonut />
-            <FindingsList />
-          </div>
-          <QuickActions hint={pendingMappingCount > 0 ? `${pendingMappingCount} Datenimporte prüfen` : undefined} />
-        </div>
-
-        {/* Rechte Spalte: Handlungsbedarf + Letzte Aktivitäten, fest 50/50.
-            Ab 1536px eigene dritte Spalte (untereinander gestapelt) - im
-            mittleren Breitenbereich (768–1535px, wie in der V12-Referenz)
-            stattdessen volle Breite unterhalb von links/mitte, dafuer intern
-            nebeneinander, damit auf schmaleren Laptop-Breiten kein
-            erzwungener dritter Spaltenblock die Lesbarkeit verschlechtert. */}
-        <div className="flex min-w-0 flex-col gap-3 min-[901px]:col-span-2 min-[901px]:flex-row min-[1536px]:col-span-1 min-[1536px]:flex-col min-[1400px]:min-h-0">
-          <AttentionList items={actionItems} />
-          <ActivityTimeline items={activityItems} />
-        </div>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
+        <FindingsHero currentPeriodLabel={currentPeriodLabel} />
+        <StatusHero dataImportCount={dataImportCount} processedMonthCount={processedMonthCount} currentPeriodLabel={currentPeriodLabel ?? ""} />
       </div>
+
+      <FindingsList />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ReviewDonut />
+        <QuickActions hint={pendingMappingCount > 0 ? `${pendingMappingCount} Datenimporte prüfen` : undefined} />
+      </div>
+
+      <ActivityTimeline items={activityItems} />
     </div>
   );
 }

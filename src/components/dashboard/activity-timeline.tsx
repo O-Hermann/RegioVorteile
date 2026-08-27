@@ -28,28 +28,27 @@ const ICON_CLASS: Record<DashAccent, string> = {
   red: "text-rose-600 dark:text-dash-red dark:border-dash-red/55",
 };
 
-// "Letzte Aktivitäten"-Karte, rechte Spalte. Struktur 1:1 aus der V12-
-// Referenz uebernommen: Timeline-Connector-Linie hinter den Zeilen, pro Zeile
-// ein "ausgestanzter" Icon-Kreis (eigener Ring-Schatten durchbricht die
-// Linie optisch), eine Zeile optional als "is-highlight" hervorgehoben, und
-// ein separater Footer-Balken als eigene Grid-Zeile (kann daher nie von der
-// Timeline ueberdeckt werden). Zeigt ausschliesslich echte Aktivitaeten aus
+// "Letzte Aktivitäten"-Karte. Struktur 1:1 aus der V12-Referenz uebernommen:
+// Timeline-Connector-Linie hinter den Zeilen, pro Zeile ein "ausgestanzter"
+// Icon-Kreis (eigener Ring-Schatten durchbricht die Linie optisch), eine
+// Zeile optional als "is-highlight" hervorgehoben, und ein separater
+// Footer-Balken als eigene Grid-Zeile (kann daher nie von der Timeline
+// ueberdeckt werden). Zeigt ausschliesslich echte Aktivitaeten aus
 // ArbeitgeberDashboardPage (Einladungen/Aktivierungen/Importe) - "highlight"
 // wird auf die neueste tatsaechlich positive Aktivitaet angewendet (z.B.
 // "Datenimport verarbeitet"), nicht auf einen erfundenen "Fund", da es dafuer
 // noch kein echtes Datenmodell gibt. Der Footer ist bewusst reiner Text ohne
 // Link, da es noch keine eigene Aktivitaetsprotokoll-Seite gibt, auf die er
 // echt verweisen koennte.
+//
+// Frueher gab es hier eine per Formel berechnete Mindesthoehe, damit Zeilen
+// in der alten, auf eine feste Viewport-Hoehe begrenzten Seite nicht
+// kollabierten/ueberlappten - mit dem MVP-Fokus (siehe findings-list.tsx)
+// hat die Seite keine feste Hoehe mehr und fliesst natuerlich, daher faellt
+// dieser Hack komplett weg.
 export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
-  // Gleiche Begruendung wie in AttentionList: ohne diese Mindesthoehe
-  // kollabiert die Karte unterhalb von 1400px (keine feste Viewport-Hoehe
-  // dort) auf beinahe 0px, wodurch sich die Aktivitaets-Zeilen gegenseitig
-  // ueberlappen statt lesbar untereinander zu stehen.
-  const minHeightPx = 96 + Math.max(items.length, 1) * 58;
   return (
-    <div
-      style={{ "--activity-min-h": `${minHeightPx}px` } as React.CSSProperties}
-      className="flex min-h-[var(--activity-min-h)] flex-1 basis-0 flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)]">
       <div className="mb-1 flex shrink-0 items-start justify-between gap-2">
         <div>
           <h3 className={`font-display ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Letzte Aktivitäten</h3>

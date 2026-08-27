@@ -1,13 +1,6 @@
 import Link from "next/link";
 import { CheckCircleIcon } from "@/components/icons";
-import {
-  DASH_ACCENT_HEX,
-  type DashAccent,
-  dashTextSectionHeading,
-  dashTextBody,
-  dashTextBodyLg,
-  dashTextSecondaryLg,
-} from "@/components/dashboard/dash-ui";
+import { DASH_ACCENT_HEX, type DashAccent, dashTextBody, dashTextBodyLg, dashTextSecondaryLg, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 export type AttentionItem = {
   id: string;
@@ -32,96 +25,78 @@ const BUBBLE_CLASS: Record<DashAccent, string> = {
   teal: "text-ink-700 bg-ink-500/10 border border-ink-500/30 dark:text-dash-teal dark:bg-[rgba(37,216,206,0.09)] dark:border-dash-teal/60",
 };
 
-// "Handlungsbedarf"-Karte, rechte Spalte. Diese Sektion ist laut Vorgabe der
-// mit Abstand fragilste Teil der V12-Referenz (siehe deren eigene v11.2 bis
-// v11.14-Korrekturebenen) - die Zeilen-Geometrie wird daher bewusst technisch
-// 1:1 uebernommen: Icon+Text vertikal zentriert, Text linksbuendig, und die
-// Akzentleiste links ist bei JEDER Zeile exakt 2px breit / 24px hoch / 72%
-// Deckkraft - unabhaengig davon, ob "priority" gesetzt ist. Es gibt bewusst
-// KEINEN zusaetzlichen inset-Schatten auf Prioritaets-Zeilen (das war genau
-// der Fehler, den v11.11 in der Referenz behoben hat).
+// "Handlungsbedarf"-Band, jetzt eine schlanke horizontale Leiste direkt unter
+// dem Seitenkopf statt einer hohen Karte in einer dritten Spalte - die alte
+// dritte Spalte (KPI-Raster/Analysevergleich/Handlungsbedarf nebeneinander,
+// alle auf eine feste Viewport-Hoehe gepresst) gibt es mit dem MVP-Fokus auf
+// die vier Fund-Kategorien (siehe findings-list.tsx) nicht mehr - die Seite
+// fliesst jetzt natuerlich und scrollt bei Bedarf, wie jede andere Seite der
+// App auch. Dadurch faellt der komplette bisherige Hoehen-Hack weg (feste
+// "min-h"-Formel + "flex: 1.35" gegen die Nachbarkarte "Letzte Aktivitäten"),
+// der ausschliesslich noetig war, damit Zeilen in der alten, hoehenbegrenzten
+// Karte nicht kollabierten/ueberlappten.
 //
-// Inhaltlich zeigt diese Komponente ausschliesslich echte offene Punkte aus
-// ArbeitgeberDashboardPage (aktuell: fehlender Import / offene Zuordnung).
-// Die Kennzahlen-Kacheln ("Offene Pruefungen 34" / "Hohe Prioritaet 5.630 €")
-// und der Fusszeilen-Hinweis aus der Referenz sind bewusst NICHT uebernommen:
-// beide beruhen dort auf einem Fallpruefungs-/Funde-Datenmodell, das es in
-// diesem Projekt noch nicht gibt (Arbeitsliste/Fallpruefung sind explizit
-// zukuenftige Arbeit) - erfundene Zahlen waeren Platzhalter-Content anstelle
-// echter Werte.
+// Inhaltlich weiterhin ausschliesslich echte offene Punkte aus
+// ArbeitgeberDashboardPage (aktuell: fehlender Import / offene Zuordnung) -
+// siehe Kommentar dort zu den bewusst nicht uebernommenen erfundenen
+// Kennzahlen-Kacheln aus der Referenz.
 export function AttentionList({ items }: { items: AttentionItem[] }) {
   const hasItems = items.length > 0;
-  // Handlungsbedarf ist der zentrale operative Bereich und bekommt bewusst
-  // mehr Gewicht als die unterstuetzende "Letzte Aktivitäten"-Historie
-  // (ca. 57/43 statt starrer 50/50-Aufteilung) - in BEIDEN Zustaenden
-  // (leer/gefuellt), damit die Karte im Empty State ruhig wirkt, aber nicht
-  // zu einem nebensaechlichen kleinen Modul schrumpft.
-  //
-  // Unterhalb von 1400px hat die Seite bewusst KEINE feste Viewport-Hoehe
-  // (siehe page.tsx, "min-[1400px]:h-[calc(100dvh-9rem)]") - Inhalt darf dort
-  // natuerlich wachsen und die Seite scrollen. Ohne diese explizite Mindest-
-  // hoehe kollabiert "flex-grow" in Kombination mit "overflow-hidden" auf
-  // den Kind-Zeilen dort jedoch auf beinahe 0px (Grid-/Flex-Autosizing hat
-  // ohne bestimmte Vorfahrenhoehe keine Referenzgroesse), wodurch Zeilen
-  // sich gegenseitig ueberlappen statt lesbar untereinander zu stehen. Die
-  // Mindesthoehe skaliert mit der echten Anzahl an Punkten; ab 1400px
-  // uebernimmt wieder die gewichtete Aufteilung.
-  const minHeightPx = hasItems ? 56 + items.length * 58 : 220;
   return (
     <div
-      style={{ "--attention-min-h": `${minHeightPx}px`, flex: "1.35 1 0%" } as React.CSSProperties}
-      className="flex min-h-[var(--attention-min-h)] flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)] min-[1400px]:min-h-0"
+      className={`flex flex-wrap items-center gap-4 rounded-2xl border p-4 shadow-warm-sm ${
+        hasItems
+          ? "border-gold-300/50 bg-[linear-gradient(120deg,rgba(215,164,52,0.07),transparent_70%)] dark:border-[rgba(224,171,72,0.28)] dark:bg-[linear-gradient(120deg,rgba(224,171,72,0.055),transparent_70%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))]"
+          : "border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))]"
+      }`}
     >
-      <div className="mb-2 shrink-0">
-        <h3 className={`font-display ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Handlungsbedarf</h3>
-        <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-[#7fa1bd]`}>
-          Priorisierte Punkte, die heute Aufmerksamkeit brauchen.
-        </p>
+      <div className="flex shrink-0 items-center gap-3">
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] ${
+            hasItems
+              ? "bg-gold-100 text-gold-700 dark:bg-[rgba(224,171,72,0.13)] dark:text-[#e2ab48]"
+              : "bg-emerald-100 text-emerald-600 dark:bg-[rgba(50,215,154,0.12)] dark:text-dash-green"
+          }`}
+        >
+          <CheckCircleIcon className="h-[18px] w-[18px]" />
+        </span>
+        <div>
+          <strong className={`font-display block ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>Handlungsbedarf</strong>
+          <span className={`${dashTextSecondarySm} text-sand-500 dark:text-[#7fa1bd]`}>
+            {hasItems ? `${items.length} ${items.length === 1 ? "Punkt braucht" : "Punkte brauchen"} heute Aufmerksamkeit` : "Alles erledigt"}
+          </span>
+        </div>
       </div>
 
       {!hasItems ? (
-        <div className="flex min-h-[104px] flex-1 flex-col items-center justify-center gap-2.5 py-4 text-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/30 to-emerald-500/10 text-emerald-600 dark:text-emerald-200 border border-emerald-400/30 dark:border-emerald-300/25 ring-1 ring-inset ring-white/10">
-            <CheckCircleIcon className="h-5 w-5" />
-          </span>
-          <p className="text-sm text-sand-500 dark:text-[#7fa1bd]">Aktuell besteht kein Handlungsbedarf.</p>
-        </div>
+        <p className={`${dashTextBody} text-sand-500 dark:text-[#7fa1bd]`}>Aktuell besteht kein Handlungsbedarf.</p>
       ) : (
-        <div
-          className="grid flex-1 gap-1.5 overflow-hidden"
-          style={{ gridTemplateRows: `repeat(${items.length}, minmax(0, 1fr))` }}
-        >
+        <div className="flex min-w-0 flex-1 flex-wrap gap-2.5">
           {items.map((item) => (
             <Link
               key={item.id}
               href={item.href}
               style={{ "--case-accent": DASH_ACCENT_HEX[item.accent] } as React.CSSProperties}
-              className={`relative grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-xl border px-2.5 py-1 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-px ${
-                item.priority
-                  ? "border-rose-300/60 bg-rose-50/60 dark:border-[rgba(255,98,93,0.24)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(82,33,40,0.28),rgba(8,29,50,0.72)_34%,rgba(7,25,44,0.66))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_8px_18px_rgba(42,10,13,0.09)]"
-                  : "border-card-border dark:border-[rgba(39,71,101,0.5)] bg-sand-50/60 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.68),rgba(7,25,44,0.62))]"
-              }`}
+              className="relative flex min-w-0 flex-1 basis-[240px] items-center gap-2.5 overflow-hidden rounded-xl border border-card-border dark:border-[rgba(39,71,101,0.5)] bg-sand-50/60 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.68),rgba(7,25,44,0.62))] py-2 pl-3 pr-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-ink-400 dark:hover:border-[rgba(71,119,156,0.78)]"
             >
               <span
                 aria-hidden
-                className="absolute left-0 top-1/2 h-6 w-[2px] -translate-y-1/2 rounded-full opacity-70"
+                className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full opacity-70"
                 style={{ background: "var(--case-accent)" }}
               />
-              <span className={`flex h-7 w-7 items-center justify-center justify-self-center rounded-full ${BUBBLE_CLASS[item.accent]}`}>
+              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${BUBBLE_CLASS[item.accent]}`}>
                 <item.icon className="h-3.5 w-3.5" />
               </span>
-              <div className="flex min-w-0 flex-col justify-center text-left">
-                <span className="flex min-w-0 items-center gap-1.5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
                   {item.priority && (
                     <span className="shrink-0 rounded-full border border-rose-300/50 bg-rose-100/70 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wide text-rose-600 dark:border-dash-red/20 dark:bg-dash-red/10 dark:text-[#ff908a]">
                       Priorität
                     </span>
                   )}
-                  <span className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>{item.title}</span>
-                </span>
-                {item.subtitle && (
-                  <span className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>
-                )}
+                  <span className={`truncate ${dashTextBody} font-bold text-sand-900 dark:text-dash-text`}>{item.title}</span>
+                </div>
+                {item.subtitle && <span className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>}
               </div>
               <span className={`shrink-0 ${dashTextSecondaryLg} font-semibold text-ink-600 dark:text-[#8db2ca]`}>{item.cta} →</span>
             </Link>

@@ -15,13 +15,17 @@ import {
 // echtes Fallpruefungs-Datenmodell im Projekt (Arbeitsliste/Fallpruefung
 // sind laut Aufgabenstellung explizit zukuenftige Arbeit) - die Werte sind
 // daher unveraendert die Referenz-Demowerte, keine erfundenen "eigenen"
-// Zahlen. Sobald ein echtes Faelle-Modell existiert, ist ausschliesslich
-// diese Komponente anzupassen (ein Owner, keine Kaskaden-Overrides).
+// Zahlen. Die Gesamtsumme (41) entspricht bewusst der Fallzahl-Summe aus
+// findings-list.tsx (getFindingsSummary().totalCount) - beide Karten zeigen
+// dieselben vier MVP-Fund-Kategorien, nur aus unterschiedlichem Blickwinkel
+// (Bearbeitungsstand hier, Betrag/Beschreibung dort). Sobald ein echtes
+// Faelle-Modell existiert, ist ausschliesslich diese Komponente anzupassen
+// (ein Owner, keine Kaskaden-Overrides).
 const LEGEND = [
-  { label: "Neu", value: 18, share: "39%", dot: "bg-dash-teal", active: true },
-  { label: "In Prüfung", value: 16, share: "35%", dot: "bg-[#ffd05c]" },
-  { label: "Geprüft", value: 8, share: "17%", dot: "bg-dash-blue" },
-  { label: "Abgeschlossen", value: 4, share: "9%", dot: "bg-[#55df9c]" },
+  { label: "Neu", value: 16, share: "39%", dot: "bg-dash-teal", active: true },
+  { label: "In Prüfung", value: 14, share: "34%", dot: "bg-[#ffd05c]" },
+  { label: "Geprüft", value: 7, share: "17%", dot: "bg-dash-blue" },
+  { label: "Abgeschlossen", value: 4, share: "10%", dot: "bg-[#55df9c]" },
 ];
 
 export function ReviewDonut() {
@@ -39,26 +43,26 @@ export function ReviewDonut() {
         </div>
         <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(37,216,206,0.16)] dark:bg-[rgba(37,216,206,0.055)] dark:text-[#b9f9f5]`}>
           <i className="h-1.5 w-1.5 rounded-full bg-ink-500 dark:bg-dash-teal" />
-          46 Fälle gesamt
+          41 Fälle gesamt
         </span>
       </div>
 
       <div className="mt-1.5 flex items-center justify-between gap-2 rounded-[10px] border border-card-border/60 bg-sand-50/60 px-2.5 py-1.5 dark:border-[rgba(71,108,140,0.19)] dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.62),rgba(7,25,44,0.44))]">
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className={`${dashTextSecondarySm} font-bold uppercase tracking-wide text-sand-400 dark:text-[#718fa8]`}>Bearbeitungsstatus</span>
-          <strong className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#eef8ff]`}>18 neue Fälle warten auf Prüfung</strong>
+          <strong className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#eef8ff]`}>16 neue Fälle warten auf Prüfung</strong>
         </div>
         <span className={`shrink-0 whitespace-nowrap text-right ${dashTextSecondarySm} text-sand-500 dark:text-[#7f9ab2]`}>
-          <b className={`block ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#d7e8f5]`}>12 Min.</b>Ø Prüfzeit
+          <b className={`block ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#d7e8f5]`}>11 Min.</b>Ø Prüfzeit
         </span>
       </div>
 
       <div className={`mt-1.5 grid ${dashDonutColClass} items-center gap-3`}>
         <div className="flex flex-col items-center gap-1">
-          <div className={`relative mx-auto ${dashDonutSizeClass} rounded-full bg-[conic-gradient(#0f766e_0_39%,#55df9c_39%_48%,#4f9fff_48%_66%,#ffd05c_66%_100%)] shadow-warm-sm dark:bg-[conic-gradient(#25d8ce_0_39%,#55df9c_39%_48%,#4f9fff_48%_66%,#ffd05c_66%_100%)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045),0_10px_22px_rgba(0,0,0,0.14)]`}>
+          <div className={`relative mx-auto ${dashDonutSizeClass} rounded-full bg-[conic-gradient(#0f766e_0_39.02%,#ffd05c_39.02%_73.17%,#4f9fff_73.17%_90.24%,#55df9c_90.24%_100%)] shadow-warm-sm dark:bg-[conic-gradient(#25d8ce_0_39.02%,#ffd05c_39.02%_73.17%,#4f9fff_73.17%_90.24%,#55df9c_90.24%_100%)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045),0_10px_22px_rgba(0,0,0,0.14)]`}>
             <div className={`absolute ${dashDonutInsetClass} rounded-full bg-sand-50 dark:bg-[radial-gradient(circle,rgba(14,41,68,0.99),rgba(9,29,50,0.99))]`} />
             <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center text-center">
-              <b className={`block ${dashTextDonutNumber} font-extrabold leading-none text-sand-900 dark:text-dash-text`}>46</b>
+              <b className={`block ${dashTextDonutNumber} font-extrabold leading-none text-sand-900 dark:text-dash-text`}>41</b>
               <span className={`mt-0.5 block leading-none ${dashTextSecondarySm} text-sand-500 dark:text-[#8da6bc]`}>Gesamt</span>
             </div>
           </div>
@@ -86,7 +90,7 @@ export function ReviewDonut() {
       <div className={`mt-auto flex shrink-0 items-center justify-between gap-2 rounded-[9px] border border-ink-400/20 bg-ink-50/60 px-2.5 py-2 ${dashTextBody} text-ink-700 dark:border-[rgba(37,216,206,0.14)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(37,216,206,0.07),rgba(37,216,206,0.018))] dark:text-[#9df8f2]`}>
         <span className="flex items-center gap-1.5">
           <i className="h-1.5 w-1.5 rounded-full bg-ink-500 dark:bg-dash-teal" />
-          <b>18 neue Fälle zuerst prüfen</b>
+          <b>16 neue Fälle zuerst prüfen</b>
         </span>
         <span>Öffnen →</span>
       </div>

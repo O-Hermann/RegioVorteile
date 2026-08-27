@@ -22,7 +22,7 @@ export function StatusHero({
 
   return (
     <div
-      className={`relative mb-2.5 min-h-[150px] overflow-hidden rounded-[14px] border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 p-[17px_16px_14px] text-center text-white shadow-warm-lg ring-1 ring-inset ring-white/10 dark:border-[rgba(114,239,230,0.34)] dark:bg-[radial-gradient(260px_150px_at_94%_0%,rgba(128,255,245,0.13),transparent_64%),radial-gradient(260px_170px_at_5%_100%,rgba(62,221,211,0.09),transparent_70%),linear-gradient(135deg,#279fa1_0%,#16888e_43%,#0f707b_72%,#0a5b68_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.13),inset_0_-18px_34px_rgba(0,0,0,0.08),0_16px_32px_rgba(3,57,62,0.19),0_0_0_1px_rgba(83,239,228,0.045)] ${
+      className={`relative flex h-full min-h-[150px] flex-col justify-center overflow-hidden rounded-[14px] border border-white/10 bg-gradient-to-br from-ink-700 via-ink-800 to-ink-900 p-[17px_16px_14px] text-center text-white shadow-warm-lg ring-1 ring-inset ring-white/10 dark:border-[rgba(114,239,230,0.34)] dark:bg-[radial-gradient(260px_150px_at_94%_0%,rgba(128,255,245,0.13),transparent_64%),radial-gradient(260px_170px_at_5%_100%,rgba(62,221,211,0.09),transparent_70%),linear-gradient(135deg,#279fa1_0%,#16888e_43%,#0f707b_72%,#0a5b68_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.13),inset_0_-18px_34px_rgba(0,0,0,0.08),0_16px_32px_rgba(3,57,62,0.19),0_0_0_1px_rgba(83,239,228,0.045)] ${
         // V12s ".status:after" (dezentes Punktmuster unten rechts) und
         // ".status:before" (geschwungene, leicht rotierte Linie) - beides
         // rein dekorativ, nur im Dark Mode (Light Mode behaelt seine
