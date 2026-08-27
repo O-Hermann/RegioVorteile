@@ -182,8 +182,7 @@ export default async function ArbeitgeberDashboardPage() {
     });
   }
   const recentActivity = activity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 4);
-  const firstPositiveIndex = recentActivity.findIndex((a) => a.color === "emerald");
-  const activityItems: ActivityTimelineItem[] = recentActivity.map((a, index) => ({
+  const activityItems: ActivityTimelineItem[] = recentActivity.map((a) => ({
     id: a.id,
     category: a.category,
     title: a.label,
@@ -191,7 +190,6 @@ export default async function ArbeitgeberDashboardPage() {
     createdAt: a.createdAt,
     icon: a.icon,
     accent: ACCENT_MAP[a.color] ?? "teal",
-    highlight: index === firstPositiveIndex,
   }));
 
   return (
