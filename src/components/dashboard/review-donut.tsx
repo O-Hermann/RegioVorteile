@@ -58,15 +58,12 @@ export function ReviewDonut() {
       </div>
 
       <div className={`mt-1.5 grid ${dashDonutColClass} items-center gap-3`}>
-        <div className="flex flex-col items-center gap-1">
-          <div className={`relative mx-auto ${dashDonutSizeClass} rounded-full bg-[conic-gradient(#0f766e_0_39.02%,#e2ab48_39.02%_73.17%,#63aaff_73.17%_90.24%,#47d795_90.24%_100%)] shadow-warm-sm dark:bg-[conic-gradient(#2dd6c5_0_39.02%,#e2ab48_39.02%_73.17%,#63aaff_73.17%_90.24%,#47d795_90.24%_100%)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045),0_10px_22px_rgba(0,0,0,0.14)]`}>
-            <div className={`absolute ${dashDonutInsetClass} rounded-full bg-sand-50 dark:bg-[radial-gradient(circle,rgba(14,41,68,0.99),rgba(9,29,50,0.99))]`} />
-            <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center text-center">
-              <b className={`block ${dashTextDonutNumber} font-extrabold leading-none text-sand-900 dark:text-dash-text`}>41</b>
-              <span className={`mt-0.5 block leading-none ${dashTextSecondarySm} text-sand-500 dark:text-[#8da6bc]`}>Gesamt</span>
-            </div>
+        <div className={`relative mx-auto ${dashDonutSizeClass} rounded-full bg-[conic-gradient(#0f766e_0_39.02%,#e2ab48_39.02%_73.17%,#63aaff_73.17%_90.24%,#47d795_90.24%_100%)] shadow-warm-sm dark:bg-[conic-gradient(#2dd6c5_0_39.02%,#e2ab48_39.02%_73.17%,#63aaff_73.17%_90.24%,#47d795_90.24%_100%)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.045),0_10px_22px_rgba(0,0,0,0.14)]`}>
+          <div className={`absolute ${dashDonutInsetClass} rounded-full bg-sand-50 dark:bg-[radial-gradient(circle,rgba(14,41,68,0.99),rgba(9,29,50,0.99))]`} />
+          <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center text-center">
+            <b className={`block ${dashTextDonutNumber} font-extrabold leading-none text-sand-900 dark:text-dash-text`}>41</b>
+            <span className={`mt-0.5 block leading-none ${dashTextSecondarySm} text-sand-500 dark:text-[#8da6bc]`}>Gesamt</span>
           </div>
-          <span className={`${dashTextSecondarySm} uppercase tracking-wide text-sand-400 dark:text-[#6f8ba3]`}>Nächster Schritt</span>
         </div>
         <div className="grid gap-1">
           {LEGEND.map((leg) => (

@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
-import { COMPANY_ROLE_LABELS } from "@/lib/company";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { getCompanyMetrics } from "@/lib/company-metrics";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
-import { StatusHero } from "@/components/dashboard/status-hero";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
 import { FindingsHero } from "@/components/dashboard/findings-hero";
 import { ReviewStatusCard } from "@/components/dashboard/review-status";
 import { ReviewDonut } from "@/components/dashboard/review-donut";
+import { DataStatusCard } from "@/components/dashboard/data-status";
 import { FindingsList } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Pagehead } from "@/components/dashboard/pagehead";
@@ -21,10 +20,13 @@ import { dashFontScopeClass, type DashAccent } from "@/components/dashboard/dash
 // - Kundenvorgabe: "erstmal dem Kunden zeigen, wo Geld liegen bleibt", eine
 // Umsatz/Kosten-Uebersicht kommt explizit erst spaeter. Die dafuer bisher
 // gebauten, echten-Daten-basierten Komponenten (KpiGrid, AnalysisCompare,
-// TrendChart) werden daher NICHT mehr gerendert, aber bewusst NICHT
-// geloescht - inklusive der zugehoerigen, bereits korrekten
+// TrendChart, StatusHero) werden daher NICHT mehr gerendert, aber bewusst
+// NICHT geloescht - inklusive der zugehoerigen, bereits korrekten
 // getCompanyMetrics()-Aggregation - damit sie spaeter ohne Neubau wieder
-// eingehaengt werden koennen.
+// eingehaengt werden koennen. StatusHero (die tuerkise "Analyse
+// abgeschlossen"-Verlaufskarte) wich hier data-status.tsx, weil im
+// freigegebenen Mockup an dieser Stelle eine schlichte Statuszeilen-Karte
+// steht statt einer grossen Verlaufskarte.
 //
 // Die vorherige Drei-Spalten-Seite war fest auf "100dvh - 9rem" begrenzt
 // (kein Scrollen), was den grossen Teil der Layout-Fehler dieser Seite
@@ -44,36 +46,38 @@ const ACCENT_MAP: Record<string, DashAccent> = {
 };
 
 export default async function ArbeitgeberDashboardPage() {
-  const { user, company, membership } = await requireCompanyMember();
+  const { user, company } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, recentDataImports, recentProcessedImports, metrics] = await Promise.all([
-    prisma.companyMembership.findMany({
-      where: { companyId: company.id },
-      orderBy: { invitedAt: "desc" },
-      take: 10,
-      include: { user: true },
-    }),
-    prisma.dataImport.count({ where: { companyId: company.id } }),
-    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
-    prisma.dataImport.findMany({
-      where: { companyId: company.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.dataImport.findMany({
-      where: { companyId: company.id, status: "PROCESSED" },
-      orderBy: { processedAt: "desc" },
-      take: 5,
-    }),
-    getCompanyMetrics(company.id),
-  ]);
+  const [memberships, dataImportCount, pendingMappingCount, failedImportCount, processedRowAgg, recentDataImports, recentProcessedImports, metrics] =
+    await Promise.all([
+      prisma.companyMembership.findMany({
+        where: { companyId: company.id },
+        orderBy: { invitedAt: "desc" },
+        take: 10,
+        include: { user: true },
+      }),
+      prisma.dataImport.count({ where: { companyId: company.id } }),
+      prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+      prisma.dataImport.count({ where: { companyId: company.id, status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
+      prisma.dataImport.aggregate({ where: { companyId: company.id, status: "PROCESSED" }, _sum: { rowCount: true } }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id, status: "PROCESSED" },
+        orderBy: { processedAt: "desc" },
+        take: 5,
+      }),
+      getCompanyMetrics(company.id),
+    ]);
   const processedMonthCount = metrics.importedMonthCount;
+  const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
-  const avatarInitial = (greetingName ?? user.email).charAt(0).toUpperCase();
-  const roleLabel = COMPANY_ROLE_LABELS[membership.role];
   const today = now.toLocaleDateString("de-DE", {
     weekday: "long",
     day: "numeric",
@@ -201,13 +205,10 @@ export default async function ArbeitgeberDashboardPage() {
     <div className={`mx-auto flex w-full max-w-[1360px] flex-col gap-3 ${dashFontScopeClass}`}>
       <Pagehead
         greeting={greeting}
-        avatarInitial={avatarInitial}
-        roleLabel={roleLabel}
         companyName={company.name}
         today={today}
         currentPeriodLabel={currentPeriodLabel}
         dataStatusReady={processedMonthCount > 0}
-        pendingMappingCount={pendingMappingCount}
       />
 
       <AttentionList items={actionItems} />
@@ -219,15 +220,15 @@ export default async function ArbeitgeberDashboardPage() {
 
       <FindingsList />
 
-      {/* Echter Datenimport-Status (StatusHero, mit seiner echten
-          Drei-Zustands-Logik) sitzt jetzt hier statt im Hero neben
-          FindingsHero - dort zeigt stattdessen ReviewStatusCard den
-          Fund-bezogenen "Prüfstatus" aus dem Mockup. Beide echten Karten
-          (Datenstatus + Fallpruefungs-Fortschritt) bleiben so nebeneinander
-          sichtbar, nur eine Ebene tiefer. */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-stretch">
         <ReviewDonut />
-        <StatusHero dataImportCount={dataImportCount} processedMonthCount={processedMonthCount} currentPeriodLabel={currentPeriodLabel ?? ""} />
+        <DataStatusCard
+          processedMonthCount={processedMonthCount}
+          processedRowCount={processedRowCount}
+          pendingMappingCount={pendingMappingCount}
+          failedImportCount={failedImportCount}
+          currentPeriodLabel={currentPeriodLabel}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

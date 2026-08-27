@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircleIcon } from "@/components/icons";
+import { AlertTriangleIcon, CheckCircleIcon } from "@/components/icons";
 import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextBody, dashTextBodyLg, dashTextSecondaryLg, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 export type AttentionItem = {
@@ -58,12 +58,12 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
               : "bg-emerald-100 text-emerald-600 dark:bg-[rgba(71,215,149,0.12)] dark:text-dash-green"
           }`}
         >
-          <CheckCircleIcon className="h-[18px] w-[18px]" />
+          {hasItems ? <AlertTriangleIcon className="h-[18px] w-[18px]" /> : <CheckCircleIcon className="h-[18px] w-[18px]" />}
         </span>
         <div>
           <strong className={`${dashFontDisplayClass} block ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>Handlungsbedarf</strong>
           <span className={`${dashTextSecondarySm} text-sand-500 dark:text-[#7fa1bd]`}>
-            {hasItems ? `${items.length} ${items.length === 1 ? "Punkt braucht" : "Punkte brauchen"} heute Aufmerksamkeit` : "Alles erledigt"}
+            {hasItems ? `${items.length} ${items.length === 1 ? "Punkt braucht" : "Punkte brauchen"} heute deine Aufmerksamkeit` : "Alles erledigt"}
           </span>
         </div>
       </div>

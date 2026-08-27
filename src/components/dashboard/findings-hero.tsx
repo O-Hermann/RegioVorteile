@@ -1,5 +1,5 @@
 import { TrendingUpIcon } from "@/components/icons";
-import { DASH_ACCENT_HEX, dashFontDisplayClass, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
+import { dashFontDisplayClass, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
 import { FINDINGS, getFindingsSummary } from "@/components/dashboard/findings-list";
 
 // Neuer Einstiegspunkt der Übersicht-Seite (ersetzt die bisherige, auf
@@ -47,6 +47,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
   const [lastX, lastY] = points[points.length - 1];
   const previousReferenceAmount = HISTORY_REFERENCE[HISTORY_REFERENCE.length - 1].amount;
   const delta = totalAmount - previousReferenceAmount;
+  const lastUpdated = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(520px_240px_at_88%_-10%,rgba(45,214,197,0.09),transparent_60%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-5 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_16px_36px_rgba(0,0,0,0.19)]">
@@ -99,26 +100,19 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {FINDINGS.map((f) => (
-          <span
-            key={f.key}
-            style={{ "--case-accent": DASH_ACCENT_HEX[f.accent] } as React.CSSProperties}
-            className="inline-flex items-center gap-1.5 rounded-full border border-card-border bg-sand-50/70 px-2.5 py-1 text-[11.5px] font-semibold text-sand-600 dark:border-[rgba(85,125,156,0.20)] dark:bg-[rgba(5,23,41,0.45)] dark:text-[#a5bbcf]"
-          >
-            <i className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--case-accent)" }} />
-            {f.name}
-          </span>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-card-border pt-4 dark:border-dash-line">
+        <span
+          aria-disabled
+          title="Noch nicht verfügbar"
+          className="inline-flex w-fit cursor-default items-center gap-1.5 rounded-[11px] border border-ink-400/40 bg-gradient-to-br from-ink-500 to-ink-700 px-4 py-2.5 text-[13.5px] font-bold text-white shadow-warm-sm dark:border-transparent dark:bg-[linear-gradient(150deg,#2dd6c5,#1fae9f)] dark:text-[#06231f]"
+        >
+          Alle Fälle prüfen
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+        <span className="text-[12.5px] text-sand-400 dark:text-dash-text-muted">Zuletzt aktualisiert: heute, {lastUpdated} Uhr</span>
       </div>
-
-      <span
-        aria-disabled
-        title="Noch nicht verfügbar"
-        className="mt-1 inline-flex w-fit cursor-default items-center gap-2 rounded-full border border-ink-400/40 bg-gradient-to-b from-ink-600 to-ink-800 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-warm-sm dark:border-dash-teal/30 dark:bg-[linear-gradient(135deg,rgba(17,101,105,0.72),rgba(8,50,67,0.95))]"
-      >
-        Alle Fälle prüfen →
-      </span>
     </div>
   );
 }
