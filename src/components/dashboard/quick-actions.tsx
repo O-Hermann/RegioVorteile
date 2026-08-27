@@ -19,7 +19,7 @@ export function QuickActions({ hint }: { hint?: string }) {
           Schnellaktion
         </div>
         {hint && (
-          <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 text-[9.5px] text-sand-500 dark:border-white/[0.06] dark:text-[#92a8bd]">
+          <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 text-[9.5px] text-sand-500 dark:border-white/[0.06] dark:text-dash-text-secondary">
             <span className="text-[8.6px] uppercase tracking-wide text-sand-400 dark:text-inherit">Nächster Schritt</span>
             <b className="text-sand-900 dark:text-white">{hint}</b>
           </div>
@@ -46,7 +46,7 @@ export function QuickActions({ hint }: { hint?: string }) {
           <UploadArrowIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
           <span className="min-w-0">
             <b className="block text-[12px] font-bold">Daten importieren</b>
-            <small className="block text-[9.5px] text-sand-500 dark:text-[#89a9c3]">Neue Datei hinzufügen</small>
+            <small className="block text-[9.5px] text-sand-500 dark:text-dash-text-secondary">Neue Datei hinzufügen</small>
           </span>
         </Link>
 
@@ -57,7 +57,7 @@ export function QuickActions({ hint }: { hint?: string }) {
           <PulseIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
           <span className="min-w-0">
             <b className="block text-[12px] font-bold">Analyse starten</b>
-            <small className="block text-[9.5px] text-sand-500 dark:text-[#89a9c3]">Aktuelle Daten erneut prüfen</small>
+            <small className="block text-[9.5px] text-sand-500 dark:text-dash-text-secondary">Aktuelle Daten erneut prüfen</small>
           </span>
         </Link>
       </div>

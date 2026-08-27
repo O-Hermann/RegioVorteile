@@ -51,7 +51,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
 
   return (
     <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(520px_240px_at_88%_-10%,rgba(45,214,197,0.09),transparent_60%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-5 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_16px_36px_rgba(0,0,0,0.19)]">
-      <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-sand-400 dark:text-[#7897af]">
+      <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-sand-400 dark:text-dash-text-muted">
         <TrendingUpIcon className="h-3.5 w-3.5 text-ink-500 dark:text-dash-teal" />
         Gefundenes Potenzial{currentPeriodLabel ? ` · ${currentPeriodLabel}` : ""}
       </span>
@@ -91,7 +91,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
           <circle cx={lastX} cy={lastY} r={10} className="text-ink-600 dark:text-dash-teal" fill="currentColor" opacity={0.16} />
           <circle cx={lastX} cy={lastY} r={4} className="fill-card text-ink-600 dark:text-dash-teal" stroke="currentColor" strokeWidth={2.4} />
         </svg>
-        <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-sand-400 dark:text-[#6685a2]">
+        <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-sand-400 dark:text-dash-text-muted">
           {history.map((h, i) => (
             <span key={h.label} className={i === history.length - 1 ? "text-ink-600 dark:text-dash-teal" : undefined}>
               {h.label}

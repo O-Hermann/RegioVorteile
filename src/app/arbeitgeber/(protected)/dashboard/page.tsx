@@ -233,7 +233,9 @@ export default async function ArbeitgeberDashboardPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <ActivityTimeline items={activityItems} />
-        <QuickActions hint={pendingMappingCount > 0 ? `${pendingMappingCount} Datenimporte prüfen` : undefined} />
+        <QuickActions
+          hint={pendingMappingCount > 0 ? `${pendingMappingCount} ${pendingMappingCount === 1 ? "Datenimport" : "Datenimporte"} prüfen` : undefined}
+        />
       </div>
     </div>
   );

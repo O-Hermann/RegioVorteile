@@ -21,21 +21,21 @@ export function ReviewStatusCard() {
         </span>
         <div>
           <strong className={`${dashFontDisplayClass} block text-[14.5px] font-bold text-sand-900 dark:text-dash-text`}>Prüfstatus</strong>
-          <span className="text-[12px] text-sand-500 dark:text-[#88a2bb]">{FINDINGS.length} Kategorien aktiv überwacht</span>
+          <span className="text-[12px] text-sand-500 dark:text-dash-text-secondary">{FINDINGS.length} Kategorien aktiv überwacht</span>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col justify-center gap-2.5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12.5px] text-sand-500 dark:text-[#88a2bb]">Offene Fälle</span>
+          <span className="text-[12.5px] text-sand-500 dark:text-dash-text-secondary">Offene Fälle</span>
           <span className="text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text">{totalCount}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12.5px] text-sand-500 dark:text-[#88a2bb]">Ø Prüfzeit</span>
+          <span className="text-[12.5px] text-sand-500 dark:text-dash-text-secondary">Ø Prüfzeit</span>
           <span className="text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text">11 Min.</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12.5px] text-sand-500 dark:text-[#88a2bb]">Zuletzt geprüft</span>
+          <span className="text-[12.5px] text-sand-500 dark:text-dash-text-secondary">Zuletzt geprüft</span>
           <span className="text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text">heute, {lastChecked}</span>
         </div>
       </div>

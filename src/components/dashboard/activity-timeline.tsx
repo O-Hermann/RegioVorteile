@@ -53,17 +53,17 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
       <div className="mb-1 flex shrink-0 items-start justify-between gap-2">
         <div>
           <h3 className={`${dashFontDisplayClass} ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Letzte Aktivitäten</h3>
-          <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-[#88a5bd]`}>Chronologisches Protokoll deiner Aktivitäten.</p>
+          <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-dash-text-secondary`}>Chronologisches Protokoll deiner Aktivitäten.</p>
         </div>
-        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.17)] dark:bg-white/[0.025] dark:text-[#a9bfd1]`}>
-          <i className="h-1.5 w-1.5 rounded-full bg-sand-400 dark:bg-[#72a1bd]" />
+        <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.17)] dark:bg-white/[0.025] dark:text-dash-text-secondary`}>
+          <i className="h-1.5 w-1.5 rounded-full bg-sand-400 dark:bg-dash-text-muted" />
           Heute
         </span>
       </div>
 
       {items.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-sand-500 dark:text-[#7fa1bd]">Bisher sind keine Aktivitäten vorhanden.</p>
+          <p className="text-sm text-sand-500 dark:text-dash-text-secondary">Bisher sind keine Aktivitäten vorhanden.</p>
         </div>
       ) : (
         <div
@@ -103,24 +103,24 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
               </span>
               <div className="min-w-0">
                 <div className="flex items-center justify-between gap-2 leading-none">
-                  <span className={`truncate ${dashTextSecondarySm} font-bold uppercase tracking-wide leading-none text-sand-400 dark:text-[#7391aa]`}>
+                  <span className={`truncate ${dashTextSecondarySm} font-bold uppercase tracking-wide leading-none text-sand-400 dark:text-dash-text-muted`}>
                     {item.category}
                   </span>
-                  <time className={`shrink-0 ${dashTextSecondaryLg} leading-none tabular-nums text-sand-400 dark:text-[#8fa7bc]`}>
+                  <time className={`shrink-0 ${dashTextSecondaryLg} leading-none tabular-nums text-sand-400 dark:text-dash-text-secondary`}>
                     {relativeTimeDe(item.createdAt)}
                   </time>
                 </div>
                 <p className={`truncate ${dashTextBodyLg} font-bold leading-tight text-sand-900 dark:text-dash-text`}>{item.title}</p>
-                <p className={`truncate ${dashTextSecondaryLg} leading-none text-sand-500 dark:text-[#829db5]`}>{item.detail}</p>
+                <p className={`truncate ${dashTextSecondaryLg} leading-none text-sand-500 dark:text-dash-text-secondary`}>{item.detail}</p>
               </div>
-              <span className="justify-self-end text-[12px] text-sand-300 dark:text-[#66849f]">→</span>
+              <span className="justify-self-end text-[12px] text-sand-300 dark:text-dash-text-muted">→</span>
             </div>
           ))}
         </div>
       )}
 
       <div className={`mt-1 flex shrink-0 items-center justify-between border-t border-card-border/70 dark:border-white/[0.055] pt-1 ${dashTextSecondaryLg}`}>
-        <span className="text-sand-400 dark:text-[#8099af]">Vollständiges Aktivitätsprotokoll</span>
+        <span className="text-sand-400 dark:text-dash-text-secondary">Vollständiges Aktivitätsprotokoll</span>
         <span className="font-semibold text-ink-600 dark:text-[#72eee6]">Bald verfügbar</span>
       </div>
     </div>

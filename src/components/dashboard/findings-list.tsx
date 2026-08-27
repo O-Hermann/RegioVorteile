@@ -120,7 +120,7 @@ export function FindingsList() {
             </span>
             <div className="min-w-0">
               <h3 className={`${dashFontDisplayClass} ${dashTextTitle} font-bold text-sand-900 dark:text-dash-text`}>{f.name}</h3>
-              <p className={`mt-0.5 ${dashTextSecondarySm} leading-snug text-sand-500 dark:text-[#89a3bb]`}>{f.desc}</p>
+              <p className={`mt-0.5 ${dashTextSecondarySm} leading-snug text-sand-500 dark:text-dash-text-secondary`}>{f.desc}</p>
             </div>
           </div>
 

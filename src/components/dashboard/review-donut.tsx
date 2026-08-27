@@ -49,10 +49,10 @@ export function ReviewDonut() {
 
       <div className="mt-1.5 flex items-center justify-between gap-2 rounded-[10px] border border-card-border/60 bg-sand-50/60 px-2.5 py-1.5 dark:border-[rgba(71,108,140,0.19)] dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.62),rgba(7,25,44,0.44))]">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span className={`${dashTextSecondarySm} font-bold uppercase tracking-wide text-sand-400 dark:text-[#718fa8]`}>Bearbeitungsstatus</span>
+          <span className={`${dashTextSecondarySm} font-bold uppercase tracking-wide text-sand-400 dark:text-dash-text-muted`}>Bearbeitungsstatus</span>
           <strong className={`truncate ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#eef8ff]`}>16 neue Fälle warten auf Prüfung</strong>
         </div>
-        <span className={`shrink-0 whitespace-nowrap text-right ${dashTextSecondarySm} text-sand-500 dark:text-[#7f9ab2]`}>
+        <span className={`shrink-0 whitespace-nowrap text-right ${dashTextSecondarySm} text-sand-500 dark:text-dash-text-muted`}>
           <b className={`block ${dashTextBodyLg} font-bold text-sand-900 dark:text-[#d7e8f5]`}>11 Min.</b>Ø Prüfzeit
         </span>
       </div>
@@ -62,7 +62,7 @@ export function ReviewDonut() {
           <div className={`absolute ${dashDonutInsetClass} rounded-full bg-sand-50 dark:bg-[radial-gradient(circle,rgba(14,41,68,0.99),rgba(9,29,50,0.99))]`} />
           <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center text-center">
             <b className={`block ${dashTextDonutNumber} font-extrabold leading-none text-sand-900 dark:text-dash-text`}>41</b>
-            <span className={`mt-0.5 block leading-none ${dashTextSecondarySm} text-sand-500 dark:text-[#8da6bc]`}>Gesamt</span>
+            <span className={`mt-0.5 block leading-none ${dashTextSecondarySm} text-sand-500 dark:text-dash-text-muted`}>Gesamt</span>
           </div>
         </div>
         <div className="grid gap-1">
@@ -78,7 +78,7 @@ export function ReviewDonut() {
                 <span className="truncate">{leg.label}</span>
               </span>
               <b className="text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{leg.value}</b>
-              <em className={`text-right ${dashTextSecondaryLg} not-italic text-sand-400 tabular-nums dark:text-[#7f9ab2]`}>{leg.share}</em>
+              <em className={`text-right ${dashTextSecondaryLg} not-italic text-sand-400 tabular-nums dark:text-dash-text-secondary`}>{leg.share}</em>
             </div>
           ))}
         </div>

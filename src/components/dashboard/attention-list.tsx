@@ -62,14 +62,14 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
         </span>
         <div>
           <strong className={`${dashFontDisplayClass} block ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>Handlungsbedarf</strong>
-          <span className={`${dashTextSecondarySm} text-sand-500 dark:text-[#7fa1bd]`}>
+          <span className={`${dashTextSecondarySm} text-sand-500 dark:text-dash-text-secondary`}>
             {hasItems ? `${items.length} ${items.length === 1 ? "Punkt braucht" : "Punkte brauchen"} heute deine Aufmerksamkeit` : "Alles erledigt"}
           </span>
         </div>
       </div>
 
       {!hasItems ? (
-        <p className={`${dashTextBody} text-sand-500 dark:text-[#7fa1bd]`}>Aktuell besteht kein Handlungsbedarf.</p>
+        <p className={`${dashTextBody} text-sand-500 dark:text-dash-text-secondary`}>Aktuell besteht kein Handlungsbedarf.</p>
       ) : (
         <div className="flex min-w-0 flex-1 flex-wrap gap-2.5">
           {items.map((item) => (
@@ -96,9 +96,9 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
                   )}
                   <span className={`truncate ${dashTextBody} font-bold text-sand-900 dark:text-dash-text`}>{item.title}</span>
                 </div>
-                {item.subtitle && <span className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-[#7897b3]`}>{item.subtitle}</span>}
+                {item.subtitle && <span className={`truncate ${dashTextSecondaryLg} text-sand-500 dark:text-dash-text-secondary`}>{item.subtitle}</span>}
               </div>
-              <span className={`shrink-0 ${dashTextSecondaryLg} font-semibold text-ink-600 dark:text-[#8db2ca]`}>{item.cta} →</span>
+              <span className={`shrink-0 ${dashTextSecondaryLg} font-semibold text-ink-600 dark:text-dash-teal`}>{item.cta} →</span>
             </Link>
           ))}
         </div>

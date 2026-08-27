@@ -249,7 +249,13 @@
   --color-dash-line: #1b2a33;
   --color-dash-text: #edf6f5;
   --color-dash-text-secondary: #93aab6;
-  --color-dash-text-muted: #63808d;
+  /* Lesbarkeits-Korrektur (2026-08-27): #63808d ergab bei den kleinsten
+     Textgroessen der Seite (Fallzeilen-Details, Fusszeilen, ~9.5-12.5px)
+     nur ~3.96:1 Kontrast auf den dunklen Kartenflaechen - unter WCAG-AA
+     (4.5:1) fuer Fliesstext. Aufgehellt auf #7d97a8 (~5.2:1 gemessen gegen
+     die dunkelste vorkommende Kartenflaeche), weiterhin klar als "gedaempft"
+     erkennbar, aber tatsaechlich lesbar. */
+  --color-dash-text-muted: #7d97a8;
   --color-dash-teal: #2dd6c5;
   --color-dash-teal-hover: #1fae9f;
   --color-dash-green: #47d795;
