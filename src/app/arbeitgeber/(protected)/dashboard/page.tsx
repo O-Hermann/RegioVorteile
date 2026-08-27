@@ -8,6 +8,7 @@ import { StatusHero } from "@/components/dashboard/status-hero";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
 import { FindingsHero } from "@/components/dashboard/findings-hero";
+import { ReviewStatusCard } from "@/components/dashboard/review-status";
 import { ReviewDonut } from "@/components/dashboard/review-donut";
 import { FindingsList } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
@@ -190,7 +191,14 @@ export default async function ArbeitgeberDashboardPage() {
   }));
 
   return (
-    <div className={`flex flex-col gap-3 ${dashFontScopeClass}`}>
+    // "max-w-[1360px] mx-auto" bewusst hier statt im geteilten Layout
+    // (layout.tsx spannt seinen eigenen Inhaltsbereich auf max-w-[1920px]
+    // fuer alle Arbeitgeber-Seiten auf) - im Mockup war die Seite auf
+    // max-width:1360px zentriert, damit Kartenreihen auf sehr breiten
+    // Bildschirmen nicht ueber die ganze Breite auseinandergezogen wirken;
+    // andere Seiten (Kunden, Auftraege, ...) sollen das bestehende 1920px
+    // weiterhin nutzen.
+    <div className={`mx-auto flex w-full max-w-[1360px] flex-col gap-3 ${dashFontScopeClass}`}>
       <Pagehead
         greeting={greeting}
         avatarInitial={avatarInitial}
@@ -206,17 +214,26 @@ export default async function ArbeitgeberDashboardPage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
         <FindingsHero currentPeriodLabel={currentPeriodLabel} />
-        <StatusHero dataImportCount={dataImportCount} processedMonthCount={processedMonthCount} currentPeriodLabel={currentPeriodLabel ?? ""} />
+        <ReviewStatusCard />
       </div>
 
       <FindingsList />
 
+      {/* Echter Datenimport-Status (StatusHero, mit seiner echten
+          Drei-Zustands-Logik) sitzt jetzt hier statt im Hero neben
+          FindingsHero - dort zeigt stattdessen ReviewStatusCard den
+          Fund-bezogenen "Prüfstatus" aus dem Mockup. Beide echten Karten
+          (Datenstatus + Fallpruefungs-Fortschritt) bleiben so nebeneinander
+          sichtbar, nur eine Ebene tiefer. */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <ReviewDonut />
-        <QuickActions hint={pendingMappingCount > 0 ? `${pendingMappingCount} Datenimporte prüfen` : undefined} />
+        <StatusHero dataImportCount={dataImportCount} processedMonthCount={processedMonthCount} currentPeriodLabel={currentPeriodLabel ?? ""} />
       </div>
 
-      <ActivityTimeline items={activityItems} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ActivityTimeline items={activityItems} />
+        <QuickActions hint={pendingMappingCount > 0 ? `${pendingMappingCount} Datenimporte prüfen` : undefined} />
+      </div>
     </div>
   );
 }
