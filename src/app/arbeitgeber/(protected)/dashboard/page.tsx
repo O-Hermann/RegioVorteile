@@ -12,7 +12,7 @@ import { ReviewDonut } from "@/components/dashboard/review-donut";
 import { FindingsList } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Pagehead } from "@/components/dashboard/pagehead";
-import type { DashAccent } from "@/components/dashboard/dash-ui";
+import { dashFontScopeClass, type DashAccent } from "@/components/dashboard/dash-ui";
 
 // MVP-Stand der Effivo-Übersicht: bewusster Fokus auf die vier Fund-
 // Kategorien (Doppelzahlungen/Skonto/Gutschriften/Überzahlung, siehe
@@ -190,7 +190,7 @@ export default async function ArbeitgeberDashboardPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col gap-3 ${dashFontScopeClass}`}>
       <Pagehead
         greeting={greeting}
         avatarInitial={avatarInitial}

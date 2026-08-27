@@ -1,16 +1,38 @@
+import { Libre_Franklin, Public_Sans } from "next/font/google";
+
 // Gemeinsame Bausteine ausschliesslich fuer die Effivo-Übersicht (Dashboard-
-// Startseite), 1:1 aus der vom Nutzer freigegebenen "Effivo_V12_Dashboard_
-// Final.html"-Designreferenz übernommen. Bewusst eigenstaendig statt aus
-// lib/import-ui.ts oder der Dashboard-Seite selbst importiert - siehe
-// Kommentar zum eigenen --color-dash-*-Namensraum in globals.css: gleiche
-// Idee (dunkle Effivo-Flaeche), andere Referenzdatei, andere exakte Werte,
-// daher eigene Konstanten statt Wiederverwendung.
+// Startseite), urspruenglich 1:1 aus der vom Nutzer freigegebenen "Effivo_
+// V12_Dashboard_Final.html"-Designreferenz übernommen. Bewusst eigenstaendig
+// statt aus lib/import-ui.ts oder der Dashboard-Seite selbst importiert -
+// siehe Kommentar zum eigenen --color-dash-*-Namensraum in globals.css:
+// gleiche Idee (dunkle Effivo-Flaeche), andere Referenzdatei, andere exakte
+// Werte, daher eigene Konstanten statt Wiederverwendung.
 //
-// Jede V12-Karte hat hier genau einen Owner (diese Datei + die jeweilige
-// Komponente) statt - wie im Referenz-HTML selbst - zwoelf uebereinander
-// gestapelter, sich gegenseitig ueberschreibender CSS-Versionsebenen (legacy
-// -> V2 … V11.14). Der optische Endzustand ist identisch, der Code dahinter
-// bewusst nicht.
+// Jede Karte hat hier genau einen Owner (diese Datei + die jeweilige
+// Komponente) statt - wie im urspruenglichen V12-Referenz-HTML selbst -
+// zwoelf uebereinander gestapelter, sich gegenseitig ueberschreibender CSS-
+// Versionsebenen (legacy -> V2 … V11.14). Der optische Endzustand ist
+// identisch, der Code dahinter bewusst nicht.
+
+// Schriften seit dem MVP-Pivot (2026-08-27, aus dem freigegebenen HTML-
+// Mockup): Libre Franklin (Ueberschriften/Zahlen) + Public Sans (Fliesstext)
+// - bewusst NUR fuer diese Seite ueber next/font/google geladen, nicht
+// App-weit als --font-display/--font-sans (die werden auf ueber 80 anderen
+// Seiten der App verwendet und sollen unveraendert bleiben, siehe
+// [[controlling_cockpit_v12_dashboard_port]]). dashFontScopeClass gehoert auf
+// den aeussersten Wrapper der Seite (page.tsx) - Fliesstext erbt daraus per
+// CSS-Vererbung automatisch, Ueberschriften (h1-h4) brauchen zusaetzlich
+// dashFontDisplayClass direkt auf dem Element, weil globals.css dafuer eine
+// eigene, staerker spezifische Regel definiert (Element-Selektor auf h1-h4),
+// die eine reine Vererbung vom Wrapper sonst nicht schlagen wuerde.
+const dashDisplayFont = Libre_Franklin({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-dash-display" });
+const dashBodyFont = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-dash-body" });
+// "dash-scope" traegt die h1-h4-Ueberschriften-Ueberschreibung aus
+// globals.css (siehe Kommentar dort - unlayered Cascade-Layer-Grund, warum
+// eine reine Tailwind-Utility-Klasse auf dem Element allein nicht reicht).
+export const dashFontScopeClass = `dash-scope ${dashDisplayFont.variable} ${dashBodyFont.variable} font-[family-name:var(--font-dash-body)]`;
+export const dashFontDisplayClass = "font-[family-name:var(--font-dash-display)]";
+
 export const dashCardClass =
   "rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_15px_34px_rgba(0,0,0,0.18)]";
 
@@ -21,21 +43,24 @@ export const dashSecondaryTextClass = "text-sand-600 dark:text-dash-text-seconda
 export const dashMutedTextClass = "text-sand-400 dark:text-dash-text-muted";
 
 export const dashIconBoxClass =
-  "flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-gradient-to-b from-ink-400/25 to-ink-400/5 dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/30 dark:border-[rgba(37,216,206,0.14)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_16px_rgba(37,216,206,0.06)]";
+  "flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-gradient-to-b from-ink-400/25 to-ink-400/5 dark:bg-[linear-gradient(180deg,rgba(45,214,197,0.14),rgba(45,214,197,0.07))] border border-ink-400/30 dark:border-[rgba(45,214,197,0.14)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_16px_rgba(45,214,197,0.06)]";
 
 export const dashModuleFootClass =
   "mt-auto flex items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-2 text-[11px] text-ink-600 dark:text-dash-teal";
 
-// Akzentfarben je Fund-/Fallkategorie (Doppelzahlung=rot, Gutschrift=orange,
-// Skonto=blau, Überzahlung=lila) - ein zentraler Ort statt wiederholter Hex-
-// Werte in attention-list/findings-list, exakt aus der Referenz.
+// Zentraler Ort fuer die sechs Akzentfarben, statt wiederholter Hex-Werte in
+// attention-list/findings-list - welche Farbe zu welcher Fund-/Handlungs-
+// bedarf-Kategorie gehoert, legt jede Komponente selbst fest (siehe dortige
+// FINDINGS/ACCENT_MAP-Konstanten). Werte seit dem MVP-Pivot (2026-08-27) aus
+// dem freigegebenen HTML-Mockup uebernommen, deckungsgleich mit den
+// --color-dash-*-Tokens in globals.css.
 export const DASH_ACCENT_HEX = {
-  red: "#ff625d",
-  orange: "#f0a23e",
-  blue: "#4f9fff",
+  red: "#ff756d",
+  orange: "#e2ab48",
+  blue: "#63aaff",
   purple: "#aa76ff",
-  green: "#32d79a",
-  teal: "#25d8ce",
+  green: "#47d795",
+  teal: "#2dd6c5",
 } as const;
 
 export type DashAccent = keyof typeof DASH_ACCENT_HEX;

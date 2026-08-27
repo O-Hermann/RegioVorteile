@@ -1,6 +1,7 @@
 import { relativeTimeDe } from "@/lib/time";
 import {
   type DashAccent,
+  dashFontDisplayClass,
   dashTextSectionHeading,
   dashTextBody,
   dashTextBodyLg,
@@ -48,10 +49,10 @@ const ICON_CLASS: Record<DashAccent, string> = {
 // dieser Hack komplett weg.
 export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(37,216,206,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)]">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(310px_150px_at_94%_-5%,rgba(45,214,197,0.045),transparent_68%),linear-gradient(180deg,rgba(16,41,69,0.98),rgba(11,31,53,0.99))] p-3 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)]">
       <div className="mb-1 flex shrink-0 items-start justify-between gap-2">
         <div>
-          <h3 className={`font-display ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Letzte Aktivitäten</h3>
+          <h3 className={`${dashFontDisplayClass} ${dashTextSectionHeading} font-bold tracking-tight text-sand-900 dark:text-dash-text`}>Letzte Aktivitäten</h3>
           <p className={`mt-0.5 ${dashTextBody} leading-snug text-sand-500 dark:text-[#88a5bd]`}>Chronologisches Protokoll deiner Aktivitäten.</p>
         </div>
         <span className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 ${dashTextSecondaryLg} font-semibold text-sand-500 dark:border-[rgba(104,145,178,0.17)] dark:bg-white/[0.025] dark:text-[#a9bfd1]`}>
@@ -66,7 +67,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
         </div>
       ) : (
         <div
-          className="relative grid flex-1 gap-0.5 overflow-hidden before:absolute before:left-[19px] before:top-[18px] before:bottom-[18px] before:w-px before:content-[''] before:bg-sand-200 dark:before:bg-[linear-gradient(180deg,rgba(37,216,206,0.22),rgba(92,126,155,0.16)_58%,rgba(170,118,255,0.16))]"
+          className="relative grid flex-1 gap-0.5 overflow-hidden before:absolute before:left-[19px] before:top-[18px] before:bottom-[18px] before:w-px before:content-[''] before:bg-sand-200 dark:before:bg-[linear-gradient(180deg,rgba(45,214,197,0.22),rgba(92,126,155,0.16)_58%,rgba(170,118,255,0.16))]"
           style={{ gridTemplateRows: `repeat(${items.length}, minmax(0, 1fr))` }}
         >
           {items.map((item) => (
@@ -91,7 +92,7 @@ export function ActivityTimeline({ items }: { items: ActivityTimelineItem[] }) {
               key={item.id}
               className={`relative z-[1] grid h-full min-h-0 grid-cols-[28px_minmax(0,1fr)_14px] items-center gap-2 rounded-xl border px-2.5 py-0.5 transition-[transform,background,border-color] duration-150 hover:-translate-y-px ${
                 item.highlight
-                  ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(50,215,154,0.19)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(50,215,154,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
+                  ? "border-emerald-300/50 bg-emerald-50/60 dark:border-[rgba(71,215,149,0.19)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(71,215,149,0.045),transparent_48%),linear-gradient(180deg,rgba(10,37,52,0.68),rgba(7,26,45,0.61))]"
                   : "border-card-border dark:border-[rgba(45,81,112,0.49)] bg-sand-50/50 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.66),rgba(7,25,44,0.58))]"
               }`}
             >

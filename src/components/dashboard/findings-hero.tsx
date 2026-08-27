@@ -1,5 +1,5 @@
 import { TrendingUpIcon } from "@/components/icons";
-import { DASH_ACCENT_HEX, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
+import { DASH_ACCENT_HEX, dashFontDisplayClass, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
 import { FINDINGS, getFindingsSummary } from "@/components/dashboard/findings-list";
 
 // Neuer Einstiegspunkt der Übersicht-Seite (ersetzt die bisherige, auf
@@ -19,7 +19,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
   const categoryList = FINDINGS.map((f) => f.name).join(", ");
 
   return (
-    <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(520px_240px_at_88%_-10%,rgba(37,216,206,0.09),transparent_60%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-5 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_16px_36px_rgba(0,0,0,0.19)]">
+    <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[radial-gradient(520px_240px_at_88%_-10%,rgba(45,214,197,0.09),transparent_60%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-5 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_16px_36px_rgba(0,0,0,0.19)]">
       <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-sand-400 dark:text-[#7897af]">
         <TrendingUpIcon className="h-3.5 w-3.5 text-ink-500 dark:text-dash-teal" />
         Gefundenes Potenzial{currentPeriodLabel ? ` · ${currentPeriodLabel}` : ""}
@@ -27,7 +27,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
 
       <div>
         <div className="flex flex-wrap items-baseline gap-3">
-          <span className="font-display text-[clamp(2rem,1.6rem+1.6vw,2.75rem)] font-extrabold tabular-nums tracking-tight text-sand-900 dark:text-dash-text">
+          <span className={`${dashFontDisplayClass} text-[clamp(2rem,1.6rem+1.6vw,2.75rem)] font-extrabold tabular-nums tracking-tight text-sand-900 dark:text-dash-text`}>
             {totalAmount.toLocaleString("de-DE")}&nbsp;€
           </span>
         </div>

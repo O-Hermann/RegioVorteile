@@ -32,13 +32,13 @@ const ACCENT_BAR: Record<KpiAccent, string> = {
 
 const ACCENT_BUBBLE: Record<KpiAccent, string> = {
   highlight:
-    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(50,215,154,0.1)] dark:border-dash-green/60",
-  teal: "text-ink-700 bg-ink-500/10 border border-ink-500/30 dark:text-dash-teal dark:bg-[rgba(37,216,206,0.09)] dark:border-dash-teal/60",
+    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(71,215,149,0.1)] dark:border-dash-green/60",
+  teal: "text-ink-700 bg-ink-500/10 border border-ink-500/30 dark:text-dash-teal dark:bg-[rgba(45,214,197,0.09)] dark:border-dash-teal/60",
   orange:
-    "text-amber-600 bg-amber-500/10 border border-amber-500/30 dark:text-dash-orange dark:bg-[rgba(240,162,62,0.16)] dark:border-dash-orange/60",
+    "text-amber-600 bg-amber-500/10 border border-amber-500/30 dark:text-dash-orange dark:bg-[rgba(226,171,72,0.16)] dark:border-dash-orange/60",
   green:
-    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(50,215,154,0.1)] dark:border-dash-green/60",
-  blue: "text-sky-600 bg-sky-500/10 border border-sky-500/30 dark:text-dash-blue dark:bg-[rgba(79,159,255,0.1)] dark:border-dash-blue/60",
+    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(71,215,149,0.1)] dark:border-dash-green/60",
+  blue: "text-sky-600 bg-sky-500/10 border border-sky-500/30 dark:text-dash-blue dark:bg-[rgba(99,170,255,0.1)] dark:border-dash-blue/60",
   purple:
     "text-violet-600 bg-violet-500/10 border border-violet-500/30 dark:text-dash-purple dark:bg-[rgba(170,118,255,0.12)] dark:border-dash-purple/60",
 };

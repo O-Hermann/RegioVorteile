@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UploadIcon, CheckIcon } from "@/components/icons";
+import { dashFontDisplayClass } from "@/components/dashboard/dash-ui";
 
 // "Datenstatus"-Hero der linken Spalte, optisch 1:1 die ".status"-Karte aus
 // der V12-Referenz (teal-tuerkiser Farbverlauf, Eyebrow, grosse Ueberschrift,
@@ -42,7 +43,7 @@ export function StatusHero({
 
         {state === "processed" ? (
           <>
-            <h2 className="mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]">
+            <h2 className={`${dashFontDisplayClass} mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]`}>
               Analyse abgeschlossen
             </h2>
             <p className="text-[13.5px] text-white dark:text-[#f2ffff]">
@@ -60,7 +61,7 @@ export function StatusHero({
           </>
         ) : state === "empty" ? (
           <>
-            <h2 className="mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]">
+            <h2 className={`${dashFontDisplayClass} mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]`}>
               Noch keine Daten
             </h2>
             <p className="text-[13.5px] text-white dark:text-[#f2ffff]">Es wurde noch kein Monatsimport verarbeitet.</p>
@@ -73,7 +74,7 @@ export function StatusHero({
           </>
         ) : (
           <>
-            <h2 className="mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]">
+            <h2 className={`${dashFontDisplayClass} mt-1.5 text-[19.5px] font-bold leading-tight tracking-tight [text-shadow:0_1px_0_rgba(0,0,0,0.08)]`}>
               {dataImportCount} {dataImportCount === 1 ? "Datei" : "Dateien"} hochgeladen
             </h2>
             <p className="text-[13.5px] text-white dark:text-[#f2ffff]">Spaltenzuordnung steht noch aus.</p>

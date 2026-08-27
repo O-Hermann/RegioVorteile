@@ -1,5 +1,5 @@
 import { CopyIcon, FileTextIcon, PercentIcon, ScaleIcon } from "@/components/icons";
-import { DASH_ACCENT_HEX, type DashAccent, dashTextTitle, dashTextBody, dashTextSectionHeading, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
+import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextTitle, dashTextBody, dashTextSectionHeading, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 // Kernstueck des MVP-Fokus (siehe Nutzer-Vorgabe: "wo Doppelzahlungen
 // gefallen sind, wo kein Skonto beruecksichtigt wurde, wo offene
@@ -26,7 +26,7 @@ export const FINDINGS: FindingCategory[] = [
   { key: "duplicate", name: "Doppelzahlungen", desc: "Rechnungen, die versehentlich doppelt oder mehrfach beglichen wurden.", amount: 42100, count: 16, accent: "red", icon: CopyIcon },
   { key: "discount", name: "Skonto nicht genutzt", desc: "Frühzahler-Rabatte, die durch verspätete Zahlung verpasst wurden.", amount: 7230, count: 8, accent: "orange", icon: PercentIcon },
   { key: "credit", name: "Offene Gutschriften", desc: "Erhaltene Gutschriften, die noch nicht mit Rechnungen verrechnet wurden.", amount: 19850, count: 11, accent: "blue", icon: FileTextIcon },
-  { key: "overpayment", name: "Mögliche Überzahlung", desc: "Gezahlter Betrag weicht vom Rechnungsbetrag ab, z. B. durch Tipp- oder Rundungsfehler.", amount: 13960, count: 6, accent: "purple", icon: ScaleIcon },
+  { key: "overpayment", name: "Mögliche Überzahlung", desc: "Gezahlter Betrag weicht vom Rechnungsbetrag ab, z. B. durch Tipp- oder Rundungsfehler.", amount: 13960, count: 6, accent: "teal", icon: ScaleIcon },
 ];
 
 export function getFindingsSummary() {
@@ -38,12 +38,12 @@ export function getFindingsSummary() {
 }
 
 const ACCENT_CLASS: Record<DashAccent, string> = {
-  red: "text-rose-600 border-rose-400/50 bg-rose-500/10 dark:text-dash-red dark:border-dash-red/50 dark:bg-[rgba(255,98,93,0.1)]",
-  orange: "text-amber-600 border-amber-400/50 bg-amber-500/10 dark:text-dash-orange dark:border-dash-orange/50 dark:bg-[rgba(240,162,62,0.1)]",
-  blue: "text-sky-600 border-sky-400/50 bg-sky-500/10 dark:text-dash-blue dark:border-dash-blue/50 dark:bg-[rgba(79,159,255,0.1)]",
+  red: "text-rose-600 border-rose-400/50 bg-rose-500/10 dark:text-dash-red dark:border-dash-red/50 dark:bg-[rgba(255,117,109,0.1)]",
+  orange: "text-amber-600 border-amber-400/50 bg-amber-500/10 dark:text-dash-orange dark:border-dash-orange/50 dark:bg-[rgba(226,171,72,0.1)]",
+  blue: "text-sky-600 border-sky-400/50 bg-sky-500/10 dark:text-dash-blue dark:border-dash-blue/50 dark:bg-[rgba(99,170,255,0.1)]",
   purple: "text-violet-600 border-violet-400/50 bg-violet-500/10 dark:text-dash-purple dark:border-dash-purple/50 dark:bg-[rgba(170,118,255,0.1)]",
-  green: "text-emerald-600 border-emerald-400/50 bg-emerald-500/10 dark:text-dash-green dark:border-dash-green/50 dark:bg-[rgba(50,215,154,0.1)]",
-  teal: "text-ink-700 border-ink-400/50 bg-ink-500/10 dark:text-dash-teal dark:border-dash-teal/50 dark:bg-[rgba(37,216,206,0.1)]",
+  green: "text-emerald-600 border-emerald-400/50 bg-emerald-500/10 dark:text-dash-green dark:border-dash-green/50 dark:bg-[rgba(71,215,149,0.1)]",
+  teal: "text-ink-700 border-ink-400/50 bg-ink-500/10 dark:text-dash-teal dark:border-dash-teal/50 dark:bg-[rgba(45,214,197,0.1)]",
 };
 
 export function FindingsList() {
@@ -60,13 +60,13 @@ export function FindingsList() {
               <f.icon className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <h3 className={`${dashTextTitle} font-bold text-sand-900 dark:text-dash-text`}>{f.name}</h3>
+              <h3 className={`${dashFontDisplayClass} ${dashTextTitle} font-bold text-sand-900 dark:text-dash-text`}>{f.name}</h3>
               <p className={`mt-0.5 ${dashTextSecondarySm} leading-snug text-sand-500 dark:text-[#89a3bb]`}>{f.desc}</p>
             </div>
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className={`font-display ${dashTextSectionHeading} font-extrabold tabular-nums text-sand-900 dark:text-dash-text`}>
+            <span className={`${dashFontDisplayClass} ${dashTextSectionHeading} font-extrabold tabular-nums text-sand-900 dark:text-dash-text`}>
               {f.amount.toLocaleString("de-DE")}&nbsp;€
             </span>
             <span className={`rounded-full border border-card-border/60 bg-sand-50 px-2 py-0.5 ${dashTextSecondarySm} font-semibold text-sand-500 dark:border-[rgba(83,121,151,0.24)] dark:bg-[rgba(5,23,41,0.55)] dark:text-[#c9dde9]`}>

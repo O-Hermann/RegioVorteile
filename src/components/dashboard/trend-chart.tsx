@@ -53,7 +53,7 @@ export function TrendChart({ history }: { history: { period: MonthPeriod; revenu
     >
       <div className="flex shrink-0 items-start justify-between gap-2">
         <div className={`flex items-center gap-2 ${dashTextTitle} font-extrabold text-sand-900 dark:text-dash-text`}>
-          <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(37,216,206,0.14),rgba(37,216,206,0.07))] border border-ink-400/25 dark:border-[rgba(37,216,206,0.14)]">
+          <span className="flex h-[27px] w-[27px] items-center justify-center rounded-[9px] text-ink-700 dark:text-dash-teal bg-ink-400/15 dark:bg-transparent dark:bg-[linear-gradient(180deg,rgba(45,214,197,0.14),rgba(45,214,197,0.07))] border border-ink-400/25 dark:border-[rgba(45,214,197,0.14)]">
             <TrendingUpIcon className="h-3.5 w-3.5" />
           </span>
           Entwicklung

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarIcon } from "@/components/icons";
+import { dashFontDisplayClass } from "@/components/dashboard/dash-ui";
 
 // Titelzeile + Filter-/Fokusreihe der Übersicht-Seite, optisch die V12-
 // ".pagehead"-Sektion. Bewusst NUR auf dieser Seite (nicht im geteilten
@@ -39,15 +40,15 @@ export function Pagehead({
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:bg-[radial-gradient(circle_at_28%_20%,rgba(218,255,252,0.2),transparent_36%),linear-gradient(145deg,#31cfc6,#117d7a_72%)] font-display text-base font-bold text-white shadow-md shadow-ink-900/20 dark:border dark:border-[rgba(118,241,233,0.2)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_18px_rgba(4,94,91,0.17)]">
+        <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ink-700 to-ink-900 dark:bg-[radial-gradient(circle_at_28%_20%,rgba(218,255,252,0.2),transparent_36%),linear-gradient(145deg,#31cfc6,#117d7a_72%)] ${dashFontDisplayClass} text-base font-bold text-white shadow-md shadow-ink-900/20 dark:border dark:border-[rgba(118,241,233,0.2)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_18px_rgba(4,94,91,0.17)]`}>
           {avatarInitial}
           <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-400 shadow-[0_0_8px_rgba(88,227,166,0.42)] dark:border-[#0e223b] dark:bg-[#58e3a6]" />
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="font-display truncate text-[24px] font-bold tracking-tight text-sand-900 dark:text-dash-text">{greeting}</h1>
+            <h1 className={`${dashFontDisplayClass} truncate text-[24px] font-bold tracking-tight text-sand-900 dark:text-dash-text`}>{greeting}</h1>
             {dataStatusReady && (
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-300/50 bg-emerald-50 px-2 py-1 text-[10.5px] font-semibold text-emerald-700 dark:border-[rgba(50,215,154,0.13)] dark:bg-[rgba(50,215,154,0.045)] dark:text-[#92cdb4]">
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-300/50 bg-emerald-50 px-2 py-1 text-[10.5px] font-semibold text-emerald-700 dark:border-[rgba(71,215,149,0.13)] dark:bg-[rgba(71,215,149,0.045)] dark:text-[#92cdb4]">
                 <i className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-dash-green" />
                 Daten aktuell
               </span>

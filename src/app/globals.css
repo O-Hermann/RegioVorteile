@@ -231,28 +231,31 @@
   --color-import-purple: #8c6cff;
   --color-import-purple-light: #a792ff;
 
-  /* Effivo-Übersicht (V12): eigener Namensraum aus demselben Grund wie
-     --color-import-* oben - exakte Werte aus der vom Nutzer freigegebenen
-     "Effivo_V12_Dashboard_Final.html"-Designreferenz, bewusst NICHT in
-     --color-import-* oder --color-cockpit-* eingebaut. Aehnliche, aber nicht
-     identische Farbwelt wie import-* (beide dunkle Effivo-Flaechen, aus
-     unterschiedlichen Referenzdateien) - eigene Konstanten verhindern, dass
-     eine Anpassung an der einen Seite ungefragt die andere mitveraendert.
-     Nur ueber dark:-Utilities genutzt; kein Light-Mode-Gegenstueck, da V12
-     ausschliesslich als Dark-Mode-Layout freigegeben wurde. */
-  --color-dash-bg: #061426;
-  --color-dash-panel: #0e223b;
-  --color-dash-panel-soft: #112a46;
-  --color-dash-line: #20415f;
-  --color-dash-text: #f5f9ff;
-  --color-dash-text-secondary: #8fa8c2;
-  --color-dash-text-muted: #6f8ba7;
-  --color-dash-teal: #25d8ce;
-  --color-dash-teal-hover: #0f9f99;
-  --color-dash-green: #32d79a;
-  --color-dash-orange: #f0a23e;
-  --color-dash-red: #ff625d;
-  --color-dash-blue: #4f9fff;
+  /* Effivo-Übersicht: eigener Namensraum aus demselben Grund wie
+     --color-import-* oben - bewusst NICHT in --color-import-* oder
+     --color-cockpit-* eingebaut, damit eine Anpassung an der einen Seite
+     nicht ungefragt die andere mitveraendert. Aehnliche, aber nicht
+     identische Farbwelt wie import-* (beide dunkle Effivo-Flaechen).
+     Werte seit dem MVP-Pivot (2026-08-27) aus dem vom Nutzer per Artifact
+     freigegebenen HTML-Mockup uebernommen ("genau so uebernehmen") - vorher
+     stammten sie aus der aelteren "Effivo_V12_Dashboard_Final.html"-
+     Referenz. Nur ueber dark:-Utilities genutzt; kein eigenes Light-Mode-
+     Gegenstueck (das Mockup-Lichtmodus-Schema wurde nicht uebernommen, da
+     der Nutzer laut [[controlling_cockpit_light_mode_feedback]] ohnehin
+     ausschliesslich Dark Mode nutzt). */
+  --color-dash-bg: #0a1720;
+  --color-dash-panel: #10202c;
+  --color-dash-panel-soft: #152936;
+  --color-dash-line: #1b2a33;
+  --color-dash-text: #edf6f5;
+  --color-dash-text-secondary: #93aab6;
+  --color-dash-text-muted: #63808d;
+  --color-dash-teal: #2dd6c5;
+  --color-dash-teal-hover: #1fae9f;
+  --color-dash-green: #47d795;
+  --color-dash-orange: #e2ab48;
+  --color-dash-red: #ff756d;
+  --color-dash-blue: #63aaff;
   --color-dash-purple: #aa76ff;
 }
 
@@ -302,6 +305,24 @@ h3,
 h4 {
   font-family: var(--font-display), Arial, Helvetica, sans-serif;
   letter-spacing: -0.02em;
+}
+
+/* Effivo-Übersicht (MVP-Pivot, 2026-08-27): eigene Schriften nur fuer diese
+   eine Seite (siehe dashFontScopeClass/dashFontDisplayClass in dash-ui.ts) -
+   diese Regel muss HIER als eigene, unlayered Regel stehen statt sich auf
+   eine Tailwind-Utility-Klasse auf dem jeweiligen Element zu verlassen: Der
+   obige "h1,h2,h3,h4"-Selektor gewinnt sonst IMMER gegen jede Tailwind-
+   Utility, unabhaengig von deren Spezifitaet - "@import tailwindcss" buendelt
+   alle Utilities in benannte CSS-Cascade-Layer, und jede nicht in einem
+   Layer stehende Regel (wie diese hier) hat laut Spezifikation automatisch
+   Vorrang vor JEDER Layer-Regel. Nur eine ebenfalls unlayered Regel mit
+   hoeherer Spezifitaet (Klasse + Element statt nur Element) kann das
+   korrekt ueberschreiben. */
+.dash-scope h1,
+.dash-scope h2,
+.dash-scope h3,
+.dash-scope h4 {
+  font-family: var(--font-dash-display), Arial, Helvetica, sans-serif;
 }
 
 @keyframes spin-slow {

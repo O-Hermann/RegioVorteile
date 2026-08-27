@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircleIcon } from "@/components/icons";
-import { DASH_ACCENT_HEX, type DashAccent, dashTextBody, dashTextBodyLg, dashTextSecondaryLg, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
+import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextBody, dashTextBodyLg, dashTextSecondaryLg, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 
 export type AttentionItem = {
   id: string;
@@ -14,15 +14,15 @@ export type AttentionItem = {
 };
 
 const BUBBLE_CLASS: Record<DashAccent, string> = {
-  red: "text-rose-600 bg-rose-500/10 border border-rose-500/30 dark:text-dash-red dark:bg-[rgba(255,98,93,0.12)] dark:border-dash-red/60",
+  red: "text-rose-600 bg-rose-500/10 border border-rose-500/30 dark:text-dash-red dark:bg-[rgba(255,117,109,0.12)] dark:border-dash-red/60",
   orange:
-    "text-amber-600 bg-amber-500/10 border border-amber-500/30 dark:text-dash-orange dark:bg-[rgba(240,162,62,0.12)] dark:border-dash-orange/60",
-  blue: "text-sky-600 bg-sky-500/10 border border-sky-500/30 dark:text-dash-blue dark:bg-[rgba(79,159,255,0.1)] dark:border-dash-blue/60",
+    "text-amber-600 bg-amber-500/10 border border-amber-500/30 dark:text-dash-orange dark:bg-[rgba(226,171,72,0.12)] dark:border-dash-orange/60",
+  blue: "text-sky-600 bg-sky-500/10 border border-sky-500/30 dark:text-dash-blue dark:bg-[rgba(99,170,255,0.1)] dark:border-dash-blue/60",
   purple:
     "text-violet-600 bg-violet-500/10 border border-violet-500/30 dark:text-dash-purple dark:bg-[rgba(170,118,255,0.1)] dark:border-dash-purple/60",
   green:
-    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(50,215,154,0.1)] dark:border-dash-green/60",
-  teal: "text-ink-700 bg-ink-500/10 border border-ink-500/30 dark:text-dash-teal dark:bg-[rgba(37,216,206,0.09)] dark:border-dash-teal/60",
+    "text-emerald-600 bg-emerald-500/10 border border-emerald-500/30 dark:text-dash-green dark:bg-[rgba(71,215,149,0.1)] dark:border-dash-green/60",
+  teal: "text-ink-700 bg-ink-500/10 border border-ink-500/30 dark:text-dash-teal dark:bg-[rgba(45,214,197,0.09)] dark:border-dash-teal/60",
 };
 
 // "Handlungsbedarf"-Band, jetzt eine schlanke horizontale Leiste direkt unter
@@ -55,13 +55,13 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] ${
             hasItems
               ? "bg-gold-100 text-gold-700 dark:bg-[rgba(224,171,72,0.13)] dark:text-[#e2ab48]"
-              : "bg-emerald-100 text-emerald-600 dark:bg-[rgba(50,215,154,0.12)] dark:text-dash-green"
+              : "bg-emerald-100 text-emerald-600 dark:bg-[rgba(71,215,149,0.12)] dark:text-dash-green"
           }`}
         >
           <CheckCircleIcon className="h-[18px] w-[18px]" />
         </span>
         <div>
-          <strong className={`font-display block ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>Handlungsbedarf</strong>
+          <strong className={`${dashFontDisplayClass} block ${dashTextBodyLg} font-bold text-sand-900 dark:text-dash-text`}>Handlungsbedarf</strong>
           <span className={`${dashTextSecondarySm} text-sand-500 dark:text-[#7fa1bd]`}>
             {hasItems ? `${items.length} ${items.length === 1 ? "Punkt braucht" : "Punkte brauchen"} heute Aufmerksamkeit` : "Alles erledigt"}
           </span>
