@@ -75,7 +75,18 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
         </p>
       </div>
 
-      <div className="mt-auto">
+      <div className="relative mt-auto">
+        {/* preserveAspectRatio="none" streckt den 400x130-viewBox nicht
+            gleichmaessig auf die tatsaechliche Kartenbreite (typ. ~800-900px
+            bei 108px Hoehe, also deutlich mehr horizontale als vertikale
+            Dehnung) - ein in Vektorkoordinaten gezeichneter Kreis wuerde
+            dadurch sichtbar zur Ellipse verzerrt und die Linie ungleichmaessig
+            dick wirken ("verpixelt"/"künstlich breit gezogen"). Fix:
+            vectorEffect haelt die Linienstaerke in echten Bildschirmpixeln
+            fest (nicht mitgedehnt), der Endpunkt-Punkt wird bewusst NICHT als
+            SVG-Kreis gezeichnet, sondern als eigenes HTML-Element prozentual
+            positioniert - dieselbe prozentuale Dehnung wie beim SVG selbst,
+            aber als echter, scharfer Kreis statt eines verzerrten Vektors. */}
         <svg viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true" className="h-[108px] w-full overflow-visible">
           <defs>
             <linearGradient id="heroFindingsFill" x1="0" y1="0" x2="0" y2="1">
@@ -87,10 +98,27 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
             <path d="M0,30 H400 M0,70 H400 M0,110 H400" />
           </g>
           <path d={areaPath} fill="url(#heroFindingsFill)" />
-          <path d={linePath} fill="none" className="text-ink-600 dark:text-dash-teal" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx={lastX} cy={lastY} r={10} className="text-ink-600 dark:text-dash-teal" fill="currentColor" opacity={0.16} />
-          <circle cx={lastX} cy={lastY} r={4} className="fill-card text-ink-600 dark:text-dash-teal" stroke="currentColor" strokeWidth={2.4} />
+          <path
+            d={linePath}
+            fill="none"
+            className="text-ink-600 dark:text-dash-teal"
+            stroke="currentColor"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
         </svg>
+        <span
+          aria-hidden
+          className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-600/15 dark:bg-dash-teal/20"
+          style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
+        />
+        <span
+          aria-hidden
+          className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-600 bg-card dark:border-dash-teal"
+          style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
+        />
         <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-sand-400 dark:text-dash-text-muted">
           {history.map((h, i) => (
             <span key={h.label} className={i === history.length - 1 ? "text-ink-600 dark:text-dash-teal" : undefined}>
