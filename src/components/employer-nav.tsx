@@ -8,10 +8,17 @@ type NavItem = {
   href?: string;
 };
 
+// Kunden/Aufträge (2026-08-29): bewusst aus der Navigation entfernt, nicht
+// geloescht - beide Bereiche sind vollstaendig gebaute CRUD-Features, haengen
+// aber mit dem Effivo-MVP-Kernablauf (Datenimport -> automatische
+// Fund-Erkennung -> Fallpruefung, siehe [[effivo_mvp_roadmap]]) inhaltlich
+// nicht zusammen - die Erkennung liest ausschliesslich importierte FINANCE-
+// Zeilen, nie Kunden-/Auftrags-Datensaetze. Routen/Code/Datenmodell bleiben
+// unveraendert bestehen, nur der einzige Navigationszugang (dieses Array) ist
+// entfernt, damit kein Kunde ueber einen Link dorthin gelangt. Bei Bedarf
+// spaeter einfach hier wieder eintragen, um sie zurueckzuholen.
 const NAV: NavItem[] = [
   { label: "Übersicht", href: "/arbeitgeber/dashboard" },
-  { label: "Kunden", href: "/arbeitgeber/dashboard/kunden" },
-  { label: "Aufträge", href: "/arbeitgeber/dashboard/auftraege" },
   { label: "Datenimporte", href: "/arbeitgeber/dashboard/datenimporte" },
   { label: "Auswertungen" },
   { label: "Berichte" },
