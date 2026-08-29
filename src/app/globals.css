@@ -56,6 +56,43 @@
   --landing-danger-subtle: #fcebf0;
   --landing-purple: #7c3aed;
   --landing-purple-subtle: #f1e9fe;
+
+  /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): eigener
+     Namensraum aus demselben Grund wie --color-import-* / --color-landing-*
+     oben - eine Anpassung hier soll nicht ungefragt andere Seiten
+     mitveraendern. Ersetzt die bisherige Teal-Palette aus dem V12-Port,
+     siehe [[controlling_cockpit_v12_dashboard_port]] und
+     [[effivo_mvp_roadmap]] fuer die volle Entstehungsgeschichte. Anders als
+     die bisherige Teal-Version hat diese Palette jetzt ein echtes
+     Light-Mode-Gegenstueck (der Nutzer hat den Lightmodus im Mockup
+     explizit geprueft und freigegeben, nicht nur Dark Mode wie zuvor). */
+  --color-dash-bg: #f7f8fb;
+  --color-dash-panel: #ffffff;
+  --color-dash-panel-soft: #eef1f6;
+  --color-dash-line: #dce1ea;
+  --color-dash-text: #10151f;
+  --color-dash-text-secondary: #4a5468;
+  --color-dash-text-muted: #6b7686;
+  --color-dash-text-faint: #8891a0;
+  --color-dash-gold: #b8863e;
+  --color-dash-gold-deep: #9c7530;
+  --color-dash-gold-glow: rgba(184, 134, 62, 0.14);
+  --color-dash-red: #c41e3a;
+  --color-dash-red-tint: rgba(196, 30, 58, 0.1);
+  --color-dash-green: #3c7a2e;
+  --color-dash-green-tint: rgba(60, 122, 46, 0.1);
+  --color-dash-blue: #1d7ba8;
+  --color-dash-blue-tint: rgba(29, 123, 168, 0.1);
+  --color-dash-purple: #8b33a8;
+  --color-dash-purple-tint: rgba(139, 51, 168, 0.1);
+  --color-dash-good: #0f8f63;
+  --color-dash-warn: #b8863e;
+  --color-dash-bad: #c41e3a;
+  --color-dash-status-new: #c79200;
+  --color-dash-status-active: #1d3fd1;
+  --color-dash-status-reviewed: #33bb21;
+  --color-dash-status-done: #475569;
+  --color-dash-shadow-card: 0 1px 0 rgba(16, 20, 32, 0.04), 0 8px 24px rgba(16, 20, 32, 0.08);
 }
 
 /* Dunkelmodus: nur die neutrale Sand-Skala und die semantischen Oberflaechen
@@ -231,38 +268,36 @@
   --color-import-purple: #8c6cff;
   --color-import-purple-light: #a792ff;
 
-  /* Effivo-Übersicht: eigener Namensraum aus demselben Grund wie
-     --color-import-* oben - bewusst NICHT in --color-import-* oder
-     --color-cockpit-* eingebaut, damit eine Anpassung an der einen Seite
-     nicht ungefragt die andere mitveraendert. Aehnliche, aber nicht
-     identische Farbwelt wie import-* (beide dunkle Effivo-Flaechen).
-     Werte seit dem MVP-Pivot (2026-08-27) aus dem vom Nutzer per Artifact
-     freigegebenen HTML-Mockup uebernommen ("genau so uebernehmen") - vorher
-     stammten sie aus der aelteren "Effivo_V12_Dashboard_Final.html"-
-     Referenz. Nur ueber dark:-Utilities genutzt; kein eigenes Light-Mode-
-     Gegenstueck (das Mockup-Lichtmodus-Schema wurde nicht uebernommen, da
-     der Nutzer laut [[controlling_cockpit_light_mode_feedback]] ohnehin
-     ausschliesslich Dark Mode nutzt). */
-  --color-dash-bg: #0a1720;
-  --color-dash-panel: #10202c;
-  --color-dash-panel-soft: #152936;
-  --color-dash-line: #1b2a33;
-  --color-dash-text: #edf6f5;
-  --color-dash-text-secondary: #93aab6;
-  /* Lesbarkeits-Korrektur (2026-08-27): #63808d ergab bei den kleinsten
-     Textgroessen der Seite (Fallzeilen-Details, Fusszeilen, ~9.5-12.5px)
-     nur ~3.96:1 Kontrast auf den dunklen Kartenflaechen - unter WCAG-AA
-     (4.5:1) fuer Fliesstext. Aufgehellt auf #7d97a8 (~5.2:1 gemessen gegen
-     die dunkelste vorkommende Kartenflaeche), weiterhin klar als "gedaempft"
-     erkennbar, aber tatsaechlich lesbar. */
-  --color-dash-text-muted: #7d97a8;
-  --color-dash-teal: #2dd6c5;
-  --color-dash-teal-hover: #1fae9f;
-  --color-dash-green: #47d795;
-  --color-dash-orange: #e2ab48;
-  --color-dash-red: #ff756d;
-  --color-dash-blue: #63aaff;
-  --color-dash-purple: #aa76ff;
+  /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): siehe ausfuehrlichen
+     Kommentar beim Light-Mode-Gegenstueck oben im :root-Block - ersetzt die
+     bisherige Teal-Palette (Werte bis 2026-08-29 aus der V12-Referenz). */
+  --color-dash-bg: #050d1a;
+  --color-dash-panel: #0c1524;
+  --color-dash-panel-soft: #111c2e;
+  --color-dash-line: #27344a;
+  --color-dash-text: #f6f3eb;
+  --color-dash-text-secondary: #9aa7bc;
+  --color-dash-text-muted: #7c8aa0;
+  --color-dash-text-faint: #5e6c82;
+  --color-dash-gold: #e2bc6b;
+  --color-dash-gold-deep: #c9983c;
+  --color-dash-gold-glow: rgba(226, 188, 107, 0.14);
+  --color-dash-red: #ef5878;
+  --color-dash-red-tint: rgba(239, 88, 120, 0.16);
+  --color-dash-green: #6fbd5c;
+  --color-dash-green-tint: rgba(111, 189, 92, 0.16);
+  --color-dash-blue: #3fa9de;
+  --color-dash-blue-tint: rgba(63, 169, 222, 0.16);
+  --color-dash-purple: #b15fd1;
+  --color-dash-purple-tint: rgba(177, 95, 209, 0.16);
+  --color-dash-good: #10d992;
+  --color-dash-warn: #e2bc6b;
+  --color-dash-bad: #ef5878;
+  --color-dash-status-new: #d9a400;
+  --color-dash-status-active: #375bff;
+  --color-dash-status-reviewed: #33bb21;
+  --color-dash-status-done: #cbd5e1;
+  --color-dash-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
@@ -328,7 +363,7 @@ h4 {
 .dash-scope h2,
 .dash-scope h3,
 .dash-scope h4 {
-  font-family: var(--font-dash-display), Arial, Helvetica, sans-serif;
+  font-family: var(--font-dash-body), Arial, Helvetica, sans-serif;
 }
 
 @keyframes spin-slow {

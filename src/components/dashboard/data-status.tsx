@@ -1,19 +1,14 @@
 import Link from "next/link";
 import { ArrowRightIcon, UploadIcon } from "@/components/icons";
-import { dashCardClass, dashIconBoxClass } from "@/components/dashboard/dash-ui";
+import { dashCardClass, dashModuleHoverClass, dashIconBoxClass, dashModuleFootClass } from "@/components/dashboard/dash-ui";
 
-// "Datenstatus"-Karte, optisch 1:1 das Mockup-Panel neben "Prüfübersicht"
-// (gleiche schlichte ".panel"-Kartenoptik, keine Farbverlaeufe). Ersetzt an
-// dieser Stelle die bisherige "StatusHero" (die grosse tuerkise Farbverlauf-
-// karte mit "Analyse abgeschlossen"-Text) - die passt optisch zu keinem
-// anderen Element mehr, seit die Seite auf den Fund-Kategorien-Fokus
-// umgestellt wurde, und kommt im freigegebenen Mockup an dieser Stelle so
-// auch nicht vor. StatusHero-Datei bleibt bewusst erhalten (nicht geloescht,
-// siehe Kommentar in page.tsx zu KpiGrid/AnalysisCompare/TrendChart), nur
-// nicht mehr gerendert.
+// "Datenstatus"-Karte, 1:1 aus dem "Goldstandard"-Mockup (siehe
+// [[effivo_mvp_roadmap]]): Gold-Icon-Box statt Teal, 12px-Radius. Ersetzt
+// an dieser Stelle die bisherige "StatusHero", siehe Kommentar-Historie in
+// page.tsx zu KpiGrid/AnalysisCompare/TrendChart (bewusst geparkt, nicht
+// geloescht).
 //
-// Alle vier Zeilen sind echte Werte (kein Referenz-Demowert wie in
-// findings-list.tsx/review-donut.tsx): Verarbeitete Monate/Belege aus den
+// Alle vier Zeilen sind echte Werte: Verarbeitete Monate/Belege aus den
 // tatsaechlich verarbeiteten Datenimporten, Offene Datenimporte aus der auf
 // der Seite ohnehin vorhandenen pendingMappingCount, Offene Datenfehler aus
 // echten FAILED/VALIDATION_FAILED-Importen.
@@ -31,32 +26,27 @@ export function DataStatusCard({
   currentPeriodLabel: string | null;
 }) {
   return (
-    <div className={`flex h-full flex-col gap-3.5 ${dashCardClass} p-4`}>
+    <div className={`flex h-full flex-col gap-4 p-6 ${dashCardClass} ${dashModuleHoverClass}`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <span className={dashIconBoxClass}>
-            <UploadIcon className="h-3.5 w-3.5" />
+            <UploadIcon className="h-4 w-4" />
           </span>
-          <h3 className="text-[15.5px] font-bold text-sand-900 dark:text-dash-text">Datenstatus</h3>
+          <h3 className="text-[16px] font-semibold text-dash-text">Datenstatus</h3>
         </div>
         {currentPeriodLabel && (
-          <span className="rounded-full border border-card-border dark:border-dash-line px-2.5 py-1 text-[11.5px] font-semibold text-sand-500 dark:text-dash-text-secondary">
-            {currentPeriodLabel}
-          </span>
+          <span className="rounded-lg border border-dash-line px-2.5 py-1 text-[12px] font-semibold text-dash-text-muted">{currentPeriodLabel}</span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-center gap-2.5">
+      <div className="flex flex-1 flex-col justify-center gap-4">
         <StatusRow label="Verarbeitete Monate" value={processedMonthCount} />
         <StatusRow label="Verarbeitete Belege" value={processedRowCount.toLocaleString("de-DE")} />
-        <StatusRow label="Offene Datenimporte" value={pendingMappingCount} valueClassName={pendingMappingCount > 0 ? "text-dash-orange" : undefined} />
-        <StatusRow label="Offene Datenfehler" value={failedImportCount} valueClassName={failedImportCount > 0 ? "text-dash-red" : "text-dash-green"} />
+        <StatusRow label="Offene Datenimporte" value={pendingMappingCount} valueClassName={pendingMappingCount > 0 ? "text-dash-warn" : undefined} />
+        <StatusRow label="Offene Datenfehler" value={failedImportCount} valueClassName={failedImportCount > 0 ? "text-dash-bad" : "text-dash-good"} />
       </div>
 
-      <Link
-        href="/arbeitgeber/dashboard/datenimporte"
-        className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-ink-400/20 bg-ink-50/60 px-3 py-2.5 text-[13px] font-semibold text-ink-700 transition-colors dark:border-dash-teal/15 dark:bg-[rgba(45,214,197,0.06)] dark:text-dash-teal"
-      >
+      <Link href="/arbeitgeber/dashboard/datenimporte" className={dashModuleFootClass}>
         Alle Datenimporte
         <ArrowRightIcon className="h-3.5 w-3.5" />
       </Link>
@@ -67,8 +57,8 @@ export function DataStatusCard({
 function StatusRow({ label, value, valueClassName }: { label: string; value: string | number; valueClassName?: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[12.5px] text-sand-500 dark:text-dash-text-secondary">{label}</span>
-      <span className={`text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text ${valueClassName ?? ""}`}>{value}</span>
+      <span className="text-[13px] text-dash-text-muted">{label}</span>
+      <span className={`text-[14px] font-semibold tabular-nums text-dash-text ${valueClassName ?? ""}`}>{value}</span>
     </div>
   );
 }

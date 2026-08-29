@@ -11,7 +11,7 @@ import { FindingsHero } from "@/components/dashboard/findings-hero";
 import { ReviewStatusCard } from "@/components/dashboard/review-status";
 import { ReviewDonut } from "@/components/dashboard/review-donut";
 import { DataStatusCard } from "@/components/dashboard/data-status";
-import { FindingsList, buildFindings } from "@/components/dashboard/findings-list";
+import { FindingsList, buildFindings, getFindingsSummary } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Pagehead } from "@/components/dashboard/pagehead";
 import { dashFontScopeClass, type DashAccent } from "@/components/dashboard/dash-ui";
@@ -86,6 +86,12 @@ export default async function ArbeitgeberDashboardPage() {
   // damit ein bereits geprueftes Fall seinen Status behaelt.
   const { duplicatePayments, openCreditNotes, overpayments, missedDiscounts } = syncedFindings;
   const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments, missedDiscounts);
+  // FindingsHero ist ein Client Component (Count-up-Animation) - bekommt
+  // deshalb nur Primitives, nicht die volle findings-Liste (die enthaelt
+  // Icon-Komponenten/Funktionen, die sich nicht ueber die Server/Client-
+  // Grenze serialisieren lassen).
+  const { totalAmount: heroTotalAmount, totalCount: heroTotalCount } = getFindingsSummary(findings);
+  const heroCategoryList = findings.map((f) => f.name).join(", ");
 
   // MVP-Roadmap Phase 3 (siehe [[effivo_mvp_roadmap]]): erst NACH
   // syncCases() (oben, bereits awaited) abfragen, sonst Race Condition -
@@ -103,6 +109,7 @@ export default async function ArbeitgeberDashboardPage() {
     year: "numeric",
   });
   const currentPeriodLabel = metrics.currentPeriod ? periodLabel(metrics.currentPeriod.periodMonth, metrics.currentPeriod.periodYear) : null;
+  const lastUpdated = `heute, ${now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr`;
 
   // Handlungsbedarf: solange kein Import existiert, auf den Upload
   // hinweisen; sobald mindestens einer wartet, auf die noch ausstehende
@@ -212,23 +219,25 @@ export default async function ArbeitgeberDashboardPage() {
   }));
 
   return (
-    // "max-w-[1360px] mx-auto" bewusst hier statt im geteilten Layout
+    // "max-w-[1280px] mx-auto" bewusst hier statt im geteilten Layout
     // (layout.tsx spannt seinen eigenen Inhaltsbereich auf max-w-[1920px]
-    // fuer alle Arbeitgeber-Seiten auf) - im Mockup war die Seite auf
-    // max-width:1360px zentriert, damit Kartenreihen auf sehr breiten
-    // Bildschirmen nicht ueber die ganze Breite auseinandergezogen wirken;
-    // andere Seiten (Kunden, Auftraege, ...) sollen das bestehende 1920px
-    // weiterhin nutzen.
-    <div className={`relative mx-auto flex w-full max-w-[1360px] flex-col gap-3 ${dashFontScopeClass}`}>
-      {/* Seiten-eigenes Ambient-Glow (Teal oben links / Gold oben rechts),
-          1:1 dem "--bg-glow" aus dem freigegebenen Mockup nachempfunden -
-          bewusst NICHT im geteilten layout.tsx (das hat bereits eigene,
-          app-weite Blur-Orbs fuer alle Arbeitgeber-Seiten, siehe dortigen
-          Kommentar zur bewussten Trennung). Nur Dark Mode, da die
-          --color-dash-*-Tokens kein Light-Mode-Gegenstueck haben. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-4 -z-10 hidden h-[420px] overflow-hidden dark:block">
-        <div className="absolute -top-32 left-[6%] h-[420px] w-[720px] rounded-full bg-dash-teal/[0.07] blur-[110px]" />
-        <div className="absolute -top-24 right-[2%] h-[340px] w-[560px] rounded-full bg-dash-orange/[0.05] blur-[110px]" />
+    // fuer alle Arbeitgeber-Seiten auf) - Design-Spezifikation gibt
+    // "Max Content Width: 1280px" explizit vor (vormals 1360px aus dem
+    // V12-Mockup); andere Seiten (Kunden, Auftraege, ...) nutzen weiterhin
+    // 1920px.
+    <div className={`relative mx-auto flex w-full max-w-[1280px] flex-col gap-6 ${dashFontScopeClass}`}>
+      {/* Seiten-eigenes Ambient-Glow (Gold oben links / dezentes Blau unten
+          rechts), 1:1 aus dem "Goldstandard"-Mockup (siehe
+          [[effivo_mvp_roadmap]]) - bewusst asymmetrisch statt der frueheren
+          Teal/Gold-Kombination in beiden oberen Ecken, nach mehreren
+          Iterationsrunden mit dem Nutzer so freigegeben. Bewusst NICHT im
+          geteilten layout.tsx (das hat bereits eigene, app-weite Blur-Orbs
+          fuer alle Arbeitgeber-Seiten). Nur in dem Modus sichtbar, in dem
+          --color-dash-* aktiv ist (beide Modi haben jetzt ein Gegenstueck,
+          daher kein dark:-Filter mehr noetig wie bei der alten Teal-Version). */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-4 -z-10 h-[600px] overflow-hidden">
+        <div className="absolute -top-40 left-[2%] h-[480px] w-[760px] rounded-full bg-dash-gold/[0.06] blur-[120px]" />
+        <div className="absolute top-40 right-[-4%] h-[480px] w-[700px] rounded-full bg-dash-status-active/[0.04] blur-[120px]" />
       </div>
       <Pagehead
         greeting={greeting}
@@ -240,14 +249,20 @@ export default async function ArbeitgeberDashboardPage() {
 
       <AttentionList items={actionItems} />
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
-        <FindingsHero findings={findings} currentPeriodLabel={currentPeriodLabel} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
+        <FindingsHero
+          totalAmount={heroTotalAmount}
+          totalCount={heroTotalCount}
+          categoryList={heroCategoryList}
+          currentPeriodLabel={currentPeriodLabel}
+          lastUpdated={lastUpdated}
+        />
         <ReviewStatusCard findings={findings} lastReviewedAt={lastReviewedAt} />
       </div>
 
       <FindingsList findings={findings} />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-stretch">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
         <ReviewDonut counts={caseCounts} />
         <DataStatusCard
           processedMonthCount={processedMonthCount}
@@ -258,7 +273,7 @@ export default async function ArbeitgeberDashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ActivityTimeline items={activityItems} />
         <QuickActions
           hint={pendingMappingCount > 0 ? `${pendingMappingCount} ${pendingMappingCount === 1 ? "Datenimport" : "Datenimporte"} prüfen` : undefined}

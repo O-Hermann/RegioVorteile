@@ -1,61 +1,67 @@
 import Link from "next/link";
 
-// "Schnellaktion"-Karte, optisch 1:1 die V12-".quick"-Karte: primäre Aktion
-// leicht staerker betont, zwei sekundaere Aktionen bewusst ruhiger (keine
-// zusaetzliche Glow-/Glas-Optik obendrauf). Ersetzt an dieser Stelle den
-// bisherigen QuickActionButton (6 CRUD-Kurzbefehle) - dessen Ziele bleiben
-// weiterhin ueber die jeweiligen Seiten/Formulare erreichbar, hier gilt aber
-// die fest vorgegebene V12-Struktur mit genau diesen drei Aktionen.
-// "Fälle prüfen" verlinkt seit MVP-Roadmap Phase 2.3 (siehe
-// [[effivo_mvp_roadmap]]) echt auf die Fallpruefungs-Arbeitsliste
-// (/arbeitgeber/dashboard/faelle).
+// "Schnellaktion"-Karte, 1:1 aus dem "Goldstandard"-Mockup (siehe
+// [[effivo_mvp_roadmap]]): "Fälle prüfen" nach mehreren Iterationsrunden mit
+// dem Nutzer NICHT mehr vollflaechig gold gefuellt (wirkte "billig"), jetzt
+// eine dunkle Flaeche mit Gold-Umrandung + goldenem Titel-Text, dasselbe
+// Prinzip wie beim aktiven Nav-Tab. Jedes Icon jetzt in einer eigenen
+// Icon-Box statt frei auf der Flaeche (vorher inkonsistent zum Rest der
+// Seite). Ersetzt an dieser Stelle den alten QuickActionButton (6
+// CRUD-Kurzbefehle) - dessen Ziele bleiben weiterhin ueber die jeweiligen
+// Seiten/Formulare erreichbar.
 export function QuickActions({ hint }: { hint?: string }) {
   return (
-    <div className="rounded-2xl border border-violet-300/40 bg-card p-2.5 shadow-warm-sm dark:border-[rgba(183,77,255,0.38)] dark:bg-[linear-gradient(180deg,rgba(17,37,67,0.96),rgba(10,29,52,0.97))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_30px_rgba(148,56,255,0.05)]">
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[13px] font-extrabold text-sand-900 dark:text-dash-text">
-          <span className="text-[17px] text-ink-500 dark:text-[#68fff7] dark:[text-shadow:0_0_12px_rgba(104,255,247,0.8)]">✦</span>
+    <div className="rounded-xl border border-dash-line bg-dash-panel p-4 shadow-[0_1px_0_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.35)]">
+      <div className="mb-3.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[16px] font-semibold text-dash-text">
+          <span className="text-[17px] text-dash-gold">✦</span>
           Schnellaktion
         </div>
         {hint && (
-          <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-card-border px-2 py-1 text-[9.5px] text-sand-500 dark:border-white/[0.06] dark:text-dash-text-secondary">
-            <span className="text-[8.6px] uppercase tracking-wide text-sand-400 dark:text-inherit">Nächster Schritt</span>
-            <b className="text-sand-900 dark:text-white">{hint}</b>
+          <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-dash-line px-2.5 py-1 text-[10px] text-dash-text-muted">
+            <span className="uppercase tracking-wide">Nächster Schritt</span>
+            <b className="text-dash-text">{hint}</b>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1.18fr_1fr_1fr]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.15fr_1fr_1fr]">
         <Link
           href="/arbeitgeber/dashboard/faelle"
-          className="relative flex min-h-[54px] items-center gap-2.5 rounded-xl border border-ink-300/60 bg-gradient-to-br from-ink-500 to-ink-700 px-3 py-2 text-white shadow-warm-sm transition-transform hover:-translate-y-px dark:border-[#3de3d9] dark:bg-[linear-gradient(135deg,#24b7b1,#147c7b)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_7px_20px_rgba(20,135,132,0.15)]"
+          className="flex min-h-[66px] items-center gap-3 rounded-xl border border-dash-gold/50 bg-dash-panel-soft p-4 shadow-[0_1px_0_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(226,188,107,0.12)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-dash-gold/75 hover:shadow-[0_12px_26px_rgba(226,188,107,0.14)]"
         >
-          <ArrowSplitIcon className="h-[22px] w-[22px] shrink-0 text-white/85" />
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-dash-gold-deep to-dash-gold text-dash-panel">
+            <ArrowSplitIcon className="h-[19px] w-[19px]" />
+          </span>
           <span className="min-w-0">
-            <b className="block text-[12px] font-bold">Fälle prüfen</b>
-            <small className="block text-[9.5px] text-white/75">Priorisierte Fälle direkt bearbeiten</small>
+            <b className="block text-[14px] font-semibold text-dash-gold">Fälle prüfen</b>
+            <small className="block text-[12px] text-dash-text-muted">Priorisierte Fälle direkt bearbeiten</small>
           </span>
         </Link>
 
         <Link
           href="/arbeitgeber/dashboard/datenimporte/neu"
-          className="group relative flex min-h-[54px] items-center gap-2.5 rounded-xl border border-card-border bg-card px-3 py-2 text-sand-900 shadow-warm-sm transition-[transform,border-color,box-shadow] hover:-translate-y-px dark:border-[rgba(54,91,124,0.62)] dark:bg-[linear-gradient(180deg,#112a46,#0b213a)] dark:text-white dark:hover:border-[rgba(79,137,177,0.78)]"
+          className="flex min-h-[66px] items-center gap-3 rounded-xl border border-dash-line bg-dash-panel-soft p-4 shadow-[0_1px_0_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.35)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-dash-gold/45 hover:shadow-[0_12px_26px_rgba(226,188,107,0.14)]"
         >
-          <UploadArrowIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[11px] bg-dash-gold-glow text-dash-gold">
+            <UploadArrowIcon className="h-[17px] w-[17px]" />
+          </span>
           <span className="min-w-0">
-            <b className="block text-[12px] font-bold">Daten importieren</b>
-            <small className="block text-[9.5px] text-sand-500 dark:text-dash-text-secondary">Neue Datei hinzufügen</small>
+            <b className="block text-[14px] font-semibold text-dash-text">Daten importieren</b>
+            <small className="block text-[12px] text-dash-text-muted">Neue Datei hinzufügen</small>
           </span>
         </Link>
 
         <Link
           href="/arbeitgeber/dashboard/monatsvergleich"
-          className="group relative flex min-h-[54px] items-center gap-2.5 rounded-xl border border-card-border bg-card px-3 py-2 text-sand-900 shadow-warm-sm transition-[transform,border-color,box-shadow] hover:-translate-y-px dark:border-[rgba(54,91,124,0.62)] dark:bg-[linear-gradient(180deg,#112a46,#0b213a)] dark:text-white dark:hover:border-[rgba(79,137,177,0.78)]"
+          className="flex min-h-[66px] items-center gap-3 rounded-xl border border-dash-line bg-dash-panel-soft p-4 shadow-[0_1px_0_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.35)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-dash-gold/45 hover:shadow-[0_12px_26px_rgba(226,188,107,0.14)]"
         >
-          <PulseIcon className="h-[19px] w-[19px] shrink-0 text-sand-500 dark:text-[#cfe6f4]" />
+          <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[11px] bg-dash-gold-glow text-dash-gold">
+            <PulseIcon className="h-[17px] w-[17px]" />
+          </span>
           <span className="min-w-0">
-            <b className="block text-[12px] font-bold">Analyse starten</b>
-            <small className="block text-[9.5px] text-sand-500 dark:text-dash-text-secondary">Aktuelle Daten erneut prüfen</small>
+            <b className="block text-[14px] font-semibold text-dash-text">Analyse starten</b>
+            <small className="block text-[12px] text-dash-text-muted">Aktuelle Daten erneut prüfen</small>
           </span>
         </Link>
       </div>
