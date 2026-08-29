@@ -149,6 +149,7 @@ model User {
   processedDataImports DataImport[]         @relation("DataImportProcessedByUser")
   createdCustomers     Customer[]           @relation("CustomerCreatedByUser")
   createdOrders        Order[]              @relation("OrderCreatedByUser")
+  reviewedCases        Case[]               @relation("CaseReviewedByUser")
 }
 
 model Company {
@@ -165,6 +166,7 @@ model Company {
   dataImportMappingTemplates DataImportMappingTemplate[]
   customers                  Customer[]
   orders                     Order[]
+  cases                      Case[]
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer
@@ -512,6 +514,60 @@ model DataImportRecord {
 
   @@index([dataImportId])
   @@index([companyId])
+}
+
+// MVP-Roadmap Phase 2 (siehe [[effivo_mvp_roadmap]]): persistente Faelle aus
+// den vier Fund-Kategorien (Doppelzahlungen/Skonto/Gutschriften/
+// Ueberzahlung), damit "Alle Faelle pruefen" ein echtes Ziel bekommt und ein
+// Fall seinen Bearbeitungsstand (Status) behaelt statt bei jedem
+// Dashboard-Aufruf neu berechnet und dabei auf "Neu" zurueckgesetzt zu
+// werden. Siehe src/lib/case-sync.ts.
+enum CaseCategory {
+  DUPLICATE_PAYMENT
+  MISSED_DISCOUNT
+  OPEN_CREDIT_NOTE
+  OVERPAYMENT
+}
+
+enum CaseStatus {
+  NEW
+  IN_REVIEW
+  REVIEWED
+  CLOSED
+}
+
+// Ein Fall entspricht genau einer Instanz einer Fund-Kategorie (z.B. eine
+// erkannte Doppelzahlung, eine offene Gutschrift). dedupeKey ist die stabile
+// Identitaet dieser Instanz ueber mehrere Sync-Laeufe hinweg - vergeben von
+// der jeweiligen detect*()-Funktion (siehe z.B.
+// duplicate-payment-detection.ts: Referenznummer+Betrag; die anderen drei
+// nutzen die DataImportRecord-Id, da dort eine Zeile = ein Fall gilt). Beim
+// Sync wird who/what/amount aktualisiert, falls sich die Quelldaten aendern,
+// der Status bleibt dabei unangetastet (siehe case-sync.ts) - das ist der
+// ganze Sinn des dedupeKey: ein bereits "Geprueft"-markierter Fall bleibt
+// geprueft, auch wenn Betraege sich durch neue Importe leicht verschieben.
+model Case {
+  id        String       @id @default(cuid())
+  companyId String
+  company   Company      @relation(fields: [companyId], references: [id])
+  category  CaseCategory
+  dedupeKey String
+
+  who    String
+  what   String
+  amount Decimal @db.Decimal(14, 2)
+
+  status CaseStatus @default(NEW)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  reviewedAt       DateTime?
+  reviewedByUserId String?
+  reviewedByUser   User?     @relation("CaseReviewedByUser", fields: [reviewedByUserId], references: [id])
+
+  @@unique([companyId, category, dedupeKey])
+  @@index([companyId])
+  @@index([companyId, status])
 }
 
 // Phase 6.1: mandantenfaehiges Kunden-Grundsystem - bewusst getrennt von

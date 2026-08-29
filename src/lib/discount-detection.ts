@@ -29,7 +29,11 @@ import { Prisma } from "@/generated/prisma/client";
 // Companies ohne alle drei gemappten Felder (die grosse Mehrheit zu Beginn,
 // da diese Felder neu sind) haben schlicht null bei mindestens einem Feld -
 // detectMissedDiscounts liefert dann ehrlich 0 Faelle, kein falscher Treffer.
+// "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
+// siehe Kommentar in open-credit-note-detection.ts zur selben Konvention
+// (bevorzugt Referenznummer, sonst Zeilen-Id als Rueckfall).
 export type MissedDiscountCase = {
+  key: string;
   who: string;
   what: string;
   amount: Prisma.Decimal;
@@ -39,6 +43,7 @@ export type MissedDiscountResult = {
   totalAmount: Prisma.Decimal;
   caseCount: number;
   topCases: MissedDiscountCase[];
+  allCases: MissedDiscountCase[];
 };
 
 export async function detectMissedDiscounts(companyId: string): Promise<MissedDiscountResult> {
@@ -52,6 +57,7 @@ export async function detectMissedDiscounts(companyId: string): Promise<MissedDi
       dataImport: { category: "FINANCE", status: "PROCESSED" },
     },
     select: {
+      id: true,
       referenceNumber: true,
       name: true,
       organization: true,
@@ -74,7 +80,9 @@ export async function detectMissedDiscounts(companyId: string): Promise<MissedDi
     const missed = invoiceAmount.times(row.discountPercent).dividedBy(100);
     if (missed.isZero()) continue;
     totalAmount = totalAmount.plus(missed);
+    const ref = row.referenceNumber?.trim();
     cases.push({
+      key: ref ? ref.toLowerCase() : row.id,
       who: row.name?.trim() || row.organization?.trim() || "Unbekannt",
       what: `${row.discountPercent.toNumber().toLocaleString("de-DE")} % Skonto verpasst`,
       amount: missed,
@@ -87,5 +95,6 @@ export async function detectMissedDiscounts(companyId: string): Promise<MissedDi
     totalAmount,
     caseCount: cases.length,
     topCases: cases.slice(0, 3),
+    allCases: cases,
   };
 }

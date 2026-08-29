@@ -2,10 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { getCompanyMetrics } from "@/lib/company-metrics";
-import { detectDuplicatePayments } from "@/lib/duplicate-payment-detection";
-import { detectOpenCreditNotes } from "@/lib/open-credit-note-detection";
-import { detectPossibleOverpayments } from "@/lib/overpayment-detection";
-import { detectMissedDiscounts } from "@/lib/discount-detection";
+import { syncCases } from "@/lib/case-sync";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
@@ -62,10 +59,7 @@ export default async function ArbeitgeberDashboardPage() {
     recentDataImports,
     recentProcessedImports,
     metrics,
-    duplicatePayments,
-    openCreditNotes,
-    overpayments,
-    missedDiscounts,
+    syncedFindings,
   ] = await Promise.all([
     prisma.companyMembership.findMany({
       where: { companyId: company.id },
@@ -88,17 +82,17 @@ export default async function ArbeitgeberDashboardPage() {
       take: 5,
     }),
     getCompanyMetrics(company.id),
-    detectDuplicatePayments(company.id),
-    detectOpenCreditNotes(company.id),
-    detectPossibleOverpayments(company.id),
-    detectMissedDiscounts(company.id),
+    syncCases(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
   const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
   // Alle vier Fund-Kategorien sind echt (siehe [[effivo_mvp_roadmap]] Phase
   // 1, abgeschlossen 2026-08-29) - duplicate-payment-detection.ts /
   // open-credit-note-detection.ts / overpayment-detection.ts /
-  // discount-detection.ts.
+  // discount-detection.ts. syncCases() (Phase 2) fuehrt diese vier
+  // Erkennungen aus UND gleicht sie mit der persistenten Case-Tabelle ab,
+  // damit ein bereits geprueftes Fall seinen Status behaelt.
+  const { duplicatePayments, openCreditNotes, overpayments, missedDiscounts } = syncedFindings;
   const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments, missedDiscounts);
 
   const greetingName = user.firstName?.trim();

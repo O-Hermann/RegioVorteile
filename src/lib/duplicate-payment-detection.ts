@@ -29,7 +29,14 @@ import { Prisma } from "@/generated/prisma/client";
 // Zahlung; alle weiteren als die faelschlich zusaetzlich gezahlten Betraege.
 // Der ausgewiesene Betrag ist daher der VERLORENE Anteil (Anzahl-1 × Betrag),
 // nicht die Summe aller Zahlungen zusammen.
+// "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
+// hier bewusst dieselbe (Referenznummer, Betrag)-Gruppierung wie oben, NICHT
+// eine einzelne DataImportRecord-Id, da ein Doppelzahlungs-Fall ja aus
+// mehreren Zeilen besteht und ueber Sync-Laeufe hinweg stabil bleiben muss,
+// auch wenn eine der beteiligten Zeilen (z.B. durch einen erneuten Import
+// derselben Datei) eine neue Id bekommt.
 export type DuplicatePaymentCase = {
+  key: string;
   who: string;
   what: string;
   amount: Prisma.Decimal;
@@ -39,6 +46,7 @@ export type DuplicatePaymentResult = {
   totalAmount: Prisma.Decimal;
   caseCount: number;
   topCases: DuplicatePaymentCase[];
+  allCases: DuplicatePaymentCase[];
 };
 
 type DuplicateRow = {
@@ -75,7 +83,8 @@ export async function detectDuplicatePayments(companyId: string): Promise<Duplic
   });
 
   // Gruppierung nach (normalisierte Referenznummer, Betrag) - siehe
-  // Kommentar oben zur bewusst engen Erkennungsregel.
+  // Kommentar oben zur bewusst engen Erkennungsregel. Der Gruppenschluessel
+  // ist zugleich der stabile "key" fuer case-sync.ts.
   const groups = new Map<string, DuplicateRow[]>();
   for (const row of rows) {
     const ref = row.referenceNumber?.trim();
@@ -91,7 +100,7 @@ export async function detectDuplicatePayments(companyId: string): Promise<Duplic
   const cases: DuplicatePaymentCase[] = [];
   let totalAmount = new Prisma.Decimal(0);
 
-  for (const groupRows of groups.values()) {
+  for (const [key, groupRows] of groups) {
     if (groupRows.length < 2) continue;
     const sorted = [...groupRows].sort((a, b) => {
       const at = (a.primaryDate ?? a.bookingDate ?? a.dataImport.processedAt)?.getTime() ?? 0;
@@ -104,7 +113,7 @@ export async function detectDuplicatePayments(companyId: string): Promise<Duplic
     totalAmount = totalAmount.plus(excessAmount);
     const who = first.name?.trim() || first.organization?.trim() || "Unbekannt";
     const ref = first.referenceNumber!.trim();
-    cases.push({ who, what: `${sorted.length}× ${ref}`, amount: excessAmount });
+    cases.push({ key, who, what: `${sorted.length}× ${ref}`, amount: excessAmount });
   }
 
   cases.sort((a, b) => b.amount.comparedTo(a.amount));
@@ -113,5 +122,6 @@ export async function detectDuplicatePayments(companyId: string): Promise<Duplic
     totalAmount,
     caseCount: cases.length,
     topCases: cases.slice(0, 3),
+    allCases: cases,
   };
 }

@@ -23,7 +23,11 @@ import { Prisma } from "@/generated/prisma/client";
 // Beginn, da dieses Feld neu ist) haben schlicht paidAmount=null bei jeder
 // Zeile - detectPossibleOverpayments liefert dann ehrlich 0 Faelle, kein
 // falscher Treffer.
+// "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
+// siehe Kommentar in open-credit-note-detection.ts zur selben Konvention
+// (bevorzugt Referenznummer, sonst Zeilen-Id als Rueckfall).
 export type OverpaymentCase = {
+  key: string;
   who: string;
   what: string;
   amount: Prisma.Decimal;
@@ -41,6 +45,7 @@ export type OverpaymentResult = {
   totalAmount: Prisma.Decimal;
   caseCount: number;
   topCases: OverpaymentCase[];
+  allCases: OverpaymentCase[];
 };
 
 export async function detectPossibleOverpayments(companyId: string): Promise<OverpaymentResult> {
@@ -52,6 +57,7 @@ export async function detectPossibleOverpayments(companyId: string): Promise<Ove
       dataImport: { category: "FINANCE", status: "PROCESSED" },
     },
     select: {
+      id: true,
       referenceNumber: true,
       name: true,
       organization: true,
@@ -72,7 +78,9 @@ export async function detectPossibleOverpayments(companyId: string): Promise<Ove
 
     const excess = paidAmount.minus(invoiceAmount);
     totalAmount = totalAmount.plus(excess);
+    const ref = row.referenceNumber?.trim();
     cases.push({
+      key: ref ? ref.toLowerCase() : row.id,
       who: row.name?.trim() || row.organization?.trim() || "Unbekannt",
       what: `gezahlt ${formatEuroAmount(paidAmount)} € statt ${formatEuroAmount(invoiceAmount)} €`,
       amount: excess,
@@ -85,5 +93,6 @@ export async function detectPossibleOverpayments(companyId: string): Promise<Ove
     totalAmount,
     caseCount: cases.length,
     topCases: cases.slice(0, 3),
+    allCases: cases,
   };
 }
