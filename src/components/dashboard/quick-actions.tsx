@@ -25,7 +25,7 @@ export function QuickActions({ hint }: { hint?: string }) {
         )}
       </div>
 
-      <div className="grid grid-cols-[1.18fr_1fr_1fr] gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1.18fr_1fr_1fr]">
         <Link
           href="/arbeitgeber/dashboard/faelle"
           className="relative flex min-h-[54px] items-center gap-2.5 rounded-xl border border-ink-300/60 bg-gradient-to-br from-ink-500 to-ink-700 px-3 py-2 text-white shadow-warm-sm transition-transform hover:-translate-y-px dark:border-[#3de3d9] dark:bg-[linear-gradient(135deg,#24b7b1,#147c7b)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_7px_20px_rgba(20,135,132,0.15)]"

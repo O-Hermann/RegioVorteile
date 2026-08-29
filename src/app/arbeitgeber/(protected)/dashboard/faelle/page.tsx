@@ -106,7 +106,7 @@ export default async function FaellePage({
       ) : (
         <div className="mt-8 flex flex-col gap-3">
           {cases.map((c) => (
-            <div key={c.id} className={`flex flex-wrap items-center justify-between gap-4 !p-4 ${importPanelClass}`}>
+            <div key={c.id} className={`flex flex-col items-stretch gap-4 !p-4 sm:flex-row sm:items-start sm:justify-between ${importPanelClass}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-semibold text-sand-600 dark:bg-white/5 dark:text-cockpit-text-secondary">
@@ -116,8 +116,12 @@ export default async function FaellePage({
                     {CASE_STATUS_LABELS[c.status]}
                   </span>
                 </div>
-                <p className="mt-1.5 font-semibold text-sand-900 dark:text-cockpit-text">{c.who}</p>
-                <p className={`text-sm ${importSecondaryTextClass}`}>{c.what}</p>
+                <p title={c.who} className="mt-1.5 truncate font-semibold text-sand-900 dark:text-cockpit-text">
+                  {c.who}
+                </p>
+                <p title={c.what} className={`truncate text-sm ${importSecondaryTextClass}`}>
+                  {c.what}
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-4">
                 <span className="font-display text-lg font-bold text-sand-900 dark:text-cockpit-text">{c.amount}</span>

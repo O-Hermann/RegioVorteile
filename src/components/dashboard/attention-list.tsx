@@ -44,7 +44,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
   const hasItems = items.length > 0;
   return (
     <div
-      className={`flex flex-wrap items-center gap-4 rounded-2xl border p-4 shadow-warm-sm ${
+      className={`flex flex-col items-stretch gap-4 rounded-2xl border p-4 shadow-warm-sm sm:flex-row sm:items-center ${
         hasItems
           ? "border-gold-300/50 bg-[linear-gradient(120deg,rgba(215,164,52,0.07),transparent_70%)] dark:border-[rgba(224,171,72,0.28)] dark:bg-[linear-gradient(120deg,rgba(224,171,72,0.055),transparent_70%),linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))]"
           : "border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))]"
