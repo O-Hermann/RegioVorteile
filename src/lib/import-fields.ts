@@ -22,6 +22,7 @@ export type RecordStorageColumn =
   | "dueDate"
   | "completionDate"
   | "bookingDate"
+  | "discountDeadline"
   | "status"
   | "documentType"
   | "netAmount"
@@ -31,6 +32,7 @@ export type RecordStorageColumn =
   | "openAmount"
   | "amount"
   | "paidAmount"
+  | "discountPercent"
   | "accountNumber"
   | "accountLabel"
   | "metricLabel"
@@ -120,6 +122,22 @@ export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefini
       synonyms: ["Belegart", "Belegtyp", "Document Type", "Dokumentart", "Art"],
     },
     {
+      key: "paymentDate",
+      label: "Zahlungsdatum",
+      group: "Beleg / Rechnung",
+      dataType: "date",
+      storageColumn: "completionDate",
+      synonyms: ["Zahlungsdatum", "Payment Date", "Bezahlt am", "Zahldatum", "Valuta"],
+    },
+    {
+      key: "discountDeadline",
+      label: "Skontofrist",
+      group: "Beleg / Rechnung",
+      dataType: "date",
+      storageColumn: "discountDeadline",
+      synonyms: ["Skontofrist", "Skonto bis", "Discount Deadline", "Skontodatum"],
+    },
+    {
       key: "netAmount",
       label: "Nettobetrag",
       group: "Beträge",
@@ -174,6 +192,14 @@ export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefini
       dataType: "number",
       storageColumn: "paidAmount",
       synonyms: ["Gezahlter Betrag", "Gezahlt", "Zahlbetrag", "Paid Amount", "Bezahlter Betrag", "Zahlungsbetrag"],
+    },
+    {
+      key: "discountPercent",
+      label: "Skontosatz (%)",
+      group: "Beträge",
+      dataType: "number",
+      storageColumn: "discountPercent",
+      synonyms: ["Skontosatz", "Skonto %", "Skonto Prozent", "Discount Percent", "Skontoprozentsatz"],
     },
     {
       key: "accountNumber",

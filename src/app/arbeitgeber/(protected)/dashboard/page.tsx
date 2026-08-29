@@ -5,6 +5,7 @@ import { getCompanyMetrics } from "@/lib/company-metrics";
 import { detectDuplicatePayments } from "@/lib/duplicate-payment-detection";
 import { detectOpenCreditNotes } from "@/lib/open-credit-note-detection";
 import { detectPossibleOverpayments } from "@/lib/overpayment-detection";
+import { detectMissedDiscounts } from "@/lib/discount-detection";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
@@ -64,6 +65,7 @@ export default async function ArbeitgeberDashboardPage() {
     duplicatePayments,
     openCreditNotes,
     overpayments,
+    missedDiscounts,
   ] = await Promise.all([
     prisma.companyMembership.findMany({
       where: { companyId: company.id },
@@ -89,14 +91,15 @@ export default async function ArbeitgeberDashboardPage() {
     detectDuplicatePayments(company.id),
     detectOpenCreditNotes(company.id),
     detectPossibleOverpayments(company.id),
+    detectMissedDiscounts(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
   const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
-  // Doppelzahlungen + Offene Gutschriften + Moegliche Ueberzahlung sind echt
-  // (siehe duplicate-payment-detection.ts / open-credit-note-detection.ts /
-  // overpayment-detection.ts) - nur Skonto bleibt Referenz-Demowert, siehe
-  // Kommentar in findings-list.tsx und [[effivo_mvp_roadmap]].
-  const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments);
+  // Alle vier Fund-Kategorien sind echt (siehe [[effivo_mvp_roadmap]] Phase
+  // 1, abgeschlossen 2026-08-29) - duplicate-payment-detection.ts /
+  // open-credit-note-detection.ts / overpayment-detection.ts /
+  // discount-detection.ts.
+  const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments, missedDiscounts);
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";

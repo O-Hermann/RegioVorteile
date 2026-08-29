@@ -3,21 +3,21 @@ import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextTitle, 
 import type { DuplicatePaymentResult } from "@/lib/duplicate-payment-detection";
 import type { OpenCreditNoteResult } from "@/lib/open-credit-note-detection";
 import type { OverpaymentResult } from "@/lib/overpayment-detection";
+import type { MissedDiscountResult } from "@/lib/discount-detection";
 
 // Kernstueck des MVP-Fokus (siehe Nutzer-Vorgabe: "wo Doppelzahlungen
 // gefallen sind, wo kein Skonto beruecksichtigt wurde, wo offene
 // Gutschriften sind" - Umsatz/Kosten-Uebersicht kommt bewusst erst spaeter).
-// Fortschritt siehe [[effivo_mvp_roadmap]] (Phase 1).
+// Fortschritt siehe [[effivo_mvp_roadmap]] (Phase 1 - abgeschlossen
+// 2026-08-29).
 //
-// Stand 2026-08-29: "Doppelzahlungen", "Offene Gutschriften" und "Moegliche
-// Ueberzahlung" sind ECHT - buildFindings() berechnet sie aus tatsaechlich
-// importierten DataImportRecord-Zeilen (siehe duplicate-payment-detection.ts
-// / open-credit-note-detection.ts / overpayment-detection.ts). Nur "Skonto
-// nicht genutzt" bleibt Referenz-Demowert, 1:1 aus dem freigegebenen
-// HTML-Mockup uebernommen (erfundene Firmennamen) - dem Datenmodell fehlen
-// dafuer noch Skonto-%/-Frist-Felder. Sobald diese existieren, kann sie nach
-// demselben Muster hier ersetzt werden - ein Owner (diese Datei), keine
-// Kaskaden-Overrides.
+// Stand 2026-08-29: alle vier Fund-Kategorien sind ECHT - buildFindings()
+// berechnet sie aus tatsaechlich importierten DataImportRecord-Zeilen
+// (siehe duplicate-payment-detection.ts / open-credit-note-detection.ts /
+// overpayment-detection.ts / discount-detection.ts). Companies ohne die
+// dafuer noetigen gemappten Felder bekommen pro Kategorie ehrlich 0 Faelle
+// statt eines geratenen/falschen Treffers - siehe die jeweilige Detection-
+// Datei fuer die genaue Regel.
 export type FindingCase = { who: string; what: string; amount: number };
 
 export type FindingCategory = {
@@ -31,34 +31,17 @@ export type FindingCategory = {
   cases: FindingCase[];
 };
 
-const STATIC_FINDINGS: FindingCategory[] = [
-  {
-    key: "discount",
-    name: "Skonto nicht genutzt",
-    desc: "Frühzahler-Rabatte, die durch verspätete Zahlung verpasst wurden.",
-    amount: 7230,
-    count: 8,
-    accent: "orange",
-    icon: PercentIcon,
-    cases: [
-      { who: "Baumann & Söhne KG", what: "2 % Skonto verpasst", amount: 890 },
-      { who: "Gastro Partner KG", what: "2 % Skonto verpasst", amount: 650 },
-      { who: "Café Sonnenschein", what: "3 % Skonto verpasst", amount: 410 },
-    ],
-  },
-];
-
-// Baut die vollstaendige Liste aus den echten Erkennungen (Doppelzahlungen,
-// Offene Gutschriften, Moegliche Ueberzahlung) plus der weiterhin statischen
-// Kategorie. Betraege dort sind Prisma.Decimal - .toNumber() ist hier
-// unbedenklich (Anzeigewerte, keine Rechengrundlage mehr). Reihenfolge
-// (duplicate, discount, credit, overpayment) entspricht der urspruenglichen
+// Baut die vollstaendige Liste aus den vier echten Erkennungen. Betraege
+// dort sind Prisma.Decimal - .toNumber() ist hier unbedenklich
+// (Anzeigewerte, keine Rechengrundlage mehr). Reihenfolge (duplicate,
+// discount, credit, overpayment) entspricht der urspruenglichen
 // Kartenreihenfolge aus dem Mockup, nicht der Reihenfolge, in der die
 // Kategorien "echt" wurden.
 export function buildFindings(
   duplicatePayments: DuplicatePaymentResult,
   openCreditNotes: OpenCreditNoteResult,
   overpayments: OverpaymentResult,
+  missedDiscounts: MissedDiscountResult,
 ): FindingCategory[] {
   const duplicateFinding: FindingCategory = {
     key: "duplicate",
@@ -69,6 +52,16 @@ export function buildFindings(
     accent: "red",
     icon: CopyIcon,
     cases: duplicatePayments.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
+  };
+  const discountFinding: FindingCategory = {
+    key: "discount",
+    name: "Skonto nicht genutzt",
+    desc: "Frühzahler-Rabatte, die durch verspätete Zahlung verpasst wurden.",
+    amount: missedDiscounts.totalAmount.toNumber(),
+    count: missedDiscounts.caseCount,
+    accent: "orange",
+    icon: PercentIcon,
+    cases: missedDiscounts.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
   };
   const creditFinding: FindingCategory = {
     key: "credit",
@@ -90,8 +83,7 @@ export function buildFindings(
     icon: ScaleIcon,
     cases: overpayments.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
   };
-  const [discount] = STATIC_FINDINGS;
-  return [duplicateFinding, discount, creditFinding, overpaymentFinding];
+  return [duplicateFinding, discountFinding, creditFinding, overpaymentFinding];
 }
 
 export function getFindingsSummary(findings: FindingCategory[]) {
