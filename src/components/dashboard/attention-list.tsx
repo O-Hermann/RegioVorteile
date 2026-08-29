@@ -77,7 +77,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
               key={item.id}
               href={item.href}
               style={{ "--case-accent": DASH_ACCENT_HEX[item.accent] } as React.CSSProperties}
-              className="relative flex min-w-0 flex-1 basis-[240px] items-center gap-2.5 overflow-hidden rounded-xl border border-card-border dark:border-[rgba(39,71,101,0.5)] bg-sand-50/60 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.68),rgba(7,25,44,0.62))] py-2 pl-3 pr-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-ink-400 dark:hover:border-[rgba(71,119,156,0.78)]"
+              className="relative flex min-w-0 flex-1 basis-[240px] max-w-[420px] items-center gap-2.5 overflow-hidden rounded-xl border border-card-border dark:border-[rgba(39,71,101,0.5)] bg-sand-50/60 dark:bg-[linear-gradient(180deg,rgba(8,29,50,0.68),rgba(7,25,44,0.62))] py-2 pl-3 pr-3.5 transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-ink-400 dark:hover:border-[rgba(71,119,156,0.78)]"
             >
               <span
                 aria-hidden

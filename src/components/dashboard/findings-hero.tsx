@@ -76,27 +76,28 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
       </div>
 
       <div className="relative mt-auto">
-        {/* preserveAspectRatio="none" streckt den 400x130-viewBox nicht
-            gleichmaessig auf die tatsaechliche Kartenbreite (typ. ~800-900px
-            bei 108px Hoehe, also deutlich mehr horizontale als vertikale
-            Dehnung) - ein in Vektorkoordinaten gezeichneter Kreis wuerde
-            dadurch sichtbar zur Ellipse verzerrt und die Linie ungleichmaessig
-            dick wirken ("verpixelt"/"künstlich breit gezogen"). Fix:
+        {/* Bewusst kompakt gehalten (h-14 statt vormals h-[108px]) - ein
+            Sparkline soll den Trend nur auf einen Blick stuetzen, nicht mit
+            der grossen Kopfzahl um vertikalen Raum konkurrieren. Kein
+            Gitterlinien-Raster mehr (wirkte bei der geringeren Hoehe
+            zusaetzlich unruhig und suggerierte eine Praezision, die eine
+            Glance-Kennzahl nicht braucht) - nur Flaechenverlauf + Linie.
+            preserveAspectRatio="none" streckt den 400x130-viewBox nicht
+            gleichmaessig auf die tatsaechliche Kartenbreite - ein in
+            Vektorkoordinaten gezeichneter Kreis wuerde dadurch sichtbar zur
+            Ellipse verzerrt und die Linie ungleichmaessig dick wirken. Fix:
             vectorEffect haelt die Linienstaerke in echten Bildschirmpixeln
             fest (nicht mitgedehnt), der Endpunkt-Punkt wird bewusst NICHT als
             SVG-Kreis gezeichnet, sondern als eigenes HTML-Element prozentual
             positioniert - dieselbe prozentuale Dehnung wie beim SVG selbst,
             aber als echter, scharfer Kreis statt eines verzerrten Vektors. */}
-        <svg viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true" className="h-[108px] w-full overflow-visible">
+        <svg viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true" className="h-14 w-full overflow-visible">
           <defs>
             <linearGradient id="heroFindingsFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" className="text-dash-teal" style={{ stopColor: "currentColor", stopOpacity: 0.32 }} />
               <stop offset="100%" className="text-dash-teal" style={{ stopColor: "currentColor", stopOpacity: 0 }} />
             </linearGradient>
           </defs>
-          <g stroke="currentColor" strokeWidth={1} className="text-sand-200 dark:text-white/[0.06]">
-            <path d="M0,30 H400 M0,70 H400 M0,110 H400" />
-          </g>
           <path d={areaPath} fill="url(#heroFindingsFill)" />
           <path
             d={linePath}
@@ -111,12 +112,12 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
         </svg>
         <span
           aria-hidden
-          className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-600/15 dark:bg-dash-teal/20"
+          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-600/15 dark:bg-dash-teal/20"
           style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
         />
         <span
           aria-hidden
-          className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-600 bg-card dark:border-dash-teal"
+          className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-600 bg-card dark:border-dash-teal"
           style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
         />
         <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-sand-400 dark:text-dash-text-muted">
