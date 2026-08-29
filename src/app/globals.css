@@ -65,34 +65,46 @@
      [[effivo_mvp_roadmap]] fuer die volle Entstehungsgeschichte. Anders als
      die bisherige Teal-Version hat diese Palette jetzt ein echtes
      Light-Mode-Gegenstueck (der Nutzer hat den Lightmodus im Mockup
-     explizit geprueft und freigegeben, nicht nur Dark Mode wie zuvor). */
-  --color-dash-bg: #f7f8fb;
-  --color-dash-panel: #ffffff;
-  --color-dash-panel-soft: #eef1f6;
-  --color-dash-line: #dce1ea;
-  --color-dash-text: #10151f;
-  --color-dash-text-secondary: #4a5468;
-  --color-dash-text-muted: #6b7686;
-  --color-dash-text-faint: #8891a0;
-  --color-dash-gold: #b8863e;
-  --color-dash-gold-deep: #9c7530;
-  --color-dash-gold-glow: rgba(184, 134, 62, 0.14);
-  --color-dash-red: #c41e3a;
-  --color-dash-red-tint: rgba(196, 30, 58, 0.1);
-  --color-dash-green: #3c7a2e;
-  --color-dash-green-tint: rgba(60, 122, 46, 0.1);
-  --color-dash-blue: #1d7ba8;
-  --color-dash-blue-tint: rgba(29, 123, 168, 0.1);
-  --color-dash-purple: #8b33a8;
-  --color-dash-purple-tint: rgba(139, 51, 168, 0.1);
-  --color-dash-good: #0f8f63;
-  --color-dash-warn: #b8863e;
-  --color-dash-bad: #c41e3a;
-  --color-dash-status-new: #c79200;
-  --color-dash-status-active: #1d3fd1;
-  --color-dash-status-reviewed: #33bb21;
-  --color-dash-status-done: #475569;
-  --color-dash-shadow-card: 0 1px 0 rgba(16, 20, 32, 0.04), 0 8px 24px rgba(16, 20, 32, 0.08);
+     explizit geprueft und freigegeben, nicht nur Dark Mode wie zuvor).
+     Bugfix 2026-08-30: OHNE "-color-"-Praefix hier definiert (anders als der
+     urspruengliche erste Portierungs-Versuch) - Tailwind v4 generiert
+     Utility-Klassen (bg-dash-panel, text-dash-gold, ...) NUR aus Tokens, die
+     ueber @theme (bzw. @theme inline, s.u.) registriert sind. Plain
+     --color-*-Variablen direkt in :root/:root[data-theme=dark] werden NICHT
+     automatisch gescannt (anders als in einer frueheren Session-Notiz
+     faelschlich angenommen) - sie waeren nur ueber Arbitrary Values wie
+     bg-[var(--color-dash-panel)] nutzbar gewesen. Deshalb hier wie bei
+     --landing-* / --background / --foreground oben: roher Wert ohne Praefix,
+     Registrierung + Light/Dark-Indirektion erst unten in @theme inline
+     (--color-dash-panel: var(--dash-panel); usw.) - exakt dasselbe Muster,
+     das fuer --landing-* bereits nachweislich funktioniert. */
+  --dash-bg: #f7f8fb;
+  --dash-panel: #ffffff;
+  --dash-panel-soft: #eef1f6;
+  --dash-line: #dce1ea;
+  --dash-text: #10151f;
+  --dash-text-secondary: #4a5468;
+  --dash-text-muted: #6b7686;
+  --dash-text-faint: #8891a0;
+  --dash-gold: #b8863e;
+  --dash-gold-deep: #9c7530;
+  --dash-gold-glow: rgba(184, 134, 62, 0.14);
+  --dash-red: #c41e3a;
+  --dash-red-tint: rgba(196, 30, 58, 0.1);
+  --dash-green: #3c7a2e;
+  --dash-green-tint: rgba(60, 122, 46, 0.1);
+  --dash-blue: #1d7ba8;
+  --dash-blue-tint: rgba(29, 123, 168, 0.1);
+  --dash-purple: #8b33a8;
+  --dash-purple-tint: rgba(139, 51, 168, 0.1);
+  --dash-good: #0f8f63;
+  --dash-warn: #b8863e;
+  --dash-bad: #c41e3a;
+  --dash-status-new: #c79200;
+  --dash-status-active: #1d3fd1;
+  --dash-status-reviewed: #33bb21;
+  --dash-status-done: #475569;
+  --dash-shadow-card: 0 1px 0 rgba(16, 20, 32, 0.04), 0 8px 24px rgba(16, 20, 32, 0.08);
 }
 
 /* Dunkelmodus: nur die neutrale Sand-Skala und die semantischen Oberflaechen
@@ -156,39 +168,43 @@
   /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): siehe ausfuehrlichen
      Kommentar beim Light-Mode-Gegenstueck oben im :root-Block - ersetzt die
      bisherige Teal-Palette (Werte bis 2026-08-29 aus der V12-Referenz).
-     Bugfix 2026-08-30: diese Werte standen zuerst faelschlich im unten
+     Bugfix 1 (2026-08-30): diese Werte standen zuerst faelschlich im unten
      folgenden `@theme`-Block statt hier - da `@theme` unconditional gilt
      (nicht durch [data-theme=dark] gegated), ueberschrieb das nichts und die
      Dashboard-Karten blieben im Dark Mode staendig bei den Light-Werten
-     haengen (Bug vom Nutzer live gemeldet, per getComputedStyle bestaetigt:
-     --color-dash-panel blieb #fff unabhaengig vom data-theme-Attribut). */
-  --color-dash-bg: #050d1a;
-  --color-dash-panel: #0c1524;
-  --color-dash-panel-soft: #111c2e;
-  --color-dash-line: #27344a;
-  --color-dash-text: #f6f3eb;
-  --color-dash-text-secondary: #9aa7bc;
-  --color-dash-text-muted: #7c8aa0;
-  --color-dash-text-faint: #5e6c82;
-  --color-dash-gold: #e2bc6b;
-  --color-dash-gold-deep: #c9983c;
-  --color-dash-gold-glow: rgba(226, 188, 107, 0.14);
-  --color-dash-red: #ef5878;
-  --color-dash-red-tint: rgba(239, 88, 120, 0.16);
-  --color-dash-green: #6fbd5c;
-  --color-dash-green-tint: rgba(111, 189, 92, 0.16);
-  --color-dash-blue: #3fa9de;
-  --color-dash-blue-tint: rgba(63, 169, 222, 0.16);
-  --color-dash-purple: #b15fd1;
-  --color-dash-purple-tint: rgba(177, 95, 209, 0.16);
-  --color-dash-good: #10d992;
-  --color-dash-warn: #e2bc6b;
-  --color-dash-bad: #ef5878;
-  --color-dash-status-new: #d9a400;
-  --color-dash-status-active: #375bff;
-  --color-dash-status-reviewed: #33bb21;
-  --color-dash-status-done: #cbd5e1;
-  --color-dash-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
+     haengen.
+     Bugfix 2 (2026-08-30, vom Nutzer live gemeldet - Karten komplett
+     farblos/transparent trotz Bugfix 1): ohne "-color-"-Praefix (siehe
+     ausfuehrliche Begruendung oben beim Light-Mode-Gegenstueck) - reiner
+     Wert hier, Registrierung als Tailwind-Utility + Indirektion erst in
+     @theme inline weiter unten. */
+  --dash-bg: #050d1a;
+  --dash-panel: #0c1524;
+  --dash-panel-soft: #111c2e;
+  --dash-line: #27344a;
+  --dash-text: #f6f3eb;
+  --dash-text-secondary: #9aa7bc;
+  --dash-text-muted: #7c8aa0;
+  --dash-text-faint: #5e6c82;
+  --dash-gold: #e2bc6b;
+  --dash-gold-deep: #c9983c;
+  --dash-gold-glow: rgba(226, 188, 107, 0.14);
+  --dash-red: #ef5878;
+  --dash-red-tint: rgba(239, 88, 120, 0.16);
+  --dash-green: #6fbd5c;
+  --dash-green-tint: rgba(111, 189, 92, 0.16);
+  --dash-blue: #3fa9de;
+  --dash-blue-tint: rgba(63, 169, 222, 0.16);
+  --dash-purple: #b15fd1;
+  --dash-purple-tint: rgba(177, 95, 209, 0.16);
+  --dash-good: #10d992;
+  --dash-warn: #e2bc6b;
+  --dash-bad: #ef5878;
+  --dash-status-new: #d9a400;
+  --dash-status-active: #375bff;
+  --dash-status-reviewed: #33bb21;
+  --dash-status-done: #cbd5e1;
+  --dash-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @theme {
@@ -338,6 +354,41 @@
   --color-landing-danger-subtle: var(--landing-danger-subtle);
   --color-landing-purple: var(--landing-purple);
   --color-landing-purple-subtle: var(--landing-purple-subtle);
+
+  /* Effivo-Übersicht ("Goldstandard"-Design) - siehe Kommentare bei den
+     --dash-*-Variablendefinitionen oben (:root / :root[data-theme=dark]).
+     Erst diese Zuordnung registriert die Tokens bei Tailwind und erzeugt
+     die Utility-Klassen (bg-dash-panel, text-dash-gold, before:from-dash-red,
+     ...) - ohne sie existierten die Klassen im kompilierten CSS ueberhaupt
+     nicht (per Inspektion des Production-Builds bestaetigt: nur die rohen
+     --color-dash-*-Custom-Properties waren vorhanden, keine einzige
+     .bg-dash-* / .text-dash-*-Regel). */
+  --color-dash-bg: var(--dash-bg);
+  --color-dash-panel: var(--dash-panel);
+  --color-dash-panel-soft: var(--dash-panel-soft);
+  --color-dash-line: var(--dash-line);
+  --color-dash-text: var(--dash-text);
+  --color-dash-text-secondary: var(--dash-text-secondary);
+  --color-dash-text-muted: var(--dash-text-muted);
+  --color-dash-text-faint: var(--dash-text-faint);
+  --color-dash-gold: var(--dash-gold);
+  --color-dash-gold-deep: var(--dash-gold-deep);
+  --color-dash-gold-glow: var(--dash-gold-glow);
+  --color-dash-red: var(--dash-red);
+  --color-dash-red-tint: var(--dash-red-tint);
+  --color-dash-green: var(--dash-green);
+  --color-dash-green-tint: var(--dash-green-tint);
+  --color-dash-blue: var(--dash-blue);
+  --color-dash-blue-tint: var(--dash-blue-tint);
+  --color-dash-purple: var(--dash-purple);
+  --color-dash-purple-tint: var(--dash-purple-tint);
+  --color-dash-good: var(--dash-good);
+  --color-dash-warn: var(--dash-warn);
+  --color-dash-bad: var(--dash-bad);
+  --color-dash-status-new: var(--dash-status-new);
+  --color-dash-status-active: var(--dash-status-active);
+  --color-dash-status-reviewed: var(--dash-status-reviewed);
+  --color-dash-status-done: var(--dash-status-done);
 }
 
 body {
