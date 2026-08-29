@@ -200,7 +200,17 @@ export default async function ArbeitgeberDashboardPage() {
     // Bildschirmen nicht ueber die ganze Breite auseinandergezogen wirken;
     // andere Seiten (Kunden, Auftraege, ...) sollen das bestehende 1920px
     // weiterhin nutzen.
-    <div className={`mx-auto flex w-full max-w-[1360px] flex-col gap-3 ${dashFontScopeClass}`}>
+    <div className={`relative mx-auto flex w-full max-w-[1360px] flex-col gap-3 ${dashFontScopeClass}`}>
+      {/* Seiten-eigenes Ambient-Glow (Teal oben links / Gold oben rechts),
+          1:1 dem "--bg-glow" aus dem freigegebenen Mockup nachempfunden -
+          bewusst NICHT im geteilten layout.tsx (das hat bereits eigene,
+          app-weite Blur-Orbs fuer alle Arbeitgeber-Seiten, siehe dortigen
+          Kommentar zur bewussten Trennung). Nur Dark Mode, da die
+          --color-dash-*-Tokens kein Light-Mode-Gegenstueck haben. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-4 -z-10 hidden h-[420px] overflow-hidden dark:block">
+        <div className="absolute -top-32 left-[6%] h-[420px] w-[720px] rounded-full bg-dash-teal/[0.07] blur-[110px]" />
+        <div className="absolute -top-24 right-[2%] h-[340px] w-[560px] rounded-full bg-dash-orange/[0.05] blur-[110px]" />
+      </div>
       <Pagehead
         greeting={greeting}
         companyName={company.name}

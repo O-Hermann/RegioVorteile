@@ -26,6 +26,26 @@ const HISTORY_REFERENCE = [
   { label: "Jul", amount: 61000 },
 ];
 
+// Catmull-Rom-zu-Bezier-Interpolation (Standardtechnik, Tension 1/6): baut
+// aus den Datenpunkten eine sanfte Kurve statt scharfer Geraden-Knicke
+// zwischen jedem Monat - der vorherige, rein lineare Pfad wirkte bei der
+// kompakten Kartenhoehe wie grob "verkantet" statt wie eine echte Kurve.
+function smoothLinePath(points: readonly (readonly [number, number])[]) {
+  let d = `M${points[0][0].toFixed(1)},${points[0][1].toFixed(1)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] ?? points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] ?? p2;
+    const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
 // "Alle Fälle prüfen" hat wie in QuickActions/AttentionList noch kein
 // echtes Ziel (Arbeitsliste/Fallpruefung sind laut Aufgabenstellung
 // zukuenftige Arbeit) und ist daher bewusst kein Link, sondern ein
@@ -42,7 +62,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
   const width = 400;
   const stepX = width / (history.length - 1);
   const points = amounts.map((v, i) => [i * stepX, 110 - ((v - min) / range) * 100] as const);
-  const linePath = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const linePath = smoothLinePath(points);
   const areaPath = `${linePath} L${points[points.length - 1][0].toFixed(1)},120 L${points[0][0].toFixed(1)},120 Z`;
   const [lastX, lastY] = points[points.length - 1];
   const previousReferenceAmount = HISTORY_REFERENCE[HISTORY_REFERENCE.length - 1].amount;
@@ -76,22 +96,23 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
       </div>
 
       <div className="relative mt-auto">
-        {/* Bewusst kompakt gehalten (h-14 statt vormals h-[108px]) - ein
-            Sparkline soll den Trend nur auf einen Blick stuetzen, nicht mit
-            der grossen Kopfzahl um vertikalen Raum konkurrieren. Kein
-            Gitterlinien-Raster mehr (wirkte bei der geringeren Hoehe
-            zusaetzlich unruhig und suggerierte eine Praezision, die eine
-            Glance-Kennzahl nicht braucht) - nur Flaechenverlauf + Linie.
-            preserveAspectRatio="none" streckt den 400x130-viewBox nicht
-            gleichmaessig auf die tatsaechliche Kartenbreite - ein in
-            Vektorkoordinaten gezeichneter Kreis wuerde dadurch sichtbar zur
-            Ellipse verzerrt und die Linie ungleichmaessig dick wirken. Fix:
-            vectorEffect haelt die Linienstaerke in echten Bildschirmpixeln
-            fest (nicht mitgedehnt), der Endpunkt-Punkt wird bewusst NICHT als
-            SVG-Kreis gezeichnet, sondern als eigenes HTML-Element prozentual
-            positioniert - dieselbe prozentuale Dehnung wie beim SVG selbst,
-            aber als echter, scharfer Kreis statt eines verzerrten Vektors. */}
-        <svg viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true" className="h-14 w-full overflow-visible">
+        {/* h-20 statt vormals h-14: bei h-14 (56px) blieb fuer die
+            Wertschwankungen kaum sichtbare Hoehe uebrig, wodurch die Kurve wie
+            ein flacher, in die Breite gezogener Strich wirkte ("kuenstlich
+            gestreckt") statt wie eine lesbare Trendlinie - mehr Hoehe gibt der
+            Kurvenform wieder echte Kontur. Dazu Catmull-Rom-Bezier statt
+            gerader Liniensegmente (smoothLinePath) fuer eine weiche statt
+            eckige Linie, sowie ein dezenter Teal-Glow (drop-shadow, nur im
+            Dark Mode) als Premium-Touch.
+            preserveAspectRatio="none" streckt den viewBox weiterhin nicht
+            gleichmaessig auf die tatsaechliche Kartenbreite - fuer eine
+            Sparkline (kategorische X-Achse, kein raeumliches Seitenverhaeltnis
+            zu wahren) ist das grundsaetzlich korrekt, nur der Endpunkt-Kreis
+            braeuchte dafuer einen echten Kreis: er wird daher bewusst NICHT
+            als SVG-Kreis gezeichnet (wuerde zur Ellipse verzerrt), sondern als
+            eigenes HTML-Element prozentual positioniert, mit vectorEffect auf
+            der Linie fuer eine konstante Strichstaerke in echten Pixeln. */}
+        <svg viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true" className="h-20 w-full overflow-visible">
           <defs>
             <linearGradient id="heroFindingsFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" className="text-dash-teal" style={{ stopColor: "currentColor", stopOpacity: 0.32 }} />
@@ -102,7 +123,7 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
           <path
             d={linePath}
             fill="none"
-            className="text-ink-600 dark:text-dash-teal"
+            className="text-ink-600 dark:text-dash-teal dark:drop-shadow-[0_0_6px_rgba(45,214,197,0.45)]"
             stroke="currentColor"
             strokeWidth={2.4}
             strokeLinecap="round"
@@ -112,12 +133,12 @@ export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: strin
         </svg>
         <span
           aria-hidden
-          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-600/15 dark:bg-dash-teal/20"
+          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-600/15 dark:bg-dash-teal/25"
           style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
         />
         <span
           aria-hidden
-          className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-600 bg-card dark:border-dash-teal"
+          className="absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-600 bg-card dark:border-dash-teal dark:shadow-[0_0_8px_rgba(45,214,197,0.6)]"
           style={{ left: `${(lastX / width) * 100}%`, top: `${(lastY / 130) * 100}%` }}
         />
         <div className="mt-1.5 flex justify-between text-[11px] font-semibold text-sand-400 dark:text-dash-text-muted">
