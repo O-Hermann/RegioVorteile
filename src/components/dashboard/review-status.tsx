@@ -1,6 +1,6 @@
 import { SearchIcon } from "@/components/icons";
 import { dashFontDisplayClass } from "@/components/dashboard/dash-ui";
-import { FINDINGS, getFindingsSummary } from "@/components/dashboard/findings-list";
+import { getFindingsSummary, type FindingCategory } from "@/components/dashboard/findings-list";
 
 // "Prüfstatus"-Karte neben FindingsHero, optisch 1:1 aus dem freigegebenen
 // HTML-Mockup uebernommen. Offene Faelle kommt bewusst aus
@@ -8,8 +8,8 @@ import { FINDINGS, getFindingsSummary } from "@/components/dashboard/findings-li
 // in review-donut.tsx eine Referenz-Demoangabe (kein echtes
 // Fallpruefungs-Datenmodell), "Zuletzt geprüft" ist dagegen echt der
 // aktuelle Server-Zeitpunkt statt einer im Mockup fest eingetragenen Uhrzeit.
-export function ReviewStatusCard() {
-  const { totalCount } = getFindingsSummary();
+export function ReviewStatusCard({ findings }: { findings: FindingCategory[] }) {
+  const { totalCount } = getFindingsSummary(findings);
   const now = new Date();
   const lastChecked = now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
@@ -21,7 +21,7 @@ export function ReviewStatusCard() {
         </span>
         <div>
           <strong className={`${dashFontDisplayClass} block text-[14.5px] font-bold text-sand-900 dark:text-dash-text`}>Prüfstatus</strong>
-          <span className="text-[12px] text-sand-500 dark:text-dash-text-secondary">{FINDINGS.length} Kategorien aktiv überwacht</span>
+          <span className="text-[12px] text-sand-500 dark:text-dash-text-secondary">{findings.length} Kategorien aktiv überwacht</span>
         </div>
       </div>
 

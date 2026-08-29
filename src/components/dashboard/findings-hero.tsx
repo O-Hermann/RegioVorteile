@@ -1,6 +1,6 @@
 import { TrendingUpIcon } from "@/components/icons";
 import { dashFontDisplayClass, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
-import { FINDINGS, getFindingsSummary } from "@/components/dashboard/findings-list";
+import { getFindingsSummary, type FindingCategory } from "@/components/dashboard/findings-list";
 
 // Neuer Einstiegspunkt der Übersicht-Seite (ersetzt die bisherige, auf
 // Umsatz ausgerichtete "StatusHero" + "KpiGrid"-Kombination der linken
@@ -50,9 +50,9 @@ function smoothLinePath(points: readonly (readonly [number, number])[]) {
 // echtes Ziel (Arbeitsliste/Fallpruefung sind laut Aufgabenstellung
 // zukuenftige Arbeit) und ist daher bewusst kein Link, sondern ein
 // deaktiviert wirkender Button - siehe Kommentar in quick-actions.tsx.
-export function FindingsHero({ currentPeriodLabel }: { currentPeriodLabel: string | null }) {
-  const { totalAmount, totalCount } = getFindingsSummary();
-  const categoryList = FINDINGS.map((f) => f.name).join(", ");
+export function FindingsHero({ findings, currentPeriodLabel }: { findings: FindingCategory[]; currentPeriodLabel: string | null }) {
+  const { totalAmount, totalCount } = getFindingsSummary(findings);
+  const categoryList = findings.map((f) => f.name).join(", ");
 
   const history = [...HISTORY_REFERENCE, { label: "Aug", amount: totalAmount }];
   const amounts = history.map((h) => h.amount);

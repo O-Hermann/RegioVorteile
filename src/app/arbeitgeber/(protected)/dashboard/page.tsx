@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCompanyMember } from "@/lib/auth";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { getCompanyMetrics } from "@/lib/company-metrics";
+import { detectDuplicatePayments } from "@/lib/duplicate-payment-detection";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
@@ -9,7 +10,7 @@ import { FindingsHero } from "@/components/dashboard/findings-hero";
 import { ReviewStatusCard } from "@/components/dashboard/review-status";
 import { ReviewDonut } from "@/components/dashboard/review-donut";
 import { DataStatusCard } from "@/components/dashboard/data-status";
-import { FindingsList } from "@/components/dashboard/findings-list";
+import { FindingsList, buildFindings } from "@/components/dashboard/findings-list";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { Pagehead } from "@/components/dashboard/pagehead";
 import { dashFontScopeClass, type DashAccent } from "@/components/dashboard/dash-ui";
@@ -49,32 +50,46 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company } = await requireCompanyMember();
   const now = new Date();
 
-  const [memberships, dataImportCount, pendingMappingCount, failedImportCount, processedRowAgg, recentDataImports, recentProcessedImports, metrics] =
-    await Promise.all([
-      prisma.companyMembership.findMany({
-        where: { companyId: company.id },
-        orderBy: { invitedAt: "desc" },
-        take: 10,
-        include: { user: true },
-      }),
-      prisma.dataImport.count({ where: { companyId: company.id } }),
-      prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
-      prisma.dataImport.count({ where: { companyId: company.id, status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
-      prisma.dataImport.aggregate({ where: { companyId: company.id, status: "PROCESSED" }, _sum: { rowCount: true } }),
-      prisma.dataImport.findMany({
-        where: { companyId: company.id },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-      prisma.dataImport.findMany({
-        where: { companyId: company.id, status: "PROCESSED" },
-        orderBy: { processedAt: "desc" },
-        take: 5,
-      }),
-      getCompanyMetrics(company.id),
-    ]);
+  const [
+    memberships,
+    dataImportCount,
+    pendingMappingCount,
+    failedImportCount,
+    processedRowAgg,
+    recentDataImports,
+    recentProcessedImports,
+    metrics,
+    duplicatePayments,
+  ] = await Promise.all([
+    prisma.companyMembership.findMany({
+      where: { companyId: company.id },
+      orderBy: { invitedAt: "desc" },
+      take: 10,
+      include: { user: true },
+    }),
+    prisma.dataImport.count({ where: { companyId: company.id } }),
+    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+    prisma.dataImport.count({ where: { companyId: company.id, status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
+    prisma.dataImport.aggregate({ where: { companyId: company.id, status: "PROCESSED" }, _sum: { rowCount: true } }),
+    prisma.dataImport.findMany({
+      where: { companyId: company.id },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.dataImport.findMany({
+      where: { companyId: company.id, status: "PROCESSED" },
+      orderBy: { processedAt: "desc" },
+      take: 5,
+    }),
+    getCompanyMetrics(company.id),
+    detectDuplicatePayments(company.id),
+  ]);
   const processedMonthCount = metrics.importedMonthCount;
   const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
+  // Doppelzahlungen ist als einzige der vier Fund-Kategorien echt (siehe
+  // duplicate-payment-detection.ts) - die anderen drei bleiben Referenz-
+  // Demowerte, siehe Kommentar in findings-list.tsx.
+  const findings = buildFindings(duplicatePayments);
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
@@ -222,11 +237,11 @@ export default async function ArbeitgeberDashboardPage() {
       <AttentionList items={actionItems} />
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
-        <FindingsHero currentPeriodLabel={currentPeriodLabel} />
-        <ReviewStatusCard />
+        <FindingsHero findings={findings} currentPeriodLabel={currentPeriodLabel} />
+        <ReviewStatusCard findings={findings} />
       </div>
 
-      <FindingsList />
+      <FindingsList findings={findings} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-stretch">
         <ReviewDonut />

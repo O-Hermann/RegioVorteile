@@ -1,17 +1,22 @@
 import { CopyIcon, FileTextIcon, PercentIcon, ScaleIcon } from "@/components/icons";
 import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextTitle, dashTextBody, dashTextSectionHeading, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
+import type { DuplicatePaymentResult } from "@/lib/duplicate-payment-detection";
 
 // Kernstueck des MVP-Fokus (siehe Nutzer-Vorgabe: "wo Doppelzahlungen
 // gefallen sind, wo kein Skonto beruecksichtigt wurde, wo offene
 // Gutschriften sind" - Umsatz/Kosten-Uebersicht kommt bewusst erst spaeter).
-// Es gibt fuer diese vier Fund-Kategorien weiterhin KEIN echtes
-// Fallpruefungs-Datenmodell im Projekt (Arbeitsliste/Fallpruefung sind laut
-// Aufgabenstellung explizit zukuenftige Arbeit) - die Werte sind daher
-// unveraendert Referenz-Demowerte, wie zuvor bei der kompakten Listenversion
-// dieser Karte. Sobald ein echtes Faelle-Modell existiert, ist
-// ausschliesslich diese Datei anzupassen (ein Owner, keine Kaskaden-
-// Overrides) - siehe getFindingsSummary(), das FindingsHero in page.tsx
-// daraus die Gesamtsumme/-anzahl ableitet, statt sie separat zu pflegen.
+//
+// Stand 2026-08-29: "Doppelzahlungen" ist als einzige der vier Kategorien
+// ECHT - buildFindings() berechnet sie aus tatsaechlich importierten
+// DataImportRecord-Zeilen (siehe src/lib/duplicate-payment-detection.ts).
+// Die anderen drei (Skonto/Gutschriften/Ueberzahlung) bleiben Referenz-
+// Demowerte, 1:1 aus dem freigegebenen HTML-Mockup uebernommen (erfundene
+// Firmennamen/Belegnummern) - dem Datenmodell fehlen die dafuer noetigen
+// Felder (Skonto-%/-Frist, Belegtyp, getrenntes "gezahlt"-Feld), siehe
+// Kommentar in duplicate-payment-detection.ts. Sobald diese Felder im
+// Import-Mapping existieren, koennen sie nach demselben Muster wie
+// Doppelzahlungen hier ersetzt werden - ein Owner (diese Datei), keine
+// Kaskaden-Overrides.
 export type FindingCase = { who: string; what: string; amount: number };
 
 export type FindingCategory = {
@@ -25,25 +30,7 @@ export type FindingCategory = {
   cases: FindingCase[];
 };
 
-// "cases" (Beispiel-Fallzeilen je Kategorie) sind wie amount/count Referenz-
-// Demowerte, 1:1 aus dem freigegebenen HTML-Mockup uebernommen (erfundene
-// Firmennamen/Belegnummern) - bewusste Nutzerentscheidung beim kompletten
-// Uebernehmen des Mockups, nicht eigenmaechtig ergaenzt.
-export const FINDINGS: FindingCategory[] = [
-  {
-    key: "duplicate",
-    name: "Doppelzahlungen",
-    desc: "Rechnungen, die versehentlich doppelt oder mehrfach beglichen wurden.",
-    amount: 42100,
-    count: 16,
-    accent: "red",
-    icon: CopyIcon,
-    cases: [
-      { who: "Elektro Falk GmbH", what: "2× RE-2026-0412", amount: 3180 },
-      { who: "Nordwind Logistik AG", what: "2× RE-2026-0355", amount: 4510 },
-      { who: "Handwerk Krause", what: "2× RE-2026-0389", amount: 2940 },
-    ],
-  },
+const STATIC_FINDINGS: FindingCategory[] = [
   {
     key: "discount",
     name: "Skonto nicht genutzt",
@@ -88,11 +75,29 @@ export const FINDINGS: FindingCategory[] = [
   },
 ];
 
-export function getFindingsSummary() {
+// Baut die vollstaendige Liste aus der echten Doppelzahlungen-Erkennung
+// (siehe duplicate-payment-detection.ts) plus den drei weiterhin statischen
+// Kategorien. Betraege dort sind Prisma.Decimal - .toNumber() ist hier
+// unbedenklich (Anzeigewerte, keine Rechengrundlage mehr).
+export function buildFindings(duplicatePayments: DuplicatePaymentResult): FindingCategory[] {
+  const duplicateFinding: FindingCategory = {
+    key: "duplicate",
+    name: "Doppelzahlungen",
+    desc: "Rechnungen, die versehentlich doppelt oder mehrfach beglichen wurden.",
+    amount: duplicatePayments.totalAmount.toNumber(),
+    count: duplicatePayments.caseCount,
+    accent: "red",
+    icon: CopyIcon,
+    cases: duplicatePayments.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
+  };
+  return [duplicateFinding, ...STATIC_FINDINGS];
+}
+
+export function getFindingsSummary(findings: FindingCategory[]) {
   return {
-    totalAmount: FINDINGS.reduce((sum, f) => sum + f.amount, 0),
-    totalCount: FINDINGS.reduce((sum, f) => sum + f.count, 0),
-    topCategory: [...FINDINGS].sort((a, b) => b.amount - a.amount)[0],
+    totalAmount: findings.reduce((sum, f) => sum + f.amount, 0),
+    totalCount: findings.reduce((sum, f) => sum + f.count, 0),
+    topCategory: [...findings].sort((a, b) => b.amount - a.amount)[0],
   };
 }
 
@@ -105,10 +110,10 @@ const ACCENT_CLASS: Record<DashAccent, string> = {
   teal: "text-ink-700 border-ink-400/50 bg-ink-500/10 dark:text-dash-teal dark:border-dash-teal/50 dark:bg-[rgba(45,214,197,0.1)]",
 };
 
-export function FindingsList() {
+export function FindingsList({ findings }: { findings: FindingCategory[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {FINDINGS.map((f) => (
+      {findings.map((f) => (
         <div
           key={f.key}
           style={{ "--case-accent": DASH_ACCENT_HEX[f.accent] } as React.CSSProperties}
@@ -133,26 +138,32 @@ export function FindingsList() {
             </span>
           </div>
 
-          <div className="flex flex-col border-t border-card-border dark:border-dash-line">
-            {f.cases.map((c) => (
-              <div
-                key={`${c.who}-${c.what}`}
-                className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-2 border-b border-card-border/70 py-2 ${dashTextSecondarySm} dark:border-dash-line/70 last:border-b-0`}
-              >
-                <span className="truncate font-semibold text-sand-800 dark:text-dash-text">{c.who}</span>
-                <span className="whitespace-nowrap text-sand-400 dark:text-dash-text-muted">{c.what}</span>
-                <span className="whitespace-nowrap text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{c.amount.toLocaleString("de-DE")}&nbsp;€</span>
+          {f.count === 0 ? (
+            <p className={`mt-auto ${dashTextSecondarySm} text-sand-400 dark:text-dash-text-muted`}>Aktuell keine Fälle in dieser Kategorie gefunden.</p>
+          ) : (
+            <>
+              <div className="flex flex-col border-t border-card-border dark:border-dash-line">
+                {f.cases.map((c) => (
+                  <div
+                    key={`${c.who}-${c.what}`}
+                    className={`grid grid-cols-[1fr_auto_auto] items-baseline gap-2 border-b border-card-border/70 py-2 ${dashTextSecondarySm} dark:border-dash-line/70 last:border-b-0`}
+                  >
+                    <span className="truncate font-semibold text-sand-800 dark:text-dash-text">{c.who}</span>
+                    <span className="whitespace-nowrap text-sand-400 dark:text-dash-text-muted">{c.what}</span>
+                    <span className="whitespace-nowrap text-right font-bold tabular-nums text-sand-900 dark:text-dash-text">{c.amount.toLocaleString("de-DE")}&nbsp;€</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <span
-            aria-disabled
-            title="Noch nicht verfügbar"
-            className={`mt-auto flex cursor-default items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 ${dashTextBody} font-bold ${ACCENT_CLASS[f.accent]}`}
-          >
-            {f.count} {f.count === 1 ? "Fall" : "Fälle"} ansehen →
-          </span>
+              <span
+                aria-disabled
+                title="Noch nicht verfügbar"
+                className={`mt-auto flex cursor-default items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 ${dashTextBody} font-bold ${ACCENT_CLASS[f.accent]}`}
+              >
+                {f.count} {f.count === 1 ? "Fall" : "Fälle"} ansehen →
+              </span>
+            </>
+          )}
         </div>
       ))}
     </div>
