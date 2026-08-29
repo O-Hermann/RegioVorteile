@@ -152,6 +152,43 @@
   --landing-danger-subtle: #3a1620;
   --landing-purple: #a78bfa;
   --landing-purple-subtle: #241c3d;
+
+  /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): siehe ausfuehrlichen
+     Kommentar beim Light-Mode-Gegenstueck oben im :root-Block - ersetzt die
+     bisherige Teal-Palette (Werte bis 2026-08-29 aus der V12-Referenz).
+     Bugfix 2026-08-30: diese Werte standen zuerst faelschlich im unten
+     folgenden `@theme`-Block statt hier - da `@theme` unconditional gilt
+     (nicht durch [data-theme=dark] gegated), ueberschrieb das nichts und die
+     Dashboard-Karten blieben im Dark Mode staendig bei den Light-Werten
+     haengen (Bug vom Nutzer live gemeldet, per getComputedStyle bestaetigt:
+     --color-dash-panel blieb #fff unabhaengig vom data-theme-Attribut). */
+  --color-dash-bg: #050d1a;
+  --color-dash-panel: #0c1524;
+  --color-dash-panel-soft: #111c2e;
+  --color-dash-line: #27344a;
+  --color-dash-text: #f6f3eb;
+  --color-dash-text-secondary: #9aa7bc;
+  --color-dash-text-muted: #7c8aa0;
+  --color-dash-text-faint: #5e6c82;
+  --color-dash-gold: #e2bc6b;
+  --color-dash-gold-deep: #c9983c;
+  --color-dash-gold-glow: rgba(226, 188, 107, 0.14);
+  --color-dash-red: #ef5878;
+  --color-dash-red-tint: rgba(239, 88, 120, 0.16);
+  --color-dash-green: #6fbd5c;
+  --color-dash-green-tint: rgba(111, 189, 92, 0.16);
+  --color-dash-blue: #3fa9de;
+  --color-dash-blue-tint: rgba(63, 169, 222, 0.16);
+  --color-dash-purple: #b15fd1;
+  --color-dash-purple-tint: rgba(177, 95, 209, 0.16);
+  --color-dash-good: #10d992;
+  --color-dash-warn: #e2bc6b;
+  --color-dash-bad: #ef5878;
+  --color-dash-status-new: #d9a400;
+  --color-dash-status-active: #375bff;
+  --color-dash-status-reviewed: #33bb21;
+  --color-dash-status-done: #cbd5e1;
+  --color-dash-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @theme {
@@ -267,37 +304,6 @@
   --color-import-info: #54a6ff;
   --color-import-purple: #8c6cff;
   --color-import-purple-light: #a792ff;
-
-  /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): siehe ausfuehrlichen
-     Kommentar beim Light-Mode-Gegenstueck oben im :root-Block - ersetzt die
-     bisherige Teal-Palette (Werte bis 2026-08-29 aus der V12-Referenz). */
-  --color-dash-bg: #050d1a;
-  --color-dash-panel: #0c1524;
-  --color-dash-panel-soft: #111c2e;
-  --color-dash-line: #27344a;
-  --color-dash-text: #f6f3eb;
-  --color-dash-text-secondary: #9aa7bc;
-  --color-dash-text-muted: #7c8aa0;
-  --color-dash-text-faint: #5e6c82;
-  --color-dash-gold: #e2bc6b;
-  --color-dash-gold-deep: #c9983c;
-  --color-dash-gold-glow: rgba(226, 188, 107, 0.14);
-  --color-dash-red: #ef5878;
-  --color-dash-red-tint: rgba(239, 88, 120, 0.16);
-  --color-dash-green: #6fbd5c;
-  --color-dash-green-tint: rgba(111, 189, 92, 0.16);
-  --color-dash-blue: #3fa9de;
-  --color-dash-blue-tint: rgba(63, 169, 222, 0.16);
-  --color-dash-purple: #b15fd1;
-  --color-dash-purple-tint: rgba(177, 95, 209, 0.16);
-  --color-dash-good: #10d992;
-  --color-dash-warn: #e2bc6b;
-  --color-dash-bad: #ef5878;
-  --color-dash-status-new: #d9a400;
-  --color-dash-status-active: #375bff;
-  --color-dash-status-reviewed: #33bb21;
-  --color-dash-status-done: #cbd5e1;
-  --color-dash-shadow-card: 0 1px 0 rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
