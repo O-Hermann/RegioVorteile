@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TrendingUpIcon } from "@/components/icons";
 import { dashFontDisplayClass, dashTextSectionHeading } from "@/components/dashboard/dash-ui";
 import { getFindingsSummary, type FindingCategory } from "@/components/dashboard/findings-list";
@@ -46,10 +47,9 @@ function smoothLinePath(points: readonly (readonly [number, number])[]) {
   return d;
 }
 
-// "Alle Fälle prüfen" hat wie in QuickActions/AttentionList noch kein
-// echtes Ziel (Arbeitsliste/Fallpruefung sind laut Aufgabenstellung
-// zukuenftige Arbeit) und ist daher bewusst kein Link, sondern ein
-// deaktiviert wirkender Button - siehe Kommentar in quick-actions.tsx.
+// "Alle Fälle prüfen" verlinkt seit MVP-Roadmap Phase 2.3 (siehe
+// [[effivo_mvp_roadmap]]) echt auf die Fallpruefungs-Arbeitsliste
+// (/arbeitgeber/dashboard/faelle).
 export function FindingsHero({ findings, currentPeriodLabel }: { findings: FindingCategory[]; currentPeriodLabel: string | null }) {
   const { totalAmount, totalCount } = getFindingsSummary(findings);
   const categoryList = findings.map((f) => f.name).join(", ");
@@ -151,16 +151,15 @@ export function FindingsHero({ findings, currentPeriodLabel }: { findings: Findi
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-card-border pt-4 dark:border-dash-line">
-        <span
-          aria-disabled
-          title="Noch nicht verfügbar"
-          className="inline-flex w-fit cursor-default items-center gap-1.5 rounded-[11px] border border-ink-400/40 bg-gradient-to-br from-ink-500 to-ink-700 px-4 py-2.5 text-[13.5px] font-bold text-white shadow-warm-sm dark:border-transparent dark:bg-[linear-gradient(150deg,#2dd6c5,#1fae9f)] dark:text-[#06231f]"
+        <Link
+          href="/arbeitgeber/dashboard/faelle"
+          className="inline-flex w-fit items-center gap-1.5 rounded-[11px] border border-ink-400/40 bg-gradient-to-br from-ink-500 to-ink-700 px-4 py-2.5 text-[13.5px] font-bold text-white shadow-warm-sm transition-transform hover:-translate-y-px dark:border-transparent dark:bg-[linear-gradient(150deg,#2dd6c5,#1fae9f)] dark:text-[#06231f]"
         >
           Alle Fälle prüfen
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
             <path d="M9 5l7 7-7 7" />
           </svg>
-        </span>
+        </Link>
         <span className="text-[12.5px] text-sand-400 dark:text-dash-text-muted">Zuletzt aktualisiert: heute, {lastUpdated} Uhr</span>
       </div>
     </div>

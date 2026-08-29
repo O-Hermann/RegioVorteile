@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { CopyIcon, FileTextIcon, PercentIcon, ScaleIcon } from "@/components/icons";
 import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextTitle, dashTextBody, dashTextSectionHeading, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 import type { DuplicatePaymentResult } from "@/lib/duplicate-payment-detection";
 import type { OpenCreditNoteResult } from "@/lib/open-credit-note-detection";
 import type { OverpaymentResult } from "@/lib/overpayment-detection";
 import type { MissedDiscountResult } from "@/lib/discount-detection";
+import type { CaseCategory } from "@/generated/prisma/client";
 
 // Kernstueck des MVP-Fokus (siehe Nutzer-Vorgabe: "wo Doppelzahlungen
 // gefallen sind, wo kein Skonto beruecksichtigt wurde, wo offene
@@ -22,6 +24,10 @@ export type FindingCase = { who: string; what: string; amount: number };
 
 export type FindingCategory = {
   key: string;
+  // Entspricht 1:1 dem CaseCategory-Enum (siehe schema.prisma) - verlinkt die
+  // "X Fälle ansehen"-CTA (Phase 2.3) auf genau diese Kategorie in der
+  // Fallpruefungs-Arbeitsliste (?category=...).
+  caseCategory: CaseCategory;
   name: string;
   desc: string;
   amount: number;
@@ -45,6 +51,7 @@ export function buildFindings(
 ): FindingCategory[] {
   const duplicateFinding: FindingCategory = {
     key: "duplicate",
+    caseCategory: "DUPLICATE_PAYMENT",
     name: "Doppelzahlungen",
     desc: "Rechnungen, die versehentlich doppelt oder mehrfach beglichen wurden.",
     amount: duplicatePayments.totalAmount.toNumber(),
@@ -55,6 +62,7 @@ export function buildFindings(
   };
   const discountFinding: FindingCategory = {
     key: "discount",
+    caseCategory: "MISSED_DISCOUNT",
     name: "Skonto nicht genutzt",
     desc: "Frühzahler-Rabatte, die durch verspätete Zahlung verpasst wurden.",
     amount: missedDiscounts.totalAmount.toNumber(),
@@ -65,6 +73,7 @@ export function buildFindings(
   };
   const creditFinding: FindingCategory = {
     key: "credit",
+    caseCategory: "OPEN_CREDIT_NOTE",
     name: "Offene Gutschriften",
     desc: "Erhaltene Gutschriften, die noch nicht mit Rechnungen verrechnet wurden.",
     amount: openCreditNotes.totalAmount.toNumber(),
@@ -75,6 +84,7 @@ export function buildFindings(
   };
   const overpaymentFinding: FindingCategory = {
     key: "overpayment",
+    caseCategory: "OVERPAYMENT",
     name: "Mögliche Überzahlung",
     desc: "Gezahlter Betrag weicht vom Rechnungsbetrag ab, z. B. durch Tipp- oder Rundungsfehler.",
     amount: overpayments.totalAmount.toNumber(),
@@ -148,13 +158,12 @@ export function FindingsList({ findings }: { findings: FindingCategory[] }) {
                 ))}
               </div>
 
-              <span
-                aria-disabled
-                title="Noch nicht verfügbar"
-                className={`mt-auto flex cursor-default items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 ${dashTextBody} font-bold ${ACCENT_CLASS[f.accent]}`}
+              <Link
+                href={`/arbeitgeber/dashboard/faelle?category=${f.caseCategory}`}
+                className={`mt-auto flex items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 ${dashTextBody} font-bold transition-colors ${ACCENT_CLASS[f.accent]}`}
               >
                 {f.count} {f.count === 1 ? "Fall" : "Fälle"} ansehen →
-              </span>
+              </Link>
             </>
           )}
         </div>

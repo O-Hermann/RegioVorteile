@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SearchIcon } from "@/components/icons";
 import { dashFontDisplayClass } from "@/components/dashboard/dash-ui";
 import { getFindingsSummary, type FindingCategory } from "@/components/dashboard/findings-list";
@@ -40,16 +41,15 @@ export function ReviewStatusCard({ findings }: { findings: FindingCategory[] }) 
         </div>
       </div>
 
-      <span
-        aria-disabled
-        title="Noch nicht verfügbar"
-        className="mt-auto flex shrink-0 cursor-default items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-3 text-[13px] font-semibold text-ink-600 dark:text-dash-teal"
+      <Link
+        href="/arbeitgeber/dashboard/faelle"
+        className="mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-card-border/70 dark:border-white/[0.06] pt-3 text-[13px] font-semibold text-ink-600 transition-colors hover:text-ink-700 dark:text-dash-teal dark:hover:text-[#5cf0e2]"
       >
         Alle Fälle prüfen
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
           <path d="M9 5l7 7-7 7" />
         </svg>
-      </span>
+      </Link>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   dashTextTitle,
   dashTextBody,
@@ -84,13 +85,16 @@ export function ReviewDonut() {
         </div>
       </div>
 
-      <div className={`mt-auto flex shrink-0 items-center justify-between gap-2 rounded-[9px] border border-ink-400/20 bg-ink-50/60 px-2.5 py-2 ${dashTextBody} text-ink-700 dark:border-[rgba(45,214,197,0.14)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(45,214,197,0.07),rgba(45,214,197,0.018))] dark:text-[#9df8f2]`}>
+      <Link
+        href="/arbeitgeber/dashboard/faelle?status=NEW"
+        className={`mt-auto flex shrink-0 items-center justify-between gap-2 rounded-[9px] border border-ink-400/20 bg-ink-50/60 px-2.5 py-2 ${dashTextBody} text-ink-700 transition-colors hover:bg-ink-50 dark:border-[rgba(45,214,197,0.14)] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(45,214,197,0.07),rgba(45,214,197,0.018))] dark:text-[#9df8f2] dark:hover:text-[#c1fbf5]`}
+      >
         <span className="flex items-center gap-1.5">
           <i className="h-1.5 w-1.5 rounded-full bg-ink-500 dark:bg-dash-teal" />
           <b>16 neue Fälle zuerst prüfen</b>
         </span>
         <span>Öffnen →</span>
-      </div>
+      </Link>
     </div>
   );
 }

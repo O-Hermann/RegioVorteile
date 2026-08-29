@@ -2,9 +2,9 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { CaseCategory, CaseStatus } from "@/generated/prisma/client";
 import { formatEuroDetailed } from "@/lib/finance-format";
-import type { CaseStatusFilter } from "@/lib/case-labels";
+import type { CaseStatusFilter, CaseCategoryFilter } from "@/lib/case-labels";
 
-export type { CaseStatusFilter } from "@/lib/case-labels";
+export type { CaseStatusFilter, CaseCategoryFilter } from "@/lib/case-labels";
 
 // MVP-Roadmap Phase 2.2 (siehe [[effivo_mvp_roadmap]]): Abfrage-Bausteine
 // fuer die Fallpruefungs-Arbeitsliste - analog zu lib/customers.ts
@@ -25,10 +25,18 @@ export type CaseListItem = {
 // Sortierung bewusst nur nach Betrag absteigend, nicht zusaetzlich nach
 // Status (die Enum-Reihenfolge NEW/IN_REVIEW/REVIEWED/CLOSED ist alphabetisch
 // nicht die Pipeline-Reihenfolge) - die Statusfilterung uebernimmt stattdessen
-// die Seite selbst ueber die Tabs, siehe faelle/page.tsx.
-export async function getCases(companyId: string, filter: CaseStatusFilter): Promise<CaseListItem[]> {
+// die Seite selbst ueber die Tabs, siehe faelle/page.tsx. "category" ist ein
+// zweiter, unabhaengig kombinierbarer Filter (Phase 2.3) - darueber verlinken
+// die "X Fälle ansehen"-Buttons der einzelnen Fund-Kategorien-Karten gezielt
+// auf genau ihre Kategorie, statt immer die komplette, ungefilterte Liste zu
+// zeigen.
+export async function getCases(companyId: string, statusFilter: CaseStatusFilter, categoryFilter: CaseCategoryFilter = "all"): Promise<CaseListItem[]> {
   const rows = await prisma.case.findMany({
-    where: { companyId, ...(filter !== "all" ? { status: filter } : {}) },
+    where: {
+      companyId,
+      ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+      ...(categoryFilter !== "all" ? { category: categoryFilter } : {}),
+    },
     orderBy: { amount: "desc" },
   });
   return rows.map((r) => ({

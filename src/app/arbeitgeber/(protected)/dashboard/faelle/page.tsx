@@ -2,26 +2,31 @@ import Link from "next/link";
 import { requireCompanyMember } from "@/lib/auth";
 import { syncCases } from "@/lib/case-sync";
 import { getCases, getCaseCounts } from "@/lib/cases";
-import { CASE_CATEGORY_LABELS, CASE_STATUS_LABELS, caseStatusBadgeClass, type CaseStatusFilter } from "@/lib/case-labels";
+import { CASE_CATEGORY_LABELS, CASE_STATUS_LABELS, caseStatusBadgeClass, isCaseCategory, type CaseStatusFilter } from "@/lib/case-labels";
 import { importPanelClass, importSecondaryTextClass } from "@/lib/import-ui";
 import { PageNav } from "@/components/page-nav";
 import { CaseStatusActions } from "@/components/case-status-actions";
 
-// MVP-Roadmap Phase 2.2 (siehe [[effivo_mvp_roadmap]]): die Fallpruefungs-
-// Arbeitsliste, auf die die "Alle Fälle prüfen"/"X Fälle ansehen"-Buttons
-// auf der Effivo-Übersicht kuenftig verlinken (Phase 2.3, noch nicht
-// umgesetzt). Bewusst mit der STANDARD-App-Optik (importPanelClass etc., wie
-// Kunden/Aufträge/Datenimporte) statt des Dashboard-eigenen dash-scope
-// (Libre Franklin/Teal) - die dash-scope-Behandlung war explizit als "nur
-// diese eine Seite" (Effivo-Übersicht) entschieden, siehe
-// [[controlling_cockpit_v12_dashboard_port]]; diese Seite ist eher eine
-// operative Listenseite wie die anderen und folgt daher deren etabliertem
-// Muster statt einer neuen, ungefragten Ausweitung des dash-scope.
+// MVP-Roadmap Phase 2.2/2.3 (siehe [[effivo_mvp_roadmap]]): die Fallpruefungs-
+// Arbeitsliste, auf die die "Alle Fälle prüfen"/"X Fälle ansehen"-Buttons auf
+// der Effivo-Übersicht verlinken. Bewusst mit der STANDARD-App-Optik
+// (importPanelClass etc., wie Kunden/Aufträge/Datenimporte) statt des
+// Dashboard-eigenen dash-scope (Libre Franklin/Teal) - die dash-scope-
+// Behandlung war explizit als "nur diese eine Seite" (Effivo-Übersicht)
+// entschieden, siehe [[controlling_cockpit_v12_dashboard_port]]; diese Seite
+// ist eher eine operative Listenseite wie die anderen und folgt daher deren
+// etabliertem Muster statt einer neuen, ungefragten Ausweitung des dash-scope.
 //
 // syncCases() wird bei jedem Aufruf erneut ausgefuehrt (wie auf der
 // Übersicht-Seite) - stellt sicher, dass neu erkannte Faelle (z.B. nach
 // einem frischen Datenimport) sofort hier auftauchen, ohne den
 // Bearbeitungsstatus bereits vorhandener Faelle zu beruehren.
+//
+// Zwei unabhaengig kombinierbare Filter: "status" (Tabs, siehe STATUS_TABS)
+// und "category" (kein eigenes Tab-UI, sondern nur ueber Links von den
+// einzelnen Fund-Kategorien-Karten der Übersicht gesetzt - z.B. verlinkt die
+// Doppelzahlungen-Karte auf ?category=DUPLICATE_PAYMENT). Ist "category"
+// aktiv, zeigt die Seite einen Hinweis-Chip mit Link zum Entfernen des Filters.
 const STATUS_TABS: { value: CaseStatusFilter; label: string }[] = [
   { value: "all", label: "Alle" },
   { value: "NEW", label: "Neu" },
@@ -34,17 +39,26 @@ function isCaseStatusFilter(value: string | undefined): value is CaseStatusFilte
   return !!value && STATUS_TABS.some((t) => t.value === value);
 }
 
+function statusTabHref(status: CaseStatusFilter, category: string | undefined): string {
+  const params = new URLSearchParams();
+  if (status !== "all") params.set("status", status);
+  if (category) params.set("category", category);
+  const qs = params.toString();
+  return qs ? `/arbeitgeber/dashboard/faelle?${qs}` : "/arbeitgeber/dashboard/faelle";
+}
+
 export default async function FaellePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; category?: string }>;
 }) {
   const { company } = await requireCompanyMember();
-  const { status } = await searchParams;
+  const { status, category } = await searchParams;
   const statusFilter: CaseStatusFilter = isCaseStatusFilter(status) ? status : "all";
+  const categoryFilter = isCaseCategory(category) ? category : "all";
 
   await syncCases(company.id);
-  const [cases, counts] = await Promise.all([getCases(company.id, statusFilter), getCaseCounts(company.id)]);
+  const [cases, counts] = await Promise.all([getCases(company.id, statusFilter, categoryFilter), getCaseCounts(company.id)]);
 
   return (
     <div>
@@ -56,11 +70,23 @@ export default async function FaellePage({
         </p>
       </div>
 
+      {categoryFilter !== "all" && (
+        <div className="mt-4 flex items-center gap-2 text-sm">
+          <span className={importSecondaryTextClass}>Gefiltert nach:</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-100 px-2.5 py-1 text-xs font-semibold text-ink-700 dark:bg-white/10 dark:text-cockpit-text">
+            {CASE_CATEGORY_LABELS[categoryFilter]}
+            <Link href={statusTabHref(statusFilter, undefined)} aria-label="Kategorie-Filter entfernen" className="hover:text-ink-900 dark:hover:text-white">
+              ×
+            </Link>
+          </span>
+        </div>
+      )}
+
       <div className="mt-6 flex flex-wrap gap-2">
         {STATUS_TABS.map((tab) => (
           <Link
             key={tab.value}
-            href={tab.value === "all" ? "/arbeitgeber/dashboard/faelle" : `/arbeitgeber/dashboard/faelle?status=${tab.value}`}
+            href={statusTabHref(tab.value, category)}
             className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
               statusFilter === tab.value
                 ? "border-ink-600 bg-ink-600 text-white"

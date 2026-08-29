@@ -48,3 +48,8 @@ export const CASE_STATUS_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
 };
 
 export type CaseStatusFilter = "all" | CaseStatus;
+export type CaseCategoryFilter = "all" | CaseCategory;
+
+export function isCaseCategory(value: string | undefined): value is CaseCategory {
+  return !!value && Object.hasOwn(CASE_CATEGORY_LABELS, value);
+}
