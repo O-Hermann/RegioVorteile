@@ -4,15 +4,22 @@ import { dashFontDisplayClass } from "@/components/dashboard/dash-ui";
 import { getFindingsSummary, type FindingCategory } from "@/components/dashboard/findings-list";
 
 // "Prüfstatus"-Karte neben FindingsHero, optisch 1:1 aus dem freigegebenen
-// HTML-Mockup uebernommen. Offene Faelle kommt bewusst aus
-// getFindingsSummary() (wie FindingsHero/FindingsList), Ø Prüfzeit ist wie
-// in review-donut.tsx eine Referenz-Demoangabe (kein echtes
-// Fallpruefungs-Datenmodell), "Zuletzt geprüft" ist dagegen echt der
-// aktuelle Server-Zeitpunkt statt einer im Mockup fest eingetragenen Uhrzeit.
-export function ReviewStatusCard({ findings }: { findings: FindingCategory[] }) {
+// HTML-Mockup uebernommen. Offene Faelle kommt aus getFindingsSummary() (wie
+// FindingsHero/FindingsList). MVP-Roadmap Phase 3 (siehe
+// [[effivo_mvp_roadmap]]): "Zuletzt geprüft" kommt jetzt echt aus
+// getLastReviewedAt() (letzter Fall, der auf REVIEWED gesetzt wurde) statt
+// der aktuellen Serverzeit - "Noch keine Prüfung", solange kein Fall
+// abgeschlossen wurde. "Ø Prüfzeit" bleibt bewusst eine Demoangabe: dem
+// Case-Modell fehlt ein Zeitstempel dafuer, wann eine Pruefung BEGONNEN
+// wurde (nur reviewedAt, wann sie abgeschlossen wurde) - die Zeit von
+// createdAt bis reviewedAt waere Durchlaufzeit inklusive Wartezeit, keine
+// echte Bearbeitungsdauer, siehe ausfuehrlicherer Kommentar in
+// review-donut.tsx.
+export function ReviewStatusCard({ findings, lastReviewedAt }: { findings: FindingCategory[]; lastReviewedAt: Date | null }) {
   const { totalCount } = getFindingsSummary(findings);
-  const now = new Date();
-  const lastChecked = now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const lastChecked = lastReviewedAt
+    ? `${lastReviewedAt.toLocaleDateString("de-DE") === new Date().toLocaleDateString("de-DE") ? "heute" : lastReviewedAt.toLocaleDateString("de-DE")}, ${lastReviewedAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`
+    : "Noch keine Prüfung";
 
   return (
     <div className="flex h-full min-h-[150px] flex-col gap-4 rounded-2xl border border-card-border dark:border-dash-line bg-card dark:bg-[linear-gradient(180deg,rgba(17,43,72,0.97),rgba(11,31,53,0.99))] p-5 shadow-warm-sm dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.032),0_16px_36px_rgba(0,0,0,0.19)]">
@@ -37,7 +44,7 @@ export function ReviewStatusCard({ findings }: { findings: FindingCategory[] }) 
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="text-[12.5px] text-sand-500 dark:text-dash-text-secondary">Zuletzt geprüft</span>
-          <span className="text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text">heute, {lastChecked}</span>
+          <span className="text-[13px] font-bold tabular-nums text-sand-900 dark:text-dash-text">{lastChecked}</span>
         </div>
       </div>
 

@@ -60,3 +60,17 @@ export async function getCaseCounts(companyId: string): Promise<Record<CaseStatu
   }
   return counts;
 }
+
+// MVP-Roadmap Phase 3 (siehe [[effivo_mvp_roadmap]]): fuer die "Zuletzt
+// geprueft"-Anzeige (review-status.tsx) - der Zeitpunkt des zuletzt auf
+// REVIEWED gesetzten Falls, nicht einfach die aktuelle Serverzeit wie bisher.
+// null, solange noch kein einziger Fall geprueft wurde (ehrlicher Zustand
+// statt eines erfundenen Zeitpunkts).
+export async function getLastReviewedAt(companyId: string): Promise<Date | null> {
+  const latest = await prisma.case.findFirst({
+    where: { companyId, reviewedAt: { not: null } },
+    orderBy: { reviewedAt: "desc" },
+    select: { reviewedAt: true },
+  });
+  return latest?.reviewedAt ?? null;
+}

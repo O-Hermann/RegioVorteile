@@ -3,6 +3,7 @@ import { requireCompanyMember } from "@/lib/auth";
 import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { getCompanyMetrics } from "@/lib/company-metrics";
 import { syncCases } from "@/lib/case-sync";
+import { getCaseCounts, getLastReviewedAt } from "@/lib/cases";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
@@ -50,40 +51,31 @@ export default async function ArbeitgeberDashboardPage() {
   const { user, company } = await requireCompanyMember();
   const now = new Date();
 
-  const [
-    memberships,
-    dataImportCount,
-    pendingMappingCount,
-    failedImportCount,
-    processedRowAgg,
-    recentDataImports,
-    recentProcessedImports,
-    metrics,
-    syncedFindings,
-  ] = await Promise.all([
-    prisma.companyMembership.findMany({
-      where: { companyId: company.id },
-      orderBy: { invitedAt: "desc" },
-      take: 10,
-      include: { user: true },
-    }),
-    prisma.dataImport.count({ where: { companyId: company.id } }),
-    prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
-    prisma.dataImport.count({ where: { companyId: company.id, status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
-    prisma.dataImport.aggregate({ where: { companyId: company.id, status: "PROCESSED" }, _sum: { rowCount: true } }),
-    prisma.dataImport.findMany({
-      where: { companyId: company.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.dataImport.findMany({
-      where: { companyId: company.id, status: "PROCESSED" },
-      orderBy: { processedAt: "desc" },
-      take: 5,
-    }),
-    getCompanyMetrics(company.id),
-    syncCases(company.id),
-  ]);
+  const [memberships, dataImportCount, pendingMappingCount, failedImportCount, processedRowAgg, recentDataImports, recentProcessedImports, metrics, syncedFindings] =
+    await Promise.all([
+      prisma.companyMembership.findMany({
+        where: { companyId: company.id },
+        orderBy: { invitedAt: "desc" },
+        take: 10,
+        include: { user: true },
+      }),
+      prisma.dataImport.count({ where: { companyId: company.id } }),
+      prisma.dataImport.count({ where: { companyId: company.id, status: "READY_FOR_MAPPING" } }),
+      prisma.dataImport.count({ where: { companyId: company.id, status: { in: ["FAILED", "VALIDATION_FAILED"] } } }),
+      prisma.dataImport.aggregate({ where: { companyId: company.id, status: "PROCESSED" }, _sum: { rowCount: true } }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.dataImport.findMany({
+        where: { companyId: company.id, status: "PROCESSED" },
+        orderBy: { processedAt: "desc" },
+        take: 5,
+      }),
+      getCompanyMetrics(company.id),
+      syncCases(company.id),
+    ]);
   const processedMonthCount = metrics.importedMonthCount;
   const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
   // Alle vier Fund-Kategorien sind echt (siehe [[effivo_mvp_roadmap]] Phase
@@ -94,6 +86,13 @@ export default async function ArbeitgeberDashboardPage() {
   // damit ein bereits geprueftes Fall seinen Status behaelt.
   const { duplicatePayments, openCreditNotes, overpayments, missedDiscounts } = syncedFindings;
   const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments, missedDiscounts);
+
+  // MVP-Roadmap Phase 3 (siehe [[effivo_mvp_roadmap]]): erst NACH
+  // syncCases() (oben, bereits awaited) abfragen, sonst Race Condition -
+  // eine parallele Abfrage koennte laufen, bevor frisch erkannte Faelle in
+  // der Case-Tabelle upserted sind, und veraltete Zahlen zeigen. Die beiden
+  // Abfragen selbst duerfen parallel zueinander laufen.
+  const [caseCounts, lastReviewedAt] = await Promise.all([getCaseCounts(company.id), getLastReviewedAt(company.id)]);
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";
@@ -107,10 +106,11 @@ export default async function ArbeitgeberDashboardPage() {
 
   // Handlungsbedarf: solange kein Import existiert, auf den Upload
   // hinweisen; sobald mindestens einer wartet, auf die noch ausstehende
-  // Spaltenzuordnung; zusaetzlich - sobald Daten verarbeitet sind - ein
-  // Hinweis auf die neuen Fund-Faelle (Neu-Anteil aus review-donut.tsx,
-  // hier als eigene Konstante gehalten statt importiert, da beide Karten
-  // laut Kommentar dort bewusst unabhaengige Referenz-Demowerte tragen).
+  // Spaltenzuordnung; zusaetzlich - sobald es tatsaechlich neue (Status
+  // NEW) Faelle gibt - ein Hinweis darauf, verlinkt direkt gefiltert auf
+  // die Fallpruefungs-Arbeitsliste (MVP-Roadmap Phase 3, siehe
+  // [[effivo_mvp_roadmap]] - vorher hartcodiert "16 neue Fälle" mit falschem
+  // Link auf /datenimporte statt /faelle).
   const actionItems: AttentionItem[] = [];
   if (dataImportCount === 0) {
     actionItems.push({
@@ -131,14 +131,14 @@ export default async function ArbeitgeberDashboardPage() {
       cta: "Ansehen",
     });
   }
-  if (processedMonthCount > 0) {
+  if (caseCounts.NEW > 0) {
     actionItems.push({
       id: "pending-findings",
-      title: "16 neue Fälle warten auf Prüfung",
+      title: `${caseCounts.NEW} ${caseCounts.NEW === 1 ? "neuer Fall wartet" : "neue Fälle warten"} auf Prüfung`,
       subtitle: "Ø Prüfzeit 11 Minuten",
       icon: SearchIcon,
       accent: ACCENT_MAP.slate,
-      href: "/arbeitgeber/dashboard/datenimporte",
+      href: "/arbeitgeber/dashboard/faelle?status=NEW",
       cta: "Prüfen",
       priority: true,
     });
@@ -242,13 +242,13 @@ export default async function ArbeitgeberDashboardPage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr] lg:items-stretch">
         <FindingsHero findings={findings} currentPeriodLabel={currentPeriodLabel} />
-        <ReviewStatusCard findings={findings} />
+        <ReviewStatusCard findings={findings} lastReviewedAt={lastReviewedAt} />
       </div>
 
       <FindingsList findings={findings} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-stretch">
-        <ReviewDonut />
+        <ReviewDonut counts={caseCounts} />
         <DataStatusCard
           processedMonthCount={processedMonthCount}
           processedRowCount={processedRowCount}
