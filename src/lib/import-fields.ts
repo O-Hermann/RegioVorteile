@@ -6,7 +6,7 @@ import type { DataImportCategory } from "@/generated/prisma/client";
 // alles andere (Vorschlagslogik, UI, Speicherung) ist kategorieunabhaengig.
 // Neue Felder/Kategorien lassen sich spaeter rein additiv ergaenzen.
 
-export type ImportFieldDataType = "text" | "number" | "date" | "status";
+export type ImportFieldDataType = "text" | "number" | "date" | "status" | "documentType";
 
 // Generische Spalten von DataImportRecord (siehe schema.prisma), auf die ein
 // Zielfeld schreibt. Innerhalb EINER Kategorie ist jede storageColumn nur
@@ -23,6 +23,7 @@ export type RecordStorageColumn =
   | "completionDate"
   | "bookingDate"
   | "status"
+  | "documentType"
   | "netAmount"
   | "taxAmount"
   | "grossAmount"
@@ -56,6 +57,7 @@ export const IMPORT_FIELD_DATA_TYPE_LABELS: Record<ImportFieldDataType, string> 
   number: "Zahl",
   date: "Datum",
   status: "Status",
+  documentType: "Belegart",
 };
 
 export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefinition[]> = {
@@ -107,6 +109,14 @@ export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefini
       dataType: "status",
       storageColumn: "status",
       synonyms: ["Zahlungsstatus", "Payment Status", "Zahlstatus", "Status"],
+    },
+    {
+      key: "documentType",
+      label: "Belegart (Rechnung/Gutschrift)",
+      group: "Beleg / Rechnung",
+      dataType: "documentType",
+      storageColumn: "documentType",
+      synonyms: ["Belegart", "Belegtyp", "Document Type", "Dokumentart", "Art"],
     },
     {
       key: "netAmount",
@@ -414,6 +424,39 @@ export function normalizeStatusValue(raw: string): CanonicalPaymentStatus | null
   return STATUS_SYNONYM_MAP[key] ?? null;
 }
 
+// Fund-Kategorie "Offene Gutschriften" (MVP-Roadmap Phase 1.1): eigene,
+// kleine Normalisierung analog zu CanonicalPaymentStatus/STATUS_SYNONYM_MAP
+// oben - bewusst ein eigener, unabhaengiger Wertebereich statt in den
+// Status-Wortschatz (PAID/OPEN/...) integriert, weil "Belegart" fachlich
+// etwas anderes ist als "Zahlungsstatus" (eine Rechnung UND eine Gutschrift
+// koennen beide z.B. den Zahlungsstatus "Offen" haben).
+export type CanonicalDocumentType = "INVOICE" | "CREDIT_NOTE";
+
+export const DOCUMENT_TYPE_LABELS_DE: Record<CanonicalDocumentType, string> = {
+  INVOICE: "Rechnung",
+  CREDIT_NOTE: "Gutschrift",
+};
+
+const DOCUMENT_TYPE_SYNONYM_MAP: Record<string, CanonicalDocumentType> = {
+  rechnung: "INVOICE",
+  invoice: "INVOICE",
+  re: "INVOICE",
+  ar: "INVOICE", // Ausgangsrechnung
+  gutschrift: "CREDIT_NOTE",
+  creditnote: "CREDIT_NOTE",
+  credit: "CREDIT_NOTE",
+  gs: "CREDIT_NOTE",
+};
+
+export function normalizeDocumentTypeValue(raw: string): CanonicalDocumentType | null {
+  const key = normalizeColumnName(raw);
+  return DOCUMENT_TYPE_SYNONYM_MAP[key] ?? null;
+}
+
+export function looksLikeDocumentTypeValue(raw: string): boolean {
+  return normalizeDocumentTypeValue(raw) !== null;
+}
+
 // Rein textbasierte Erkennung fuer die Datentyp-Heuristik (Beispielwerte) -
 // dieselbe Normalisierung wie beim eigentlichen Mapping, damit Status-Spalten
 // zuverlaessig als "Status" statt als "Text" erkannt werden.
@@ -501,5 +544,6 @@ export function detectColumnDataType(samples: string[]): ImportFieldDataType {
   if (values.every((v) => normalizeDateFromString(v) !== null)) return "date";
   if (values.every((v) => normalizeNumberFromString(v) !== null)) return "number";
   if (values.every((v) => looksLikeStatusValue(v))) return "status";
+  if (values.every((v) => looksLikeDocumentTypeValue(v))) return "documentType";
   return "text";
 }

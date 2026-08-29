@@ -466,6 +466,15 @@ model DataImportRecord {
   status    String? // normalisierter interner Status (PAID/OPEN/PARTIALLY_PAID/OVERDUE/CANCELED)
   statusRaw String? // unveraenderter Rohwert aus der Datei
 
+  // Fund-Kategorie "Offene Gutschriften" (MVP-Roadmap Phase 1.1): analog zu
+  // status/statusRaw normalisiertes Feld + Rohwert, siehe import-fields.ts
+  // (CanonicalDocumentType) und import-process.ts (normalizeDocumentTypeCell).
+  // Nur fuer FINANCE-Importe gemappt; bei allen aelteren/anderen Zeilen bleibt
+  // es null (kein "Rechnung" geraten) - normalizeDocumentTypeValue() gibt bei
+  // unbekannten Rohwerten bewusst null zurueck statt zu raten.
+  documentType    String? // normalisiert (INVOICE/CREDIT_NOTE)
+  documentTypeRaw String? // unveraenderter Rohwert aus der Datei
+
   netAmount   Decimal? @db.Decimal(14, 2)
   taxAmount   Decimal? @db.Decimal(14, 2)
   grossAmount Decimal? @db.Decimal(14, 2)

@@ -9,6 +9,7 @@ import {
   normalizeNumberFromString,
   normalizeDateFromString,
   normalizeStatusValue,
+  normalizeDocumentTypeValue,
   IGNORE_FIELD_KEY,
 } from "@/lib/import-fields";
 
@@ -101,6 +102,16 @@ function normalizeStatusCell(raw: ExcelCellRaw): { status: string | null; status
   return { status: normalizeStatusValue(s), statusRaw: clipped };
 }
 
+// Analog zu normalizeStatusCell, siehe CanonicalDocumentType in
+// import-fields.ts (MVP-Roadmap Phase 1.1 - "Offene Gutschriften").
+function normalizeDocumentTypeCell(raw: ExcelCellRaw): { documentType: string | null; documentTypeRaw: string | null } {
+  if (raw === null || raw === undefined) return { documentType: null, documentTypeRaw: null };
+  const s = (raw instanceof Date ? raw.toLocaleDateString("de-DE") : String(raw)).trim();
+  if (s === "") return { documentType: null, documentTypeRaw: null };
+  const clipped = s.length > MAX_IMPORT_CELL_TEXT_LENGTH ? s.slice(0, MAX_IMPORT_CELL_TEXT_LENGTH) : s;
+  return { documentType: normalizeDocumentTypeValue(s), documentTypeRaw: clipped };
+}
+
 export type RowError = { row: number; message: string };
 export type ProcessedRecordFields = Record<string, unknown> & { rowNumber: number };
 
@@ -147,6 +158,10 @@ export function buildProcessedRecords(
         const { status, statusRaw } = normalizeStatusCell(raw);
         fields.status = status;
         fields.statusRaw = statusRaw;
+      } else if (field.dataType === "documentType") {
+        const { documentType, documentTypeRaw } = normalizeDocumentTypeCell(raw);
+        fields.documentType = documentType;
+        fields.documentTypeRaw = documentTypeRaw;
       }
     }
     return { rowNumber, ...fields };
