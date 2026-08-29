@@ -4,6 +4,7 @@ import { periodLabel, DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { getCompanyMetrics } from "@/lib/company-metrics";
 import { detectDuplicatePayments } from "@/lib/duplicate-payment-detection";
 import { detectOpenCreditNotes } from "@/lib/open-credit-note-detection";
+import { detectPossibleOverpayments } from "@/lib/overpayment-detection";
 import { TrendingUpIcon, UploadIcon, UsersIcon, SearchIcon } from "@/components/icons";
 import { AttentionList, type AttentionItem } from "@/components/dashboard/attention-list";
 import { ActivityTimeline, type ActivityTimelineItem } from "@/components/dashboard/activity-timeline";
@@ -62,6 +63,7 @@ export default async function ArbeitgeberDashboardPage() {
     metrics,
     duplicatePayments,
     openCreditNotes,
+    overpayments,
   ] = await Promise.all([
     prisma.companyMembership.findMany({
       where: { companyId: company.id },
@@ -86,14 +88,15 @@ export default async function ArbeitgeberDashboardPage() {
     getCompanyMetrics(company.id),
     detectDuplicatePayments(company.id),
     detectOpenCreditNotes(company.id),
+    detectPossibleOverpayments(company.id),
   ]);
   const processedMonthCount = metrics.importedMonthCount;
   const processedRowCount = processedRowAgg._sum.rowCount ?? 0;
-  // Doppelzahlungen + Offene Gutschriften sind echt (siehe
-  // duplicate-payment-detection.ts / open-credit-note-detection.ts) - die
-  // anderen zwei bleiben Referenz-Demowerte, siehe Kommentar in
-  // findings-list.tsx und [[effivo_mvp_roadmap]].
-  const findings = buildFindings(duplicatePayments, openCreditNotes);
+  // Doppelzahlungen + Offene Gutschriften + Moegliche Ueberzahlung sind echt
+  // (siehe duplicate-payment-detection.ts / open-credit-note-detection.ts /
+  // overpayment-detection.ts) - nur Skonto bleibt Referenz-Demowert, siehe
+  // Kommentar in findings-list.tsx und [[effivo_mvp_roadmap]].
+  const findings = buildFindings(duplicatePayments, openCreditNotes, overpayments);
 
   const greetingName = user.firstName?.trim();
   const greeting = greetingName ? `Guten Tag, ${greetingName}` : "Guten Tag";

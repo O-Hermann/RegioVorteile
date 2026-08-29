@@ -30,6 +30,7 @@ export type RecordStorageColumn =
   | "costAmount"
   | "openAmount"
   | "amount"
+  | "paidAmount"
   | "accountNumber"
   | "accountLabel"
   | "metricLabel"
@@ -165,6 +166,14 @@ export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefini
       dataType: "number",
       storageColumn: "amount",
       synonyms: ["Betrag", "Saldo", "Amount", "Balance"],
+    },
+    {
+      key: "paidAmount",
+      label: "Gezahlter Betrag",
+      group: "Beträge",
+      dataType: "number",
+      storageColumn: "paidAmount",
+      synonyms: ["Gezahlter Betrag", "Gezahlt", "Zahlbetrag", "Paid Amount", "Bezahlter Betrag", "Zahlungsbetrag"],
     },
     {
       key: "accountNumber",

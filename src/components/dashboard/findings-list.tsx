@@ -2,20 +2,20 @@ import { CopyIcon, FileTextIcon, PercentIcon, ScaleIcon } from "@/components/ico
 import { DASH_ACCENT_HEX, type DashAccent, dashFontDisplayClass, dashTextTitle, dashTextBody, dashTextSectionHeading, dashTextSecondarySm } from "@/components/dashboard/dash-ui";
 import type { DuplicatePaymentResult } from "@/lib/duplicate-payment-detection";
 import type { OpenCreditNoteResult } from "@/lib/open-credit-note-detection";
+import type { OverpaymentResult } from "@/lib/overpayment-detection";
 
 // Kernstueck des MVP-Fokus (siehe Nutzer-Vorgabe: "wo Doppelzahlungen
 // gefallen sind, wo kein Skonto beruecksichtigt wurde, wo offene
 // Gutschriften sind" - Umsatz/Kosten-Uebersicht kommt bewusst erst spaeter).
 // Fortschritt siehe [[effivo_mvp_roadmap]] (Phase 1).
 //
-// Stand 2026-08-29: "Doppelzahlungen" und "Offene Gutschriften" sind ECHT -
-// buildFindings() berechnet sie aus tatsaechlich importierten
-// DataImportRecord-Zeilen (siehe duplicate-payment-detection.ts /
-// open-credit-note-detection.ts). Die anderen zwei (Skonto/Ueberzahlung)
-// bleiben Referenz-Demowerte, 1:1 aus dem freigegebenen HTML-Mockup
-// uebernommen (erfundene Firmennamen/Belegnummern) - dem Datenmodell fehlen
-// die dafuer noetigen Felder (Skonto-%/-Frist, getrenntes "gezahlt"-Feld).
-// Sobald diese Felder im Import-Mapping existieren, koennen sie nach
+// Stand 2026-08-29: "Doppelzahlungen", "Offene Gutschriften" und "Moegliche
+// Ueberzahlung" sind ECHT - buildFindings() berechnet sie aus tatsaechlich
+// importierten DataImportRecord-Zeilen (siehe duplicate-payment-detection.ts
+// / open-credit-note-detection.ts / overpayment-detection.ts). Nur "Skonto
+// nicht genutzt" bleibt Referenz-Demowert, 1:1 aus dem freigegebenen
+// HTML-Mockup uebernommen (erfundene Firmennamen) - dem Datenmodell fehlen
+// dafuer noch Skonto-%/-Frist-Felder. Sobald diese existieren, kann sie nach
 // demselben Muster hier ersetzt werden - ein Owner (diese Datei), keine
 // Kaskaden-Overrides.
 export type FindingCase = { who: string; what: string; amount: number };
@@ -46,29 +46,20 @@ const STATIC_FINDINGS: FindingCategory[] = [
       { who: "Café Sonnenschein", what: "3 % Skonto verpasst", amount: 410 },
     ],
   },
-  {
-    key: "overpayment",
-    name: "Mögliche Überzahlung",
-    desc: "Gezahlter Betrag weicht vom Rechnungsbetrag ab, z. B. durch Tipp- oder Rundungsfehler.",
-    amount: 13960,
-    count: 6,
-    accent: "teal",
-    icon: ScaleIcon,
-    cases: [
-      { who: "Lindqvist Fensterbau GmbH", what: "gezahlt 8.920 € statt 8.180 €", amount: 740 },
-      { who: "Nordlicht Systemtechnik GmbH", what: "gezahlt 4.510 € statt 4.150 €", amount: 360 },
-      { who: "Weber Sanitär & Heizung", what: "gezahlt 2.980 € statt 2.640 €", amount: 340 },
-    ],
-  },
 ];
 
 // Baut die vollstaendige Liste aus den echten Erkennungen (Doppelzahlungen,
-// Offene Gutschriften) plus den weiterhin statischen Kategorien. Betraege
-// dort sind Prisma.Decimal - .toNumber() ist hier unbedenklich
-// (Anzeigewerte, keine Rechengrundlage mehr). Reihenfolge (duplicate, credit,
-// ...static) entspricht der urspruenglichen Kartenreihenfolge aus dem
-// Mockup, nicht der Reihenfolge, in der die Kategorien "echt" wurden.
-export function buildFindings(duplicatePayments: DuplicatePaymentResult, openCreditNotes: OpenCreditNoteResult): FindingCategory[] {
+// Offene Gutschriften, Moegliche Ueberzahlung) plus der weiterhin statischen
+// Kategorie. Betraege dort sind Prisma.Decimal - .toNumber() ist hier
+// unbedenklich (Anzeigewerte, keine Rechengrundlage mehr). Reihenfolge
+// (duplicate, discount, credit, overpayment) entspricht der urspruenglichen
+// Kartenreihenfolge aus dem Mockup, nicht der Reihenfolge, in der die
+// Kategorien "echt" wurden.
+export function buildFindings(
+  duplicatePayments: DuplicatePaymentResult,
+  openCreditNotes: OpenCreditNoteResult,
+  overpayments: OverpaymentResult,
+): FindingCategory[] {
   const duplicateFinding: FindingCategory = {
     key: "duplicate",
     name: "Doppelzahlungen",
@@ -89,8 +80,18 @@ export function buildFindings(duplicatePayments: DuplicatePaymentResult, openCre
     icon: FileTextIcon,
     cases: openCreditNotes.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
   };
-  const [discount, overpayment] = STATIC_FINDINGS;
-  return [duplicateFinding, discount, creditFinding, overpayment];
+  const overpaymentFinding: FindingCategory = {
+    key: "overpayment",
+    name: "Mögliche Überzahlung",
+    desc: "Gezahlter Betrag weicht vom Rechnungsbetrag ab, z. B. durch Tipp- oder Rundungsfehler.",
+    amount: overpayments.totalAmount.toNumber(),
+    count: overpayments.caseCount,
+    accent: "teal",
+    icon: ScaleIcon,
+    cases: overpayments.topCases.map((c) => ({ who: c.who, what: c.what, amount: c.amount.toNumber() })),
+  };
+  const [discount] = STATIC_FINDINGS;
+  return [duplicateFinding, discount, creditFinding, overpaymentFinding];
 }
 
 export function getFindingsSummary(findings: FindingCategory[]) {

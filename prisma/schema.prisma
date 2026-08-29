@@ -481,6 +481,12 @@ model DataImportRecord {
   costAmount  Decimal? @db.Decimal(14, 2)
   openAmount  Decimal? @db.Decimal(14, 2)
   amount      Decimal? @db.Decimal(14, 2)
+  // Fund-Kategorie "Moegliche Ueberzahlung" (MVP-Roadmap Phase 1.2): der
+  // tatsaechlich gezahlte Betrag, bewusst getrennt von grossAmount/amount
+  // (der Rechnungs-/Sollbetrag) - siehe overpayment-detection.ts. Ein reines
+  // Zahlenfeld ohne Rohwert-Companion (anders als status/documentType), da
+  // hier keine Wortschatz-Normalisierung noetig ist.
+  paidAmount  Decimal? @db.Decimal(14, 2)
 
   accountNumber String?
   accountLabel  String?
