@@ -29,6 +29,24 @@ import { Prisma } from "@/generated/prisma/client";
 // Zahlung; alle weiteren als die faelschlich zusaetzlich gezahlten Betraege.
 // Der ausgewiesene Betrag ist daher der VERLORENE Anteil (Anzahl-1 × Betrag),
 // nicht die Summe aller Zahlungen zusammen.
+//
+// MVP-Roadmap Phase 4 (siehe [[effivo_mvp_roadmap]]) - Re-Import-Sicherheit:
+// bisher verhinderte nur ein Byte-identischer Datei-Checksum-Vergleich
+// (siehe confirmDuplicate in actions/data-import.ts) den erneuten Import
+// EXAKT derselben Datei. Zwei UNTERSCHIEDLICHE, aber inhaltlich
+// ueberlappende Exporte desselben Zeitraums (z.B. derselbe DATEV-Export an
+// zwei Tagen mit leicht anderer Formatierung) legen dieselbe Rechnung als
+// zwei separate DataImportRecord-Zeilen aus zwei verschiedenen DataImports
+// an - ohne Gegenmassnahme wuerde das hier faelschlich als Doppelzahlung
+// erscheinen. Loesung: pro (periodMonth, periodYear) zaehlt fuer die
+// Doppelzahlungs-Erkennung nur der ZULETZT verarbeitete DataImport dieses
+// Zeitraums (siehe latestImportIdsPerPeriod() unten) - ein Re-Import
+// desselben Zeitraums ERSETZT den vorherigen fuer diesen Zweck, statt beide
+// zu addieren. Echte Doppelzahlungen bleiben davon unberuehrt: sowohl
+// mehrfache Treffer INNERHALB eines einzelnen Imports (weiterhin
+// eingeschlossen) als auch ueber ZWEI VERSCHIEDENE Zeitraeume hinweg
+// (jeweils deren eigener "letzter Import" bleibt eingeschlossen) werden
+// weiterhin erkannt.
 // "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
 // hier bewusst dieselbe (Referenznummer, Betrag)-Gruppierung wie oben, NICHT
 // eine einzelne DataImportRecord-Id, da ein Doppelzahlungs-Fall ja aus
@@ -61,12 +79,42 @@ type DuplicateRow = {
   dataImport: { processedAt: Date | null };
 };
 
+// Siehe ausfuehrliche Begruendung im Kommentar oberhalb von
+// detectDuplicatePayments(). Liefert die Id-Menge aller DataImports, die
+// fuer den Doppelzahlungs-Scan beruecksichtigt werden sollen: pro
+// (periodMonth, periodYear) nur der zuletzt verarbeitete. "Zuletzt"
+// bemisst sich an processedAt (faellt auf createdAt zurueck, falls
+// processedAt aus irgendeinem Grund fehlt) - NICHT am periodMonth/Year
+// selbst, da zwei Imports desselben Zeitraums per Definition denselben
+// Zeitraum tragen und sich nur im tatsaechlichen Upload-/
+// Verarbeitungszeitpunkt unterscheiden koennen.
+async function latestImportIdsPerPeriod(companyId: string): Promise<Set<string>> {
+  const imports = await prisma.dataImport.findMany({
+    where: { companyId, category: "FINANCE", status: "PROCESSED" },
+    select: { id: true, periodMonth: true, periodYear: true, processedAt: true, createdAt: true },
+  });
+
+  const latestByPeriod = new Map<string, { id: string; time: number }>();
+  for (const imp of imports) {
+    const periodKey = `${imp.periodYear}-${imp.periodMonth}`;
+    const time = (imp.processedAt ?? imp.createdAt).getTime();
+    const current = latestByPeriod.get(periodKey);
+    if (!current || time > current.time) {
+      latestByPeriod.set(periodKey, { id: imp.id, time });
+    }
+  }
+  return new Set([...latestByPeriod.values()].map((v) => v.id));
+}
+
 export async function detectDuplicatePayments(companyId: string): Promise<DuplicatePaymentResult> {
+  const activeImportIds = await latestImportIdsPerPeriod(companyId);
+
   const rows: DuplicateRow[] = await prisma.dataImportRecord.findMany({
     where: {
       companyId,
       status: "PAID",
       referenceNumber: { not: null },
+      dataImportId: { in: [...activeImportIds] },
       dataImport: { category: "FINANCE", status: "PROCESSED" },
     },
     select: {
