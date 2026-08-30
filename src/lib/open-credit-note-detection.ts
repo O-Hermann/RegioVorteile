@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { looksLikeCreditNoteReference } from "@/lib/import-fields";
 
 // Echte Erkennungslogik fuer die "Offene Gutschriften"-Fund-Kategorie
 // (MVP-Roadmap Phase 1.1, siehe [[effivo_mvp_roadmap]]) - zweite der vier
@@ -21,9 +22,23 @@ import { Prisma } from "@/generated/prisma/client";
 // kriterium - jede offene Gutschrift ist unabhaengig fuer sich ein eigener
 // Fall (kein "Duplikat"-Konzept).
 //
-// Companies ohne gemapptes "Belegart"-Feld (die grosse Mehrheit zu Beginn,
-// da dieses Feld neu ist) haben schlicht documentType=null bei jeder Zeile -
-// detectOpenCreditNotes liefert dann ehrlich 0 Faelle, kein falscher Treffer.
+// MVP-Roadmap Phase 3.2 (siehe [[effivo_mvp_roadmap]]): Companies OHNE
+// gemapptes "Belegart"-Feld (documentType=null bei jeder Zeile) sind NICHT
+// mehr automatisch 0 Faelle - eine Zeile OHNE documentType gilt ebenfalls
+// als offene Gutschrift, wenn eine der beiden beweisbaren Fallback-Regeln
+// zutrifft (siehe isFallbackCreditNote() unten):
+// 1. Die Referenznummer traegt einen gebraeuchlichen Gutschrift-Praefix
+//    ("G-"/"GS-"/"GUT-"/"CN-", siehe looksLikeCreditNoteReference() in
+//    import-fields.ts) - das staerkere, fuer sich allein ausreichende Signal.
+// 2. Der Betrag ist negativ UND der Zahlungsstatus ist "OPEN" - bewusst NUR
+//    in Kombination (nicht der negative Betrag allein, der z.B. auch eine
+//    Stornierung/Korrektur bedeuten koennte), da ein negativer, noch
+//    offener Posten ohne erkennbaren anderen Grund ein plausibles,
+//    beweisbares Indiz fuer eine Gutschrift ist.
+// Zeilen mit explizit gemapptem documentType="CREDIT_NOTE" nutzen weiterhin
+// ausschliesslich die urspruengliche, praezise Regel (status="OPEN") - die
+// Fallback-Heuristik greift NUR dort, wo keine Belegart-Zuordnung
+// existiert, und uebersteuert diese nie.
 // "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
 // bevorzugt die (getrimmte, kleingeschriebene) Referenznummer, damit ein
 // erneuter Import derselben Datei (der neue DataImportRecord-Ids erzeugt)
@@ -46,13 +61,25 @@ export type OpenCreditNoteResult = {
   allCases: OpenCreditNoteCase[];
 };
 
+// Siehe ausfuehrliche Begruendung im Kommentar oberhalb von
+// detectOpenCreditNotes(). Nur fuer Zeilen ohne gemapptes documentType
+// aufgerufen - eine Zeile mit documentType="CREDIT_NOTE" braucht diese
+// Heuristik nicht, sie ist bereits eindeutig.
+function isFallbackCreditNote(row: { referenceNumber: string | null; status: string | null; amount: Prisma.Decimal | null }): boolean {
+  const ref = row.referenceNumber?.trim();
+  if (ref && looksLikeCreditNoteReference(ref)) return true;
+  return row.status === "OPEN" && !!row.amount && row.amount.isNegative();
+}
+
 export async function detectOpenCreditNotes(companyId: string): Promise<OpenCreditNoteResult> {
   const rows = await prisma.dataImportRecord.findMany({
     where: {
       companyId,
-      documentType: "CREDIT_NOTE",
-      status: "OPEN",
       dataImport: { category: "FINANCE", status: "PROCESSED" },
+      OR: [
+        { documentType: "CREDIT_NOTE", status: "OPEN" },
+        { documentType: null },
+      ],
     },
     select: {
       id: true,
@@ -61,6 +88,8 @@ export async function detectOpenCreditNotes(companyId: string): Promise<OpenCred
       organization: true,
       grossAmount: true,
       amount: true,
+      documentType: true,
+      status: true,
     },
   });
 
@@ -68,6 +97,9 @@ export async function detectOpenCreditNotes(companyId: string): Promise<OpenCred
   let totalAmount = new Prisma.Decimal(0);
 
   for (const row of rows) {
+    if (row.documentType === null && !isFallbackCreditNote({ referenceNumber: row.referenceNumber, status: row.status, amount: row.grossAmount ?? row.amount })) {
+      continue;
+    }
     const amount = row.grossAmount ?? row.amount;
     if (!amount || amount.isZero()) continue;
     const absAmount = amount.abs();

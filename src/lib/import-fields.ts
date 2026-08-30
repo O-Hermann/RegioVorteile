@@ -510,6 +510,22 @@ export function looksLikeDocumentTypeValue(raw: string): boolean {
   return normalizeDocumentTypeValue(raw) !== null;
 }
 
+// MVP-Roadmap Phase 3.2 (siehe [[effivo_mvp_roadmap]]): Fallback-Heuristik
+// fuer "Offene Gutschriften", wenn ueberhaupt keine "Belegart"-Spalte
+// gemappt ist (documentType bleibt dann fuer jede Zeile null, siehe
+// open-credit-note-detection.ts) - erkennt einen der in Deutschland
+// gebraeuchlichen Gutschrift-Referenznummern-Praefixe ("G-"/"GS-"/"GUT-"/
+// "CN-", jeweils gefolgt von einem Trennzeichen). Bewusst ein Trennzeichen
+// (Bindestrich/Schraegstrich/Leerzeichen) nach dem Praefix verlangt statt
+// nur des Praefix-Buchstabens, um z.B. eine normale Rechnungsnummer wie
+// "G12345" (kein Gutschrift-Hinweis) nicht faelschlich zu treffen - "lieber
+// 0 als falsch" gilt auch fuer diese Heuristik.
+const CREDIT_NOTE_REFERENCE_PREFIX_RE = /^(g|gs|gut|cn)[-/\s]/i;
+
+export function looksLikeCreditNoteReference(referenceNumber: string): boolean {
+  return CREDIT_NOTE_REFERENCE_PREFIX_RE.test(referenceNumber.trim());
+}
+
 // Rein textbasierte Erkennung fuer die Datentyp-Heuristik (Beispielwerte) -
 // dieselbe Normalisierung wie beim eigentlichen Mapping, damit Status-Spalten
 // zuverlaessig als "Status" statt als "Text" erkannt werden.
