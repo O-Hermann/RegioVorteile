@@ -269,20 +269,20 @@ function BookingRow({
 }) {
   const background = useTransform(() => {
     if (!row.focus) return "transparent";
-    if (rowsLocked.get()) return "linear-gradient(90deg, rgba(25,198,193,.05), rgba(25,198,193,.016))";
+    if (rowsLocked.get()) return "linear-gradient(90deg, rgba(226,188,107,.05), rgba(226,188,107,.016))";
     const tint = Math.max(0.1 * pairPeak.get(), 0.046 * lockTransition.get());
-    return `linear-gradient(90deg, rgba(25,198,193,${tint}), rgba(25,198,193,${tint * 0.34}))`;
+    return `linear-gradient(90deg, rgba(226,188,107,${tint}), rgba(226,188,107,${tint * 0.34}))`;
   });
   const borderColor = useTransform(() => {
     if (!row.focus) return "transparent";
-    if (rowsLocked.get()) return "rgba(25,198,193,.22)";
-    return `rgba(25,198,193,${0.08 + 0.3 * pairPeak.get() + 0.11 * lockTransition.get()})`;
+    if (rowsLocked.get()) return "rgba(226,188,107,.22)";
+    return `rgba(226,188,107,${0.08 + 0.3 * pairPeak.get() + 0.11 * lockTransition.get()})`;
   });
   const boxShadow = useTransform(() => {
     if (!row.focus) return "none";
-    if (rowsLocked.get()) return "0 0 16px rgba(25,198,193,.03), inset 0 0 0 1px rgba(25,198,193,.025)";
+    if (rowsLocked.get()) return "0 0 16px rgba(226,188,107,.03), inset 0 0 0 1px rgba(226,188,107,.025)";
     const peak = pairPeak.get();
-    return `0 0 ${14 + 22 * peak}px rgba(25,198,193,${0.02 + 0.045 * peak})`;
+    return `0 0 ${14 + 22 * peak}px rgba(226,188,107,${0.02 + 0.045 * peak})`;
   });
   const x = useTransform(() => {
     if (!row.focus) return 0;

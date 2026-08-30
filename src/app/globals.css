@@ -32,30 +32,41 @@
      damit eine einzige Klasse (z.B. "bg-landing-card") ohne "dark:"-Praefix
      automatisch dem aktiven Theme folgt - Light-Werte hier, Dark-Werte im
      "[data-theme=dark]"-Block weiter unten, bewusst eigenstaendig gestaltet
-     statt einer reinen Invertierung. */
-  --landing-bg: #f6f9fc;
-  --landing-bg-alt: #edf2f7;
+     statt einer reinen Invertierung.
+     Goldstandard-Rollout Phase 2 (2026-08-30, siehe [[effivo_mvp_roadmap]]):
+     Werte hier auf die Gold/Ink-Navy-Palette der App umgefaerbt (vormals
+     Teal/kuehles Blaugrau) - der eigenstaendige --landing-*-Namensraum und
+     seine @theme-inline-Architektur bleiben bewusst bestehen (User-
+     Entscheidung: "Namensraum behalten, nur Werte umfaerben" statt Migration
+     auf --color-dash-*), nur die Farbwerte selbst sind jetzt 1:1 aus der
+     dash-*-Palette uebernommen. accent/accent-hover/accent-light/
+     accent-subtle = Marken-Gold (ersetzt Teal als primaere CTA-/Link-Farbe).
+     info/success/danger/purple an die entsprechenden dash-*-Akzente
+     angeglichen; warning bewusst NICHT gold (kollidiert sonst mit accent),
+     bleibt ein eigenstaendiger Bernstein-Ton. */
+  --landing-bg: #f7f8fb;
+  --landing-bg-alt: #eef1f6;
   --landing-card: #ffffff;
   --landing-card-elevated: #ffffff;
   --landing-header-bg: #ffffff;
-  --landing-border: #dce3eb;
-  --landing-text-primary: #0c1524;
-  --landing-text-secondary: #46536a;
-  --landing-text-muted: #78889c;
-  --landing-accent: #0b726d;
-  --landing-accent-hover: #095c58;
-  --landing-accent-light: #0e8e88;
-  --landing-accent-subtle: #e4f5f3;
-  --landing-info: #2461e8;
-  --landing-info-subtle: #eaf1fe;
-  --landing-success: #178a4a;
-  --landing-success-subtle: #e7f7ec;
+  --landing-border: #dce1ea;
+  --landing-text-primary: #10151f;
+  --landing-text-secondary: #4a5468;
+  --landing-text-muted: #6b7686;
+  --landing-accent: #b8863e;
+  --landing-accent-hover: #9c7530;
+  --landing-accent-light: #c99a4f;
+  --landing-accent-subtle: #f5ecd8;
+  --landing-info: #1d7ba8;
+  --landing-info-subtle: #e5f1f7;
+  --landing-success: #0f8f63;
+  --landing-success-subtle: #e3f5ee;
   --landing-warning: #a35a0a;
   --landing-warning-subtle: #fbeeda;
-  --landing-danger: #d23a5b;
-  --landing-danger-subtle: #fcebf0;
-  --landing-purple: #7c3aed;
-  --landing-purple-subtle: #f1e9fe;
+  --landing-danger: #c41e3a;
+  --landing-danger-subtle: #fbe4e8;
+  --landing-purple: #8b33a8;
+  --landing-purple-subtle: #f5e8f7;
 
   /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): eigener
      Namensraum aus demselben Grund wie --color-import-* / --color-landing-*
@@ -138,31 +149,31 @@
   --color-sand-900: #f7f8fa;
 
   /* Landing/Marketing Dark Mode - siehe Kommentar bei den Light-Werten oben.
-     Werte orientieren sich an der Vorgabe (Page/Alternate/Card/Elevated Card,
-     Primary/Secondary/Muted Text, Primary Teal), bewusst eigenstaendig
-     gestaltet statt einer Invertierung der Light-Werte. */
-  --landing-bg: #071426;
-  --landing-bg-alt: #0a1930;
-  --landing-card: #0f1d36;
-  --landing-card-elevated: #132546;
-  --landing-header-bg: #050f1e;
-  --landing-border: #22385a;
-  --landing-text-primary: #f8fbff;
-  --landing-text-secondary: #b8c6dd;
-  --landing-text-muted: #8191ac;
-  --landing-accent: #0b726d;
-  --landing-accent-hover: #0e8e88;
-  --landing-accent-light: #19c6c1;
-  --landing-accent-subtle: #0e2e38;
-  --landing-info: #5b9dff;
+     Goldstandard-Rollout Phase 2 (2026-08-30): Werte 1:1 aus der dash-*-
+     Palette der App uebernommen (vormals Teal), Namensraum/Architektur
+     unveraendert. */
+  --landing-bg: #050d1a;
+  --landing-bg-alt: #0a1420;
+  --landing-card: #0c1524;
+  --landing-card-elevated: #111c2e;
+  --landing-header-bg: #050d1a;
+  --landing-border: #27344a;
+  --landing-text-primary: #f6f3eb;
+  --landing-text-secondary: #9aa7bc;
+  --landing-text-muted: #7c8aa0;
+  --landing-accent: #e2bc6b;
+  --landing-accent-hover: #c9983c;
+  --landing-accent-light: #f0d08c;
+  --landing-accent-subtle: #2e2411;
+  --landing-info: #3fa9de;
   --landing-info-subtle: #12233f;
-  --landing-success: #3ecf8e;
+  --landing-success: #10d992;
   --landing-success-subtle: #0f2a22;
   --landing-warning: #f2b84b;
   --landing-warning-subtle: #3a2a10;
-  --landing-danger: #f5677a;
+  --landing-danger: #ef5878;
   --landing-danger-subtle: #3a1620;
-  --landing-purple: #a78bfa;
+  --landing-purple: #b15fd1;
   --landing-purple-subtle: #241c3d;
 
   /* Effivo-Übersicht ("Goldstandard"-Design, 2026-08-30): siehe ausfuehrlichen

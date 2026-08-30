@@ -291,7 +291,7 @@ function ParticleDot({ particle, scrollYProgress }: { particle: Particle; scroll
   const y = useTransform(scrollYProgress, (p) => particleState(p, particle).y);
   const opacity = useTransform(scrollYProgress, (p) => particleState(p, particle).opacity);
   const scale = useTransform(scrollYProgress, (p) => particleState(p, particle).scale);
-  const color = particle.tint > 0.74 ? "rgba(77,132,255,0.85)" : "rgba(25,198,193,0.85)";
+  const color = particle.tint > 0.74 ? "rgba(77,132,255,0.85)" : "rgba(226,188,107,0.85)";
   return (
     <motion.span
       className="absolute left-1/2 top-1/2 h-[5px] w-[5px] rounded-full"
