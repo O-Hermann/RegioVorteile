@@ -42,19 +42,24 @@ export async function syncCases(companyId: string): Promise<SyncedFindings> {
     detectMissedDiscounts(companyId),
   ]);
 
-  const upserts: { category: CaseCategory; key: string; who: string; what: string; amount: Prisma.Decimal }[] = [
-    ...duplicatePayments.allCases.map((c) => ({ category: "DUPLICATE_PAYMENT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount })),
-    ...openCreditNotes.allCases.map((c) => ({ category: "OPEN_CREDIT_NOTE" as const, key: c.key, who: c.who, what: c.what, amount: c.amount })),
-    ...overpayments.allCases.map((c) => ({ category: "OVERPAYMENT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount })),
-    ...missedDiscounts.allCases.map((c) => ({ category: "MISSED_DISCOUNT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount })),
+  const upserts: { category: CaseCategory; key: string; who: string; what: string; amount: Prisma.Decimal; sourceRecordIds: string[] }[] = [
+    ...duplicatePayments.allCases.map((c) => ({ category: "DUPLICATE_PAYMENT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount, sourceRecordIds: c.sourceRecordIds })),
+    ...openCreditNotes.allCases.map((c) => ({ category: "OPEN_CREDIT_NOTE" as const, key: c.key, who: c.who, what: c.what, amount: c.amount, sourceRecordIds: c.sourceRecordIds })),
+    ...overpayments.allCases.map((c) => ({ category: "OVERPAYMENT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount, sourceRecordIds: c.sourceRecordIds })),
+    ...missedDiscounts.allCases.map((c) => ({ category: "MISSED_DISCOUNT" as const, key: c.key, who: c.who, what: c.what, amount: c.amount, sourceRecordIds: c.sourceRecordIds })),
   ];
 
+  // sourceRecordIds wird auch beim UPDATE-Zweig mitgeschrieben (nicht nur
+  // bei create) - anders als who/what/amount, die sich nur graduell
+  // verschieben, koennen sich die zugrundeliegenden Zeilen-Ids bei einem
+  // Re-Import komplett aendern (neue DataImportRecord-Ids), die
+  // Detail-Ansicht soll dann auf die AKTUELLEN Zeilen zeigen.
   await Promise.all(
     upserts.map((u) =>
       prisma.case.upsert({
         where: { companyId_category_dedupeKey: { companyId, category: u.category, dedupeKey: u.key } },
-        create: { companyId, category: u.category, dedupeKey: u.key, who: u.who, what: u.what, amount: u.amount },
-        update: { who: u.who, what: u.what, amount: u.amount },
+        create: { companyId, category: u.category, dedupeKey: u.key, who: u.who, what: u.what, amount: u.amount, sourceRecordIds: u.sourceRecordIds },
+        update: { who: u.who, what: u.what, amount: u.amount, sourceRecordIds: u.sourceRecordIds },
       }),
     ),
   );

@@ -53,7 +53,7 @@ export async function getCases(companyId: string, statusFilter: CaseStatusFilter
 
 export async function getCaseCounts(companyId: string): Promise<Record<CaseStatusFilter, number>> {
   const groups = await prisma.case.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } });
-  const counts: Record<CaseStatusFilter, number> = { all: 0, NEW: 0, IN_REVIEW: 0, REVIEWED: 0, CLOSED: 0 };
+  const counts: Record<CaseStatusFilter, number> = { all: 0, NEW: 0, IN_REVIEW: 0, REVIEWED: 0, CLOSED: 0, FALSE_POSITIVE: 0 };
   for (const g of groups) {
     counts[g.status] = g._count._all;
     counts.all += g._count._all;

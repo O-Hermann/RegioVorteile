@@ -14,9 +14,12 @@ export type UpdateCaseStatusResult = { status: "ok" } | { status: "error"; messa
 // erlaubte Uebergaenge serverseitig via CASE_STATUS_TRANSITIONS durchgesetzt
 // (dieselbe Tabelle wie die Client-Buttons in case-status-actions.tsx nutzen,
 // hier aber die tatsaechlich massgebliche Pruefung). reviewedAt/
-// reviewedByUserId werden nur beim Erreichen von REVIEWED gesetzt/aktualisiert
-// - bei allen anderen Uebergaengen unveraendert gelassen (kein Loeschen des
-// bisherigen Pruefverlaufs beim spaeteren Wiedereroeffnen).
+// reviewedByUserId werden beim Erreichen von REVIEWED oder FALSE_POSITIVE
+// gesetzt/aktualisiert - beides ist eine abgeschlossene menschliche Pruefung
+// des Falls (siehe MVP-Roadmap Phase 5, [[effivo_mvp_roadmap]]: "Kein echter
+// Fund" ist keine Ablehnung ohne Pruefung, sondern deren Ergebnis). Bei allen
+// anderen Uebergaengen unveraendert gelassen (kein Loeschen des bisherigen
+// Pruefverlaufs beim spaeteren Wiedereroeffnen).
 export async function updateCaseStatus(caseId: string, nextStatus: CaseStatus): Promise<UpdateCaseStatusResult> {
   const { company, user } = await requireCompanyMember();
 
@@ -31,7 +34,7 @@ export async function updateCaseStatus(caseId: string, nextStatus: CaseStatus): 
     where: { id: caseId },
     data: {
       status: nextStatus,
-      ...(nextStatus === "REVIEWED" ? { reviewedAt: new Date(), reviewedByUserId: user.id } : {}),
+      ...(nextStatus === "REVIEWED" || nextStatus === "FALSE_POSITIVE" ? { reviewedAt: new Date(), reviewedByUserId: user.id } : {}),
     },
   });
 

@@ -543,6 +543,12 @@ enum CaseStatus {
   IN_REVIEW
   REVIEWED
   CLOSED
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]): Kennzeichnung fuer
+  // einen falsch-positiven Fund ("Kein echter Fund") - fachlich etwas
+  // anderes als CLOSED (regulaer abgeschlossen, der Fund war real), daher
+  // ein eigener Statuswert statt eines zusaetzlichen Booleans. Siehe
+  // case-labels.ts (CASE_STATUS_TRANSITIONS) fuer die erlaubten Uebergaenge.
+  FALSE_POSITIVE
 }
 
 // Ein Fall entspricht genau einer Instanz einer Fund-Kategorie (z.B. eine
@@ -565,6 +571,18 @@ model Case {
   who    String
   what   String
   amount Decimal @db.Decimal(14, 2)
+
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]): Ids der
+  // DataImportRecord-Zeile(n), die zu diesem Fund gefuehrt haben - fuer die
+  // Case-Detail-Ansicht ("warum wurde das markiert?"). Bei Doppelzahlungen
+  // mehrere Zeilen (die gesamte Gruppe gleicher Referenz+Betrag), bei den
+  // uebrigen drei Kategorien genau eine. Bewusst KEIN @relation (die
+  // referenzierten DataImportRecord-Zeilen koennen durch einen geloeschten
+  // Import verschwinden, ohne dass dieser Fall automatisch mitgeloescht
+  // werden soll - siehe case-sync.ts, "verschwundene" Faelle bleiben
+  // unveraendert stehen) - die Detail-Ansicht behandelt fehlende Zeilen
+  // defensiv (siehe faelle/[id]/page.tsx).
+  sourceRecordIds String[] @default([])
 
   status CaseStatus @default(NEW)
 

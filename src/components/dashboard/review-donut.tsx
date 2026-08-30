@@ -20,7 +20,13 @@ const STATUS_LEGEND: { key: Exclude<CaseStatusFilter, "all">; label: string; dot
 ];
 
 export function ReviewDonut({ counts }: { counts: Record<CaseStatusFilter, number> }) {
-  const total = counts.all;
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]): "Kein echter Fund"
+  // (FALSE_POSITIVE) ist bewusst kein Bearbeitungsschritt der Pipeline,
+  // sondern eine Korrektur - zaehlt daher NICHT in "total" mit, sonst
+  // wuerden Prozentanteile/Legende nicht mehr zu 100% aufsummieren (kein
+  // eigenes Donut-Segment dafuer, siehe caseStatusBadgeClass-Kommentar in
+  // case-labels.ts).
+  const total = counts.all - counts.FALSE_POSITIVE;
   const legend = STATUS_LEGEND.map((entry) => ({
     ...entry,
     value: counts[entry.key],

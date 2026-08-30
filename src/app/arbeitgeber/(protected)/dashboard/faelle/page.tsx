@@ -34,6 +34,7 @@ const STATUS_TABS: { value: CaseStatusFilter; label: string }[] = [
   { value: "IN_REVIEW", label: "In Prüfung" },
   { value: "REVIEWED", label: "Geprüft" },
   { value: "CLOSED", label: "Abgeschlossen" },
+  { value: "FALSE_POSITIVE", label: "Kein echter Fund" },
 ];
 
 function isCaseStatusFilter(value: string | undefined): value is CaseStatusFilter {
@@ -109,9 +110,15 @@ export default async function FaellePage({
           {cases.map((c) => (
             <div
               key={c.id}
-              className={`flex flex-col items-stretch gap-4 p-4 sm:flex-row sm:items-start sm:justify-between ${dashCardClass} ${dashModuleHoverClass}`}
+              className={`relative flex flex-col items-stretch gap-4 p-4 sm:flex-row sm:items-start sm:justify-between ${dashCardClass} ${dashModuleHoverClass}`}
             >
-              <div className="min-w-0 flex-1">
+              {/* Stretched-Link-Muster (siehe Kunden-/Auftraege-Tabellen):
+                  die gesamte Karte ist klickbar zur Case-Detail-Ansicht
+                  (Phase 5, siehe [[effivo_mvp_roadmap]]), die
+                  Status-Aktionsbuttons rechts bleiben ueber "relative z-10"
+                  unabhaengig klickbar. */}
+              <Link href={`/arbeitgeber/dashboard/faelle/${c.id}`} className="absolute inset-0 z-0" aria-label={`Fall ${c.who} ansehen`} />
+              <div className="relative min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-dash-panel-soft px-2.5 py-0.5 text-xs font-semibold text-dash-text-secondary">
                     {CASE_CATEGORY_LABELS[c.category]}
@@ -127,7 +134,7 @@ export default async function FaellePage({
                   {c.what}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-4">
+              <div className="relative z-10 flex shrink-0 items-center gap-4">
                 <span className="text-lg font-bold text-dash-text">{c.amount}</span>
                 <CaseStatusActions caseId={c.id} status={c.status} />
               </div>

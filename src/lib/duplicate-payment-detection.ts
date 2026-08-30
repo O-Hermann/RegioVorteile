@@ -58,6 +58,10 @@ export type DuplicatePaymentCase = {
   who: string;
   what: string;
   amount: Prisma.Decimal;
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]): ALLE Zeilen der
+  // Gruppe (nicht nur die "zusaetzlichen"), damit die Case-Detail-Ansicht
+  // auch die urspruengliche, legitime Zahlung als Vergleich zeigen kann.
+  sourceRecordIds: string[];
 };
 
 export type DuplicatePaymentResult = {
@@ -161,7 +165,7 @@ export async function detectDuplicatePayments(companyId: string): Promise<Duplic
     totalAmount = totalAmount.plus(excessAmount);
     const who = first.name?.trim() || first.organization?.trim() || "Unbekannt";
     const ref = first.referenceNumber!.trim();
-    cases.push({ key, who, what: `${sorted.length}× ${ref}`, amount: excessAmount });
+    cases.push({ key, who, what: `${sorted.length}× ${ref}`, amount: excessAmount, sourceRecordIds: sorted.map((r) => r.id) });
   }
 
   cases.sort((a, b) => b.amount.comparedTo(a.amount));

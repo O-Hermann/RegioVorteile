@@ -31,6 +31,9 @@ export type OverpaymentCase = {
   who: string;
   what: string;
   amount: Prisma.Decimal;
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]) - fuer die
+  // Case-Detail-Ansicht.
+  sourceRecordIds: string[];
 };
 
 // toLocaleString allein liesse Nachkommastellen bei "runden" Betraegen weg
@@ -90,6 +93,7 @@ export async function detectPossibleOverpayments(companyId: string): Promise<Ove
       who: row.name?.trim() || row.organization?.trim() || "Unbekannt",
       what: `gezahlt ${formatEuroAmount(paidAmount)} € statt ${formatEuroAmount(invoiceAmount)} €`,
       amount: excess,
+      sourceRecordIds: [row.id],
     });
   }
 

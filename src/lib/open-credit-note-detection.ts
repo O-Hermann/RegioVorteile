@@ -52,6 +52,9 @@ export type OpenCreditNoteCase = {
   who: string;
   what: string;
   amount: Prisma.Decimal;
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]) - fuer die
+  // Case-Detail-Ansicht.
+  sourceRecordIds: string[];
 };
 
 export type OpenCreditNoteResult = {
@@ -110,6 +113,7 @@ export async function detectOpenCreditNotes(companyId: string): Promise<OpenCred
       who: row.name?.trim() || row.organization?.trim() || "Unbekannt",
       what: ref || "Gutschrift ohne Referenz",
       amount: absAmount,
+      sourceRecordIds: [row.id],
     });
   }
 

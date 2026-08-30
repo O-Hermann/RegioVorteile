@@ -45,6 +45,9 @@ export type MissedDiscountCase = {
   who: string;
   what: string;
   amount: Prisma.Decimal;
+  // MVP-Roadmap Phase 5 (siehe [[effivo_mvp_roadmap]]) - fuer die
+  // Case-Detail-Ansicht.
+  sourceRecordIds: string[];
 };
 
 export type MissedDiscountResult = {
@@ -103,6 +106,7 @@ export async function detectMissedDiscounts(companyId: string): Promise<MissedDi
       who: row.name?.trim() || row.organization?.trim() || "Unbekannt",
       what: `${row.discountPercent.toNumber().toLocaleString("de-DE")} % Skonto verpasst`,
       amount: missed,
+      sourceRecordIds: [row.id],
     });
   }
 

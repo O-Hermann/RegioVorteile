@@ -18,6 +18,7 @@ const TRANSITION_BUTTON_LABELS: Record<CaseStatus, string> = {
   REVIEWED: "Als geprüft markieren",
   CLOSED: "Abschließen",
   NEW: "Wieder öffnen",
+  FALSE_POSITIVE: "Kein echter Fund",
 };
 
 export function CaseStatusActions({ caseId, status }: { caseId: string; status: CaseStatus }) {
