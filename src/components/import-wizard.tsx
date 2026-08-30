@@ -16,8 +16,15 @@ import {
   formatFileSize,
   CREATE_DATA_IMPORT_IDLE_STATE,
 } from "@/lib/data-import";
-import { importPanelClass, importSecondaryTextClass, importIconGlowClass, importIconBadgeClass } from "@/lib/import-ui";
-import { primaryButtonClass, secondaryButtonClass, labelClass, inputClass } from "@/lib/ui";
+import {
+  dashCardClass,
+  dashSecondaryTextClass,
+  dashIconGlowClass,
+  dashPrimaryButtonClass,
+  dashSecondaryButtonClass,
+  dashLabelClass,
+  dashInputClass,
+} from "@/components/dashboard/dash-ui";
 import {
   UploadIcon,
   FileTextIcon,
@@ -36,7 +43,7 @@ const STEPS = ["Angaben", "Datei", "Vorschau", "Bestätigen"] as const;
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - 4 + i);
 
-const fieldClass = `${inputClass} !py-2.5 !text-[15px]`;
+const fieldClass = `${dashInputClass} !py-2.5 !text-[15px]`;
 
 function StepIndicator({ step }: { step: number }) {
   return (
@@ -51,17 +58,17 @@ function StepIndicator({ step }: { step: number }) {
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   active
-                    ? importIconGlowClass
+                    ? dashIconGlowClass
                     : done
-                      ? "bg-ink-100 text-ink-700 dark:bg-cockpit-accent-subtle dark:text-cockpit-accent-light"
-                      : "bg-sand-100 text-sand-400 dark:bg-white/5 dark:text-cockpit-text-weak"
+                      ? "bg-dash-gold-glow text-dash-gold"
+                      : "bg-dash-panel-soft text-dash-text-faint"
                 }`}
               >
                 {done ? <CheckIcon className="h-4 w-4" /> : n}
               </span>
               <span
                 className={`whitespace-nowrap text-[11px] font-semibold ${
-                  active || done ? "text-sand-800 dark:text-cockpit-heading" : "text-sand-400 dark:text-cockpit-text-weak"
+                  active || done ? "text-dash-text" : "text-dash-text-faint"
                 }`}
               >
                 {label}
@@ -70,7 +77,7 @@ function StepIndicator({ step }: { step: number }) {
             {n < STEPS.length && (
               <div
                 className={`mx-2.5 mb-[18px] h-px flex-1 transition-colors duration-300 ${
-                  done ? "bg-ink-300 dark:bg-cockpit-accent-light/50" : "bg-card-border dark:bg-white/10"
+                  done ? "bg-dash-gold/60" : "bg-dash-line"
                 }`}
               />
             )}
@@ -84,13 +91,13 @@ function StepIndicator({ step }: { step: number }) {
 function PreviewTable({ preview }: { preview: SpreadsheetPreview }) {
   const [header, ...rest] = preview.rows;
   return (
-    <div className={`overflow-x-auto !p-0 ${importPanelClass}`}>
+    <div className={`overflow-x-auto !p-0 ${dashCardClass}`}>
       <table className="w-full min-w-[480px] text-left text-sm">
         {header && (
-          <thead className="bg-sand-50 dark:bg-white/5">
+          <thead className="bg-dash-panel-soft">
             <tr>
               {header.map((cell, i) => (
-                <th key={i} className="whitespace-nowrap px-3 py-2.5 font-semibold text-sand-700 dark:text-cockpit-text">
+                <th key={i} className="whitespace-nowrap px-3 py-2.5 font-semibold text-dash-text-secondary">
                   {cell || `Spalte ${i + 1}`}
                 </th>
               ))}
@@ -99,9 +106,9 @@ function PreviewTable({ preview }: { preview: SpreadsheetPreview }) {
         )}
         <tbody>
           {rest.map((row, ri) => (
-            <tr key={ri} className="border-t border-card-border/70 transition-colors hover:bg-sand-50 dark:border-white/5 dark:hover:bg-white/[0.03]">
+            <tr key={ri} className="border-t border-dash-line transition-colors hover:bg-dash-panel-soft">
               {row.map((cell, ci) => (
-                <td key={ci} className={`whitespace-nowrap px-3 py-2.5 ${importSecondaryTextClass}`}>
+                <td key={ci} className={`whitespace-nowrap px-3 py-2.5 ${dashSecondaryTextClass}`}>
                   {cell}
                 </td>
               ))}
@@ -215,12 +222,12 @@ export function ImportWizard({ companyId }: { companyId: string }) {
       <PageNav backHref="/arbeitgeber/dashboard/datenimporte" backLabel="Zurück zu Datenimporten" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-sand-900">Neuer Datenimport</h1>
-          <p className={`mt-2 ${importSecondaryTextClass}`}>
+          <h1 className="text-3xl font-semibold text-dash-text">Neuer Datenimport</h1>
+          <p className={`mt-2 ${dashSecondaryTextClass}`}>
             Zeitraum und Kategorie festlegen, Datei hochladen und Vorschau prüfen.
           </p>
         </div>
-        <Link href="/arbeitgeber/dashboard/datenimporte" className={secondaryButtonClass}>
+        <Link href="/arbeitgeber/dashboard/datenimporte" className={dashSecondaryButtonClass}>
           Abbrechen
         </Link>
       </div>
@@ -242,7 +249,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
             fileInputRef.current.files = dt.files;
           }
         }}
-        className={`!p-8 ${importPanelClass}`}
+        className={`!p-8 ${dashCardClass}`}
       >
         <input type="hidden" name="companyId" value={companyId} />
         <input type="hidden" name="periodMonth" value={periodMonth} />
@@ -271,10 +278,10 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
         {step === 1 && (
           <div className="space-y-5">
-            <h2 className="font-display text-lg font-semibold text-sand-900">Zeitraum und Kategorie</h2>
+            <h2 className="text-lg font-semibold text-dash-text">Zeitraum und Kategorie</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelClass} htmlFor="periodMonth-select">
+                <label className={dashLabelClass} htmlFor="periodMonth-select">
                   Monat
                 </label>
                 <select
@@ -291,7 +298,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                 </select>
               </div>
               <div>
-                <label className={labelClass} htmlFor="periodYear-select">
+                <label className={dashLabelClass} htmlFor="periodYear-select">
                   Jahr
                 </label>
                 <select
@@ -310,7 +317,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
             </div>
 
             <div>
-              <label className={labelClass} htmlFor="category-select">
+              <label className={dashLabelClass} htmlFor="category-select">
                 Datenkategorie
               </label>
               <select
@@ -325,14 +332,14 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                   </option>
                 ))}
               </select>
-              <p className={`mt-2 text-sm leading-snug ${importSecondaryTextClass}`}>
+              <p className={`mt-2 text-sm leading-snug ${dashSecondaryTextClass}`}>
                 {DATA_IMPORT_CATEGORY_DESCRIPTIONS[category]}
               </p>
             </div>
 
             <div>
-              <label className={labelClass} htmlFor="sourceSystem-select">
-                Quellsystem <span className="font-normal text-sand-400">(optional)</span>
+              <label className={dashLabelClass} htmlFor="sourceSystem-select">
+                Quellsystem <span className="font-normal text-dash-text-faint">(optional)</span>
               </label>
               <select
                 id="sourceSystem-select"
@@ -353,7 +360,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
               type="button"
               disabled={!canGoToStep2}
               onClick={() => setStep(2)}
-              className={`w-full !py-3 ${primaryButtonClass}`}
+              className={`w-full !py-3 ${dashPrimaryButtonClass}`}
             >
               Weiter
             </button>
@@ -362,8 +369,8 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
         {step === 2 && (
           <div className="space-y-5">
-            <h2 className="font-display text-lg font-semibold text-sand-900">Datei hochladen</h2>
-            <p className={`text-sm ${importSecondaryTextClass}`}>XLSX oder CSV – maximal {MAX_IMPORT_FILE_SIZE_LABEL}.</p>
+            <h2 className="text-lg font-semibold text-dash-text">Datei hochladen</h2>
+            <p className={`text-sm ${dashSecondaryTextClass}`}>XLSX oder CSV – maximal {MAX_IMPORT_FILE_SIZE_LABEL}.</p>
 
             {!file && (
               <div
@@ -389,22 +396,22 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                 onClick={() => fileInputRef.current?.click()}
                 className={`relative flex cursor-pointer flex-col items-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors ${
                   dragOver
-                    ? "border-ink-400 bg-ink-50 dark:border-cockpit-accent-light/50 dark:bg-cockpit-accent-subtle/30"
-                    : "border-card-border dark:border-white/15 hover:border-ink-300 dark:hover:border-cockpit-accent-light/30"
+                    ? "border-dash-gold/50 bg-dash-gold-glow"
+                    : "border-dash-line hover:border-dash-gold/40"
                 }`}
               >
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cockpit-accent-light/10 blur-3xl opacity-0 dark:opacity-100"
+                  className="pointer-events-none absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-dash-gold/[0.08] blur-3xl"
                 />
-                <span className={`relative flex h-16 w-16 items-center justify-center rounded-full ${importIconGlowClass}`}>
+                <span className={`relative flex h-16 w-16 items-center justify-center rounded-full ${dashIconGlowClass}`}>
                   <UploadIcon className="h-7 w-7" />
                 </span>
                 <div className="relative">
-                  <p className="text-sm font-semibold text-sand-800 dark:text-cockpit-text">
+                  <p className="text-sm font-semibold text-dash-text">
                     Datei hierher ziehen oder klicken zum Auswählen
                   </p>
-                  <p className={`mt-1 text-xs ${importSecondaryTextClass}`}>XLSX oder CSV · maximal {MAX_IMPORT_FILE_SIZE_LABEL}</p>
+                  <p className={`mt-1 text-xs ${dashSecondaryTextClass}`}>XLSX oder CSV · maximal {MAX_IMPORT_FILE_SIZE_LABEL}</p>
                 </div>
               </div>
             )}
@@ -412,16 +419,16 @@ export function ImportWizard({ companyId }: { companyId: string }) {
             {file && (
               <div
                 className={`flex items-center justify-between gap-3 rounded-2xl border p-4 ${
-                  fileError ? "border-rose-300 bg-rose-50 dark:border-rose-400/30 dark:bg-rose-500/10" : "border-card-border dark:border-white/10"
+                  fileError ? "border-dash-red/40 bg-dash-red-tint" : "border-dash-line"
                 }`}
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${importIconBadgeClass}`}>
+                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${"bg-dash-gold-glow text-dash-gold border border-dash-gold/30"}`}>
                     <FileTextIcon className="h-5 w-5" />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-sand-900 dark:text-cockpit-heading">{file.name}</p>
-                    <p className={`text-xs ${importSecondaryTextClass}`}>
+                    <p className="truncate text-sm font-semibold text-dash-text">{file.name}</p>
+                    <p className={`text-xs ${dashSecondaryTextClass}`}>
                       {(fileType ?? extensionForFileName(file.name).slice(1)).toUpperCase()} · {formatFileSize(file.size)}
                     </p>
                   </div>
@@ -429,7 +436,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                 <button
                   type="button"
                   onClick={removeFile}
-                  className="shrink-0 rounded-full p-2 text-sand-400 hover:bg-sand-100 hover:text-sand-700 dark:hover:bg-white/10"
+                  className="shrink-0 rounded-full p-2 text-dash-text-faint hover:bg-dash-panel-soft hover:text-dash-text"
                   aria-label="Datei entfernen"
                 >
                   <XIcon className="h-4 w-4" />
@@ -438,14 +445,14 @@ export function ImportWizard({ companyId }: { companyId: string }) {
             )}
 
             {previewLoading && (
-              <p className={`flex items-center gap-2 text-sm ${importSecondaryTextClass}`}>
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink-300 border-t-ink-600 dark:border-white/20 dark:border-t-cockpit-accent-light" />
+              <p className={`flex items-center gap-2 text-sm ${dashSecondaryTextClass}`}>
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-dash-gold/30 border-t-dash-gold" />
                 Vorschau wird geladen…
               </p>
             )}
 
             {fileError && (
-              <p className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+              <p className="flex items-center gap-2 rounded-lg bg-dash-red-tint px-3 py-2 text-sm text-dash-red">
                 <AlertTriangleIcon className="h-4 w-4 shrink-0" />
                 {fileError}
               </p>
@@ -453,7 +460,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
             {preview && preview.sheetNames.length > 1 && (
               <div>
-                <label className={labelClass} htmlFor="sheet-select">
+                <label className={dashLabelClass} htmlFor="sheet-select">
                   Tabellenblatt
                 </label>
                 <select
@@ -473,7 +480,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
             )}
 
             <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(1)} className={`!py-3 ${secondaryButtonClass}`}>
+              <button type="button" onClick={() => setStep(1)} className={`!py-3 ${dashSecondaryButtonClass}`}>
                 <ArrowLeftIcon className="mr-1.5 h-4 w-4" />
                 Zurück
               </button>
@@ -481,7 +488,7 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                 type="button"
                 disabled={!canGoToStep3}
                 onClick={() => setStep(3)}
-                className={`flex-1 !py-3 ${primaryButtonClass}`}
+                className={`flex-1 !py-3 ${dashPrimaryButtonClass}`}
               >
                 Weiter
               </button>
@@ -491,18 +498,18 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
         {step === 3 && preview && (
           <div className="space-y-5">
-            <h2 className="font-display text-lg font-semibold text-sand-900">Vorschau</h2>
-            <p className={`text-sm leading-relaxed ${importSecondaryTextClass}`}>
+            <h2 className="text-lg font-semibold text-dash-text">Vorschau</h2>
+            <p className={`text-sm leading-relaxed ${dashSecondaryTextClass}`}>
               Erste {Math.min(preview.rows.length - 1, 9)} Datenzeilen von {preview.rowCount} · {preview.columnCount} Spalten.
               Dies ist eine rein technische Vorschau der vorhandenen Werte, noch keine Zuordnung zu Effivo-Kennzahlen.
             </p>
             <PreviewTable preview={preview} />
             <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(2)} className={`!py-3 ${secondaryButtonClass}`}>
+              <button type="button" onClick={() => setStep(2)} className={`!py-3 ${dashSecondaryButtonClass}`}>
                 <ArrowLeftIcon className="mr-1.5 h-4 w-4" />
                 Zurück
               </button>
-              <button type="button" onClick={() => setStep(4)} className={`flex-1 !py-3 ${primaryButtonClass}`}>
+              <button type="button" onClick={() => setStep(4)} className={`flex-1 !py-3 ${dashPrimaryButtonClass}`}>
                 Weiter
               </button>
             </div>
@@ -511,39 +518,39 @@ export function ImportWizard({ companyId }: { companyId: string }) {
 
         {step === 4 && file && (
           <div className="space-y-5">
-            <h2 className="font-display text-lg font-semibold text-sand-900">Bestätigen</h2>
+            <h2 className="text-lg font-semibold text-dash-text">Bestätigen</h2>
 
-            <dl className={`space-y-3 !p-5 text-sm ${importPanelClass}`}>
+            <dl className={`space-y-3 !p-5 text-sm ${dashCardClass}`}>
               <div className="flex justify-between gap-3">
-                <dt className={importSecondaryTextClass}>Zeitraum</dt>
-                <dd className="font-semibold text-sand-900 dark:text-cockpit-heading">
+                <dt className={dashSecondaryTextClass}>Zeitraum</dt>
+                <dd className="font-semibold text-dash-text">
                   {MONTH_LABELS_DE[periodMonth - 1]} {periodYear}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className={importSecondaryTextClass}>Kategorie</dt>
-                <dd className="font-semibold text-sand-900 dark:text-cockpit-heading">{DATA_IMPORT_CATEGORY_LABELS[category]}</dd>
+                <dt className={dashSecondaryTextClass}>Kategorie</dt>
+                <dd className="font-semibold text-dash-text">{DATA_IMPORT_CATEGORY_LABELS[category]}</dd>
               </div>
               {sourceSystem && (
                 <div className="flex justify-between gap-3">
-                  <dt className={importSecondaryTextClass}>Quellsystem</dt>
-                  <dd className="font-semibold text-sand-900 dark:text-cockpit-heading">{sourceSystem}</dd>
+                  <dt className={dashSecondaryTextClass}>Quellsystem</dt>
+                  <dd className="font-semibold text-dash-text">{sourceSystem}</dd>
                 </div>
               )}
               <div className="flex justify-between gap-3">
-                <dt className={importSecondaryTextClass}>Datei</dt>
-                <dd className="truncate font-semibold text-sand-900 dark:text-cockpit-heading">{file.name}</dd>
+                <dt className={dashSecondaryTextClass}>Datei</dt>
+                <dd className="truncate font-semibold text-dash-text">{file.name}</dd>
               </div>
               {selectedSheetName && (
                 <div className="flex justify-between gap-3">
-                  <dt className={importSecondaryTextClass}>Tabellenblatt</dt>
-                  <dd className="font-semibold text-sand-900 dark:text-cockpit-heading">{selectedSheetName}</dd>
+                  <dt className={dashSecondaryTextClass}>Tabellenblatt</dt>
+                  <dd className="font-semibold text-dash-text">{selectedSheetName}</dd>
                 </div>
               )}
             </dl>
 
             {state.status === "duplicate" && (
-              <div className="space-y-3 rounded-xl bg-gold-100 px-4 py-3.5 text-sm text-gold-700">
+              <div className="space-y-3 rounded-xl bg-dash-gold-glow px-4 py-3.5 text-sm text-dash-gold">
                 <p className="flex items-center gap-2 font-medium">
                   <AlertTriangleIcon className="h-4 w-4 shrink-0" />
                   {state.message}
@@ -559,25 +566,25 @@ export function ImportWizard({ companyId }: { companyId: string }) {
                     if (confirmDuplicateInputRef.current) confirmDuplicateInputRef.current.value = "1";
                     formRef.current?.requestSubmit();
                   }}
-                  className={secondaryButtonClass}
+                  className={dashSecondaryButtonClass}
                 >
                   Trotzdem importieren
                 </button>
               </div>
             )}
             {state.status === "error" && (
-              <p className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+              <p className="flex items-center gap-2 rounded-lg bg-dash-red-tint px-3 py-2 text-sm text-dash-red">
                 <AlertTriangleIcon className="h-4 w-4 shrink-0" />
                 {state.message}
               </p>
             )}
 
             <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(3)} className={`!py-3 ${secondaryButtonClass}`}>
+              <button type="button" onClick={() => setStep(3)} className={`!py-3 ${dashSecondaryButtonClass}`}>
                 <ArrowLeftIcon className="mr-1.5 h-4 w-4" />
                 Zurück
               </button>
-              <button type="submit" disabled={isPending} className={`flex-1 !py-3 ${primaryButtonClass}`}>
+              <button type="submit" disabled={isPending} className={`flex-1 !py-3 ${dashPrimaryButtonClass}`}>
                 {isPending ? (
                   "Wird gespeichert…"
                 ) : (

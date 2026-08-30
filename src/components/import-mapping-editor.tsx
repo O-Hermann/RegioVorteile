@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { saveDataImportMapping, confirmAndProcessDataImport } from "@/actions/data-import-mapping";
 import { IGNORE_FIELD_KEY, IMPORT_FIELD_DATA_TYPE_LABELS, type ImportFieldDataType } from "@/lib/import-fields";
-import { importPanelClass, importSecondaryTextClass, importIconBadgeClass } from "@/lib/import-ui";
-import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+import { dashCardClass, dashSecondaryTextClass, dashPrimaryButtonClass, dashSecondaryButtonClass } from "@/components/dashboard/dash-ui";
 import { CheckCircleIcon, AlertTriangleIcon, ArrowLeftIcon, TargetIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
 
@@ -121,64 +120,64 @@ export function ImportMappingEditor({
       <PageNav backHref={detailHref} backLabel="Zurück zum Datenimport" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-sand-900">Spalten zuordnen</h1>
-          <p className={`mt-2 max-w-2xl ${importSecondaryTextClass}`}>
+          <h1 className="text-3xl font-semibold text-dash-text">Spalten zuordnen</h1>
+          <p className={`mt-2 max-w-2xl ${dashSecondaryTextClass}`}>
             Ordnen Sie die Spalten Ihrer Datei den passenden Effivo-Feldern zu. Diese Zuordnung bestimmt, wie die Daten
             anschließend verarbeitet werden.
           </p>
         </div>
-        <Link href={detailHref} className={secondaryButtonClass}>
+        <Link href={detailHref} className={dashSecondaryButtonClass}>
           <ArrowLeftIcon className="mr-1.5 h-4 w-4" />
           Zurück
         </Link>
       </div>
 
-      <div className={`flex flex-wrap items-center gap-x-6 gap-y-1.5 !p-4 text-sm ${importPanelClass}`}>
+      <div className={`flex flex-wrap items-center gap-x-6 gap-y-1.5 !p-4 text-sm ${dashCardClass}`}>
         <span>
-          <span className={importSecondaryTextClass}>Datei: </span>
-          <span className="font-medium text-sand-900 dark:text-cockpit-heading">{fileName}</span>
+          <span className={dashSecondaryTextClass}>Datei: </span>
+          <span className="font-medium text-dash-text">{fileName}</span>
         </span>
         <span>
-          <span className={importSecondaryTextClass}>Zeitraum: </span>
-          <span className="font-medium text-sand-900 dark:text-cockpit-heading">{periodLabel}</span>
+          <span className={dashSecondaryTextClass}>Zeitraum: </span>
+          <span className="font-medium text-dash-text">{periodLabel}</span>
         </span>
         <span>
-          <span className={importSecondaryTextClass}>Kategorie: </span>
-          <span className="font-medium text-sand-900 dark:text-cockpit-heading">{categoryLabel}</span>
+          <span className={dashSecondaryTextClass}>Kategorie: </span>
+          <span className="font-medium text-dash-text">{categoryLabel}</span>
         </span>
       </div>
 
       {!canEdit && (
-        <p className="flex items-center gap-2 rounded-lg bg-sand-100 px-3 py-2.5 text-sm text-sand-700 dark:bg-white/5 dark:text-cockpit-text-secondary">
+        <p className="flex items-center gap-2 rounded-lg bg-dash-panel-soft px-3 py-2.5 text-sm text-dash-text-secondary">
           Sie haben Leserechte für diesen Datenimport. Nur Inhaber, Unternehmensadmins und Buchhaltung können die Zuordnung ändern.
         </p>
       )}
 
       {initialErrorMessage && (
-        <p className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+        <p className="flex items-center gap-2 rounded-lg bg-dash-red-tint px-3 py-2.5 text-sm text-dash-red">
           <AlertTriangleIcon className="h-4 w-4 shrink-0" />
           {initialErrorMessage}
         </p>
       )}
 
-      <div className={`!p-4 ${importPanelClass}`}>
+      <div className={`!p-4 ${dashCardClass}`}>
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <p className="font-semibold text-sand-900 dark:text-cockpit-heading">
+          <p className="font-semibold text-dash-text">
             {mappedCount} von {total} Spalten zugeordnet
           </p>
-          <p className={importSecondaryTextClass}>
+          <p className={dashSecondaryTextClass}>
             {mappedCount} zugeordnet · {ignoredCount} ignoriert · {openCount} noch offen
           </p>
         </div>
-        <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-sand-100 dark:bg-white/10">
+        <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-dash-panel-soft">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-ink-500 to-ink-700 transition-all duration-300 dark:from-cockpit-accent-light dark:to-cockpit-accent-dark"
+            className="h-full rounded-full bg-gradient-to-r from-dash-gold-deep to-dash-gold transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
       </div>
 
-      <div className={`!p-0 ${importPanelClass}`}>
+      <div className={`!p-0 ${dashCardClass}`}>
         {columns.map((col, i) => {
           const state = mapping[col.index];
           const hasActiveTarget = !!state?.targetField && state.targetField !== IGNORE_FIELD_KEY;
@@ -192,19 +191,19 @@ export function ImportMappingEditor({
             <div
               key={col.index}
               className={`grid grid-cols-1 items-center gap-3 px-4 py-3.5 md:grid-cols-[minmax(0,1.4fr)_110px_minmax(0,1.4fr)] md:gap-4 ${
-                i > 0 ? "border-t border-card-border/70 dark:border-white/5" : ""
+                i > 0 ? "border-t border-dash-line" : ""
               }`}
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-sand-900 dark:text-cockpit-heading" title={col.header}>
+                <p className="truncate text-sm font-semibold text-dash-text" title={col.header}>
                   {col.header || `Spalte ${col.index + 1}`}
                 </p>
-                <p className={`truncate text-xs ${importSecondaryTextClass}`}>
+                <p className={`truncate text-xs ${dashSecondaryTextClass}`}>
                   {col.samples.length > 0 ? col.samples.join(" · ") : "keine Beispielwerte"}
                 </p>
               </div>
               <div>
-                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${importIconBadgeClass}`}>
+                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${"bg-dash-gold-glow text-dash-gold border border-dash-gold/30"}`}>
                   {IMPORT_FIELD_DATA_TYPE_LABELS[col.detectedType]}
                 </span>
               </div>
@@ -213,7 +212,7 @@ export function ImportMappingEditor({
                   value={state?.targetField ?? ""}
                   disabled={!canEdit}
                   onChange={(e) => updateColumn(col.index, e.target.value)}
-                  className="w-full rounded-lg border border-card-border bg-card px-3 py-2.5 text-sm text-sand-900 transition-colors focus:border-ink-500 focus:outline-none focus:ring-2 focus:ring-ink-500 disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-cockpit-text"
+                  className="w-full rounded-lg border border-dash-line bg-dash-panel px-3 py-2.5 text-sm text-dash-text transition-colors focus:border-dash-gold/50 focus:outline-none focus:ring-2 focus:ring-dash-gold/40 disabled:opacity-60"
                 >
                   <option value="">– bitte auswählen –</option>
                   {fieldGroups.map((g) => (
@@ -227,7 +226,7 @@ export function ImportMappingEditor({
                   ))}
                   <option value={IGNORE_FIELD_KEY}>Spalte ignorieren</option>
                 </select>
-                {originLabel && <p className="mt-1 text-xs font-medium text-ink-600 dark:text-cockpit-accent-light">{originLabel}</p>}
+                {originLabel && <p className="mt-1 text-xs font-medium text-dash-gold">{originLabel}</p>}
               </div>
             </div>
           );
@@ -235,7 +234,7 @@ export function ImportMappingEditor({
       </div>
 
       {processError && (
-        <div className="space-y-2 rounded-xl bg-rose-50 px-4 py-3.5 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="space-y-2 rounded-xl bg-dash-red-tint px-4 py-3.5 text-sm text-dash-red">
           <p className="flex items-center gap-2 font-medium">
             <AlertTriangleIcon className="h-4 w-4 shrink-0" />
             {processError.message}
@@ -254,31 +253,31 @@ export function ImportMappingEditor({
       )}
 
       {canEdit && showSummary && (
-        <div className={`space-y-4 !p-5 ${importPanelClass}`}>
-          <h2 className="font-display text-lg font-semibold text-sand-900 dark:text-cockpit-heading">Zuordnung bereit</h2>
+        <div className={`space-y-4 !p-5 ${dashCardClass}`}>
+          <h2 className="text-lg font-semibold text-dash-text">Zuordnung bereit</h2>
           <dl className="space-y-1.5 text-sm">
             <div className="flex justify-between">
-              <dt className={importSecondaryTextClass}>Spalten erkannt</dt>
-              <dd className="font-medium text-sand-900 dark:text-cockpit-text">{total}</dd>
+              <dt className={dashSecondaryTextClass}>Spalten erkannt</dt>
+              <dd className="font-medium text-dash-text">{total}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className={importSecondaryTextClass}>Spalten zugeordnet</dt>
-              <dd className="font-medium text-sand-900 dark:text-cockpit-text">{mappedCount}</dd>
+              <dt className={dashSecondaryTextClass}>Spalten zugeordnet</dt>
+              <dd className="font-medium text-dash-text">{mappedCount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className={importSecondaryTextClass}>Spalten ignoriert</dt>
-              <dd className="font-medium text-sand-900 dark:text-cockpit-text">{ignoredCount}</dd>
+              <dt className={dashSecondaryTextClass}>Spalten ignoriert</dt>
+              <dd className="font-medium text-dash-text">{ignoredCount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className={importSecondaryTextClass}>Datensätze zur Verarbeitung</dt>
-              <dd className="font-medium text-sand-900 dark:text-cockpit-text">{rowCount}</dd>
+              <dt className={dashSecondaryTextClass}>Datensätze zur Verarbeitung</dt>
+              <dd className="font-medium text-dash-text">{rowCount}</dd>
             </div>
           </dl>
           <div className="flex gap-3">
-            <button type="button" onClick={() => setShowSummary(false)} className={secondaryButtonClass}>
+            <button type="button" onClick={() => setShowSummary(false)} className={dashSecondaryButtonClass}>
               Nochmal prüfen
             </button>
-            <button type="button" disabled={processing} onClick={handleProcess} className={`flex-1 !py-3 ${primaryButtonClass}`}>
+            <button type="button" disabled={processing} onClick={handleProcess} className={`flex-1 !py-3 ${dashPrimaryButtonClass}`}>
               {processing ? (
                 "Wird verarbeitet…"
               ) : (
@@ -294,21 +293,21 @@ export function ImportMappingEditor({
 
       {canEdit && !showSummary && (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" disabled={saving} onClick={handleSave} className={secondaryButtonClass}>
+          <button type="button" disabled={saving} onClick={handleSave} className={dashSecondaryButtonClass}>
             {saving ? "Wird gespeichert…" : "Zuordnung speichern"}
           </button>
           <button
             type="button"
             disabled={!mappingValid}
             onClick={() => setShowSummary(true)}
-            className={`min-w-[240px] flex-1 !py-3 ${primaryButtonClass}`}
+            className={`min-w-[240px] flex-1 !py-3 ${dashPrimaryButtonClass}`}
           >
             <TargetIcon className="mr-1.5 h-4 w-4" />
             Zuordnung prüfen
           </button>
         </div>
       )}
-      {saveMessage && <p className={`text-sm ${importSecondaryTextClass}`}>{saveMessage}</p>}
+      {saveMessage && <p className={`text-sm ${dashSecondaryTextClass}`}>{saveMessage}</p>}
     </div>
   );
 }

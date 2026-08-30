@@ -60,8 +60,8 @@ export function DeleteImportDialog({
         }}
         className={
           variant === "button"
-            ? "inline-flex items-center gap-1.5 rounded-full border border-rose-200 dark:border-import-danger/30 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-import-danger hover:bg-rose-50 dark:hover:bg-import-danger/10 transition-colors"
-            : "flex w-full items-center gap-2.5 px-[15px] py-[13px] text-left text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:text-import-danger dark:hover:bg-[#142a44] transition-colors"
+            ? "inline-flex items-center gap-1.5 rounded-full border border-dash-red/35 px-3 py-1.5 text-xs font-semibold text-dash-red hover:bg-dash-red-tint transition-colors"
+            : "flex w-full items-center gap-2.5 px-[15px] py-[13px] text-left text-sm font-semibold text-dash-red hover:bg-dash-red-tint transition-colors"
         }
       >
         <TrashIcon className="h-3.5 w-3.5" />
@@ -78,43 +78,43 @@ export function DeleteImportDialog({
             aria-modal="true"
             aria-labelledby="delete-import-title"
             onClick={(event) => event.stopPropagation()}
-            className="relative w-full max-w-[570px] rounded-2xl border border-card-border dark:border-import-accent/55 bg-card dark:bg-[linear-gradient(180deg,#071a2d,#07182a)] shadow-warm-lg dark:shadow-[0_24px_70px_rgba(0,0,0,0.5),0_0_35px_rgba(23,200,195,0.08)]"
+            className="relative w-full max-w-[570px] rounded-2xl border border-dash-line bg-dash-panel shadow-[0_24px_70px_rgba(0,0,0,0.5)]"
           >
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Schließen"
-              className="absolute right-4 top-3.5 flex h-8 w-8 items-center justify-center rounded-full text-sand-400 hover:bg-sand-100 hover:text-sand-700 dark:text-import-text-secondary dark:hover:bg-white/5 dark:hover:text-import-text transition-colors"
+              className="absolute right-4 top-3.5 flex h-8 w-8 items-center justify-center rounded-full text-dash-text-faint hover:bg-dash-panel-soft hover:text-dash-text transition-colors"
             >
               <XIcon className="h-5 w-5" />
             </button>
 
             <div className="flex gap-4.5 p-6 pb-5">
-              <span className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-import-danger/12 dark:text-import-danger">
+              <span className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-dash-red-tint text-dash-red">
                 <TrashIcon className="h-6 w-6" />
               </span>
 
               <div className="min-w-0 flex-1">
                 <h2
                   id="delete-import-title"
-                  className="font-display text-xl font-semibold text-sand-900 dark:text-import-text"
+                  className="text-xl font-semibold text-dash-text"
                 >
                   Dateiimport löschen?
                 </h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-sand-600 dark:text-[#aebed0]">
+                <p className="mt-2 text-[15px] leading-relaxed text-dash-text-secondary">
                   Möchten Sie diesen Dateiimport wirklich löschen? Der Eintrag wird aus der Historie entfernt. Diese
                   Aktion kann nicht rückgängig gemacht werden.
                   {isProcessed && " Die daraus abgeleiteten Auswertungsdaten werden dabei ebenfalls entfernt."}
                 </p>
 
-                <dl className="mt-4 grid grid-cols-[1fr_1.6fr] gap-5 rounded-[10px] border border-card-border dark:border-transparent bg-sand-50 dark:bg-[#0a2138] p-4 text-sm">
+                <dl className="mt-4 grid grid-cols-[1fr_1.6fr] gap-5 rounded-[10px] border border-dash-line bg-dash-panel-soft p-4 text-sm">
                   <div>
-                    <dt className="text-sand-500 dark:text-[#7d93ac]">Zeitraum</dt>
-                    <dd className="mt-0.5 font-medium text-sand-900 dark:text-import-text">{period}</dd>
+                    <dt className="text-dash-text-faint">Zeitraum</dt>
+                    <dd className="mt-0.5 font-medium text-dash-text">{period}</dd>
                   </div>
                   <div className="min-w-0">
-                    <dt className="text-sand-500 dark:text-[#7d93ac]">Dateiname</dt>
-                    <dd className="mt-0.5 truncate font-medium text-sand-900 dark:text-import-text" title={fileName}>
+                    <dt className="text-dash-text-faint">Dateiname</dt>
+                    <dd className="mt-0.5 truncate font-medium text-dash-text" title={fileName}>
                       {fileName}
                     </dd>
                   </div>
@@ -124,20 +124,20 @@ export function DeleteImportDialog({
 
             <form
               action={deleteDataImport}
-              className="flex justify-end gap-3.5 border-t border-card-border dark:border-import-border px-6 py-4"
+              className="flex justify-end gap-3.5 border-t border-dash-line px-6 py-4"
             >
               <input type="hidden" name="dataImportId" value={dataImportId} />
               <button
                 ref={cancelRef}
                 type="button"
                 onClick={() => setOpen(false)}
-                className="min-w-[180px] rounded-lg border border-card-border px-5 py-2.5 text-sm font-bold text-sand-800 hover:bg-sand-100 dark:border-[#31506d] dark:bg-[#091a2c] dark:text-import-text dark:hover:bg-[#0d2338] transition-colors"
+                className="min-w-[180px] rounded-lg border border-dash-line bg-dash-panel px-5 py-2.5 text-sm font-bold text-dash-text hover:bg-dash-panel-soft transition-colors"
               >
                 Abbrechen
               </button>
               <button
                 type="submit"
-                className="min-w-[180px] rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-rose-700 active:bg-rose-800 dark:bg-[linear-gradient(180deg,#ef4650,#d93642)] dark:hover:brightness-110 transition-[filter,background-color]"
+                className="min-w-[180px] rounded-lg bg-dash-red px-5 py-2.5 text-sm font-bold text-white hover:brightness-110 transition-[filter,background-color]"
               >
                 Löschen
               </button>

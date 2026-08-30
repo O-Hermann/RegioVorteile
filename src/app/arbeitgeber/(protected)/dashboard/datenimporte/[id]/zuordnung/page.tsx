@@ -13,7 +13,7 @@ import {
   type MappingFieldOption,
   type MappingColumnOrigin,
 } from "@/components/import-mapping-editor";
-import { secondaryButtonClass } from "@/lib/ui";
+import { dashSecondaryButtonClass } from "@/components/dashboard/dash-ui";
 import { PageNav } from "@/components/page-nav";
 import Link from "next/link";
 
@@ -55,10 +55,10 @@ export default async function DatenimportZuordnungPage({ params }: { params: Pro
     return (
       <div className="mx-auto max-w-[720px]">
         <PageNav backHref={detailHref} backLabel="Zurück zum Datenimport" />
-        <p className={`mt-3 flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300`}>
+        <p className="mt-3 flex items-center gap-2 rounded-lg bg-dash-red-tint px-3 py-2.5 text-sm text-dash-red">
           {message}
         </p>
-        <Link href={detailHref} className={`mt-4 inline-flex ${secondaryButtonClass}`}>
+        <Link href={detailHref} className={`mt-4 inline-flex ${dashSecondaryButtonClass}`}>
           Zurück zum Datenimport
         </Link>
       </div>

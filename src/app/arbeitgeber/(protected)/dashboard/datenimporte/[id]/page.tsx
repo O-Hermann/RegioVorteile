@@ -14,14 +14,14 @@ import {
   formatFileSize,
 } from "@/lib/data-import";
 import {
-  importPanelClass,
-  importSecondaryTextClass,
-  importIconBadgeClass,
-  importIconGlowClass,
-  importKebabPanelClass,
-  importKebabTriggerClass,
-} from "@/lib/import-ui";
-import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+  dashCardClass,
+  dashSecondaryTextClass,
+  dashIconGlowClass,
+  dashKebabPanelClass,
+  dashKebabTriggerClass,
+  dashPrimaryButtonClass,
+  dashSecondaryButtonClass,
+} from "@/components/dashboard/dash-ui";
 import { ArrowLeftIcon, TargetIcon, CheckCircleIcon } from "@/components/icons";
 import { PageNav } from "@/components/page-nav";
 import { KebabMenu } from "@/components/kebab-menu";
@@ -77,8 +77,8 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-sand-900">{dataImport.fileName}</h1>
-          <p className={`mt-1 ${importSecondaryTextClass}`}>
+          <h1 className="text-3xl font-semibold text-dash-text">{dataImport.fileName}</h1>
+          <p className={`mt-1 ${dashSecondaryTextClass}`}>
             {periodLabel(dataImport.periodMonth, dataImport.periodYear)} ·{" "}
             {DATA_IMPORT_CATEGORY_LABELS[dataImport.category]}
           </p>
@@ -88,7 +88,7 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
             {DATA_IMPORT_STATUS_LABELS[dataImport.status]}
           </span>
           {canEdit && (
-            <KebabMenu panelClassName={importKebabPanelClass} triggerClassName={importKebabTriggerClass}>
+            <KebabMenu panelClassName={dashKebabPanelClass} triggerClassName={dashKebabTriggerClass}>
               <DeleteImportDialog
                 dataImportId={dataImport.id}
                 fileName={dataImport.fileName}
@@ -100,77 +100,77 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
         </div>
       </div>
 
-      <div className={`mt-6 !p-6 ${importPanelClass}`}>
+      <div className={`mt-6 !p-6 ${dashCardClass}`}>
         <dl className="grid grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Zeitraum</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Zeitraum</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {periodLabel(dataImport.periodMonth, dataImport.periodYear)}
             </dd>
           </div>
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Kategorie</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Kategorie</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {DATA_IMPORT_CATEGORY_LABELS[dataImport.category]}
             </dd>
           </div>
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Quellsystem</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Quellsystem</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {dataImport.sourceSystem ?? "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Dateigröße</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Dateigröße</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {formatFileSize(dataImport.fileSize)}
             </dd>
           </div>
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Hochgeladen von</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{uploaderName}</dd>
+            <dt className="text-dash-text-faint">Hochgeladen von</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">{uploaderName}</dd>
           </div>
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Uploadzeitpunkt</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Uploadzeitpunkt</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {dataImport.createdAt.toLocaleDateString("de-DE")} ·{" "}
               {dataImport.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
             </dd>
           </div>
           {dataImport.selectedSheetName && (
             <div>
-              <dt className="text-sand-500 dark:text-cockpit-text-weak">Tabellenblatt</dt>
-              <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+              <dt className="text-dash-text-faint">Tabellenblatt</dt>
+              <dd className="mt-0.5 font-medium text-dash-text">
                 {dataImport.selectedSheetName}
               </dd>
             </div>
           )}
           <div>
-            <dt className="text-sand-500 dark:text-cockpit-text-weak">Umfang</dt>
-            <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+            <dt className="text-dash-text-faint">Umfang</dt>
+            <dd className="mt-0.5 font-medium text-dash-text">
               {dataImport.rowCount ?? "—"} Zeilen · {dataImport.columnCount ?? "—"} Spalten
             </dd>
           </div>
           {dataImport.status === "PROCESSED" && (
             <>
               <div>
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Verarbeitet am</dt>
-                <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">
+                <dt className="text-dash-text-faint">Verarbeitet am</dt>
+                <dd className="mt-0.5 font-medium text-dash-text">
                   {dataImport.processedAt?.toLocaleDateString("de-DE")} ·{" "}
                   {dataImport.processedAt?.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                 </dd>
               </div>
               <div>
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Verarbeitet von</dt>
-                <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{processorName ?? "—"}</dd>
+                <dt className="text-dash-text-faint">Verarbeitet von</dt>
+                <dd className="mt-0.5 font-medium text-dash-text">{processorName ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Datensätze</dt>
-                <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{dataImport.processedRowCount ?? "—"}</dd>
+                <dt className="text-dash-text-faint">Datensätze</dt>
+                <dd className="mt-0.5 font-medium text-dash-text">{dataImport.processedRowCount ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-sand-500 dark:text-cockpit-text-weak">Zugeordnete Spalten</dt>
-                <dd className="mt-0.5 font-medium text-sand-900 dark:text-cockpit-text">{dataImport.mappedColumnCount ?? "—"}</dd>
+                <dt className="text-dash-text-faint">Zugeordnete Spalten</dt>
+                <dd className="mt-0.5 font-medium text-dash-text">{dataImport.mappedColumnCount ?? "—"}</dd>
               </div>
             </>
           )}
@@ -178,16 +178,16 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
       </div>
 
       <div className="mt-6">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Technische Vorschau</h2>
-        {previewError && <p className={`mt-3 text-sm ${importSecondaryTextClass}`}>{previewError}</p>}
+        <h2 className="text-lg font-semibold text-dash-text">Technische Vorschau</h2>
+        {previewError && <p className={`mt-3 text-sm ${dashSecondaryTextClass}`}>{previewError}</p>}
         {preview && (
-          <div className={`mt-3 overflow-x-auto !p-0 ${importPanelClass}`}>
+          <div className={`mt-3 overflow-x-auto !p-0 ${dashCardClass}`}>
             <table className="w-full min-w-[480px] text-left text-sm">
               {preview.rows[0] && (
-                <thead className="bg-sand-50 dark:bg-white/5">
+                <thead className="bg-dash-panel-soft">
                   <tr>
                     {preview.rows[0].map((cell, i) => (
-                      <th key={i} className="whitespace-nowrap px-3 py-2.5 font-semibold text-sand-700 dark:text-cockpit-text">
+                      <th key={i} className="whitespace-nowrap px-3 py-2.5 font-semibold text-dash-text-secondary">
                         {cell || `Spalte ${i + 1}`}
                       </th>
                     ))}
@@ -196,9 +196,9 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
               )}
               <tbody>
                 {preview.rows.slice(1).map((row, ri) => (
-                  <tr key={ri} className="border-t border-card-border/70 dark:border-white/5">
+                  <tr key={ri} className="border-t border-dash-line">
                     {row.map((cell, ci) => (
-                      <td key={ci} className={`whitespace-nowrap px-3 py-2.5 ${importSecondaryTextClass}`}>
+                      <td key={ci} className={`whitespace-nowrap px-3 py-2.5 ${dashSecondaryTextClass}`}>
                         {cell}
                       </td>
                     ))}
@@ -211,22 +211,22 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
       </div>
 
       {dataImport.status === "PROCESSED" ? (
-        <div className={`mt-6 !p-5 ${importPanelClass}`}>
+        <div className={`mt-6 !p-5 ${dashCardClass}`}>
           <div className="flex items-center gap-3">
-            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${importIconBadgeClass}`}>
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${"bg-dash-gold-glow text-dash-gold border border-dash-gold/30"}`}>
               <CheckCircleIcon className="h-4 w-4" />
             </span>
-            <h2 className="font-display text-lg font-semibold text-sand-900 dark:text-cockpit-heading">Verwendete Zuordnung</h2>
+            <h2 className="text-lg font-semibold text-dash-text">Verwendete Zuordnung</h2>
           </div>
           {usedMapping.length === 0 ? (
-            <p className={`mt-3 text-sm ${importSecondaryTextClass}`}>Keine Spaltenzuordnung hinterlegt.</p>
+            <p className={`mt-3 text-sm ${dashSecondaryTextClass}`}>Keine Spaltenzuordnung hinterlegt.</p>
           ) : (
-            <ul className="mt-4 divide-y divide-card-border/60 dark:divide-white/5">
+            <ul className="mt-4 divide-y divide-dash-line">
               {usedMapping.map((m, i) => (
                 <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <span className={importSecondaryTextClass}>{m.sourceName}</span>
-                  <span className="flex items-center gap-2 font-medium text-sand-900 dark:text-cockpit-text">
-                    <ArrowLeftIcon className="h-3.5 w-3.5 rotate-180 text-sand-300 dark:text-cockpit-text-weak" />
+                  <span className={dashSecondaryTextClass}>{m.sourceName}</span>
+                  <span className="flex items-center gap-2 font-medium text-dash-text">
+                    <ArrowLeftIcon className="h-3.5 w-3.5 rotate-180 text-dash-text-faint" />
                     {m.targetLabel}
                   </span>
                 </li>
@@ -236,28 +236,28 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
         </div>
       ) : (
         (dataImport.status === "READY_FOR_MAPPING" || dataImport.status === "VALIDATION_FAILED" || dataImport.status === "FAILED") && (
-          <div className={`relative mt-6 overflow-hidden !p-6 ${importPanelClass}`}>
+          <div className={`relative mt-6 overflow-hidden !p-6 ${dashCardClass}`}>
             <div
               aria-hidden
-              className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cockpit-accent-light/10 blur-3xl opacity-0 dark:opacity-100"
+              className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-dash-gold/[0.08] blur-3xl"
             />
             <div className="relative flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${importIconGlowClass}`}>
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${dashIconGlowClass}`}>
                   <TargetIcon className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="font-display text-base font-semibold text-sand-900 dark:text-cockpit-heading">
+                  <p className="text-base font-semibold text-dash-text">
                     {canEdit ? "Bereit für die Spaltenzuordnung" : "Spaltenzuordnung ausstehend"}
                   </p>
-                  <p className={`mt-0.5 max-w-md text-sm ${importSecondaryTextClass}`}>
+                  <p className={`mt-0.5 max-w-md text-sm ${dashSecondaryTextClass}`}>
                     {canEdit
                       ? "Ordnen Sie die Spalten dieser Datei den passenden Effivo-Feldern zu, um den Import zu verarbeiten."
                       : "Ein Inhaber, Unternehmensadmin oder die Buchhaltung kann diesen Import zuordnen und verarbeiten."}
                   </p>
                 </div>
               </div>
-              <Link href={zuordnungHref} className={`shrink-0 !px-6 !py-3 ${primaryButtonClass}`}>
+              <Link href={zuordnungHref} className={`shrink-0 !px-6 !py-3 ${dashPrimaryButtonClass}`}>
                 <TargetIcon className="mr-1.5 h-4 w-4" />
                 {canEdit ? "Spalten zuordnen" : "Zuordnung ansehen"}
               </Link>
@@ -266,7 +266,7 @@ export default async function DatenimportDetailPage({ params }: { params: Promis
         )
       )}
 
-      <Link href="/arbeitgeber/dashboard/datenimporte" className={`mt-6 inline-flex ${secondaryButtonClass}`}>
+      <Link href="/arbeitgeber/dashboard/datenimporte" className={`mt-6 inline-flex ${dashSecondaryButtonClass}`}>
         Zurück zur Importhistorie
       </Link>
     </div>
