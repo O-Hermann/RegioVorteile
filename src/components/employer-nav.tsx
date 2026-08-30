@@ -30,7 +30,7 @@ function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; ac
   if (!item.href) {
     return (
       <span
-        className={`${mobile ? "whitespace-nowrap" : ""} inline-flex items-center gap-1 px-3 py-2 text-sand-400 dark:text-cockpit-text-weak cursor-default`}
+        className={`${mobile ? "whitespace-nowrap" : ""} inline-flex items-center gap-1 px-3 py-2 text-dash-text-faint cursor-default`}
         title="Noch nicht verfügbar"
       >
         {item.label}
@@ -41,10 +41,10 @@ function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; ac
   return (
     <Link
       href={item.href}
-      className={`${mobile ? "whitespace-nowrap " : ""}rounded-full px-4 py-2 transition-all duration-200 ${
+      className={`${mobile ? "whitespace-nowrap " : ""}rounded-lg px-4 py-2 transition-all duration-200 ${
         active
-          ? "bg-gradient-to-r from-ink-50 to-ink-100/60 text-ink-700 dark:from-cockpit-accent-subtle dark:to-cockpit-accent-subtle/40 dark:text-cockpit-accent-light border border-ink-200 dark:border-cockpit-accent-light/30 shadow-[0_0_14px_-4px_rgba(8,122,120,0.35)] dark:shadow-[0_0_16px_-3px_rgba(30,151,148,0.4)]"
-          : "border border-transparent text-sand-700 hover:text-sand-900 hover:bg-sand-100 dark:text-cockpit-text-secondary dark:hover:text-cockpit-heading dark:hover:bg-white/5"
+          ? "bg-dash-panel-soft text-dash-gold border border-dash-gold/50 shadow-[inset_0_0_0_1px_rgba(226,188,107,0.12)]"
+          : "border border-transparent text-dash-text-secondary hover:text-dash-text hover:bg-dash-panel-soft"
       }`}
     >
       {item.label}
@@ -62,7 +62,7 @@ export function EmployerNav({ mobile }: { mobile?: boolean }) {
           key={item.label}
           item={item}
           mobile={mobile}
-          active={!!item.href && pathname.startsWith(item.href)}
+          active={!!item.href && (item.href === "/arbeitgeber/dashboard" ? pathname === item.href : pathname.startsWith(item.href))}
         />
       ))}
     </>

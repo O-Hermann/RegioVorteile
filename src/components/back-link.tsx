@@ -10,7 +10,7 @@ export function BackLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-1.5 rounded-full border border-card-border dark:border-white/15 bg-card dark:bg-white/5 px-3.5 py-2 text-sm font-semibold text-sand-800 shadow-warm-sm transition-colors duration-150 hover:border-ink-400 hover:bg-sand-50 hover:text-ink-700 dark:text-cockpit-text dark:hover:border-cockpit-accent-light/50 dark:hover:bg-white/10 dark:hover:text-cockpit-accent-light"
+      className="group inline-flex items-center gap-1.5 rounded-full border border-dash-line bg-dash-panel px-3.5 py-2 text-sm font-semibold text-dash-text transition-colors duration-150 hover:border-dash-gold/40 hover:bg-dash-panel-soft hover:text-dash-gold"
     >
       <ArrowLeftIcon className="h-3.5 w-3.5 transition-transform duration-150 group-hover:-translate-x-0.5" />
       {label}

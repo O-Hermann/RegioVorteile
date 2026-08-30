@@ -21,16 +21,20 @@ export const CASE_STATUS_LABELS: Record<CaseStatus, string> = {
   CLOSED: "Abgeschlossen",
 };
 
+// Goldstandard-Rollout Phase 2 (2026-08-30): dieselben vier Statusfarben wie
+// im Uebersicht-Pruefuebersicht-Donut (review-donut.tsx STATUS_LEGEND) -
+// Neu=Gold, In Pruefung=Blau, Geprueft=Gruen, Abgeschlossen=Grau, damit ein
+// Status auf beiden Seiten gleich aussieht.
 export function caseStatusBadgeClass(status: CaseStatus): string {
   switch (status) {
     case "NEW":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
+      return "bg-dash-status-new/15 text-dash-status-new";
     case "IN_REVIEW":
-      return "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300";
+      return "bg-dash-status-active/15 text-dash-status-active";
     case "REVIEWED":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
+      return "bg-dash-status-reviewed/15 text-dash-status-reviewed";
     case "CLOSED":
-      return "bg-sand-200 text-sand-700 dark:bg-white/5 dark:text-cockpit-text-weak";
+      return "bg-dash-status-done/15 text-dash-status-done";
   }
 }
 

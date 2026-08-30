@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { updateCaseStatus } from "@/actions/case-review";
 import { CASE_STATUS_TRANSITIONS } from "@/lib/case-labels";
 import type { CaseStatus } from "@/generated/prisma/client";
-import { secondaryButtonClass } from "@/lib/ui";
+import { dashSecondaryButtonClass } from "@/components/dashboard/dash-ui";
 
 // MVP-Roadmap Phase 2.2 (siehe [[effivo_mvp_roadmap]]): einzige interaktive
 // Komponente der Fallpruefungs-Arbeitsliste - der Rest der Seite bleibt eine
@@ -45,14 +45,14 @@ export function CaseStatusActions({ caseId, status }: { caseId: string; status: 
           onClick={() => handleClick(next)}
           className={
             i === 0
-              ? "inline-flex items-center justify-center rounded-full bg-ink-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-warm hover:bg-ink-700 active:bg-ink-800 transition-all disabled:opacity-50"
-              : `${secondaryButtonClass} !px-3.5 !py-1.5 !text-xs`
+              ? "inline-flex items-center justify-center rounded-full bg-gradient-to-br from-dash-gold-deep to-dash-gold px-3.5 py-1.5 text-xs font-semibold text-dash-panel transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+              : `${dashSecondaryButtonClass} !rounded-full !px-3.5 !py-1.5 !text-xs`
           }
         >
           {isPending ? "…" : TRANSITION_BUTTON_LABELS[next]}
         </button>
       ))}
-      {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
+      {error && <span className="text-xs text-dash-red">{error}</span>}
     </div>
   );
 }

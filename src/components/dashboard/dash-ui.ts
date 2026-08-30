@@ -1,21 +1,26 @@
 import { Inter } from "next/font/google";
 
-// Gemeinsame Bausteine ausschliesslich fuer die Effivo-Übersicht (Dashboard-
-// Startseite). Design-System 2026-08-30 ("Goldstandard"): ersetzt die
-// bisherige Teal/Libre-Franklin-Optik aus dem V12-Port (siehe
+// Gemeinsame Bausteine fuer das Goldstandard-Design-System. Ursprung
+// 2026-08-30: zunaechst ausschliesslich fuer die Effivo-Übersicht
+// (Dashboard-Startseite) entwickelt, ersetzte dort die bisherige Teal/
+// Libre-Franklin-Optik aus dem V12-Port (siehe
 // [[controlling_cockpit_v12_dashboard_port]]) - der Nutzer wollte explizit
 // eine komplett neue, eigenstaendige Design-Sprache statt der bisherigen
 // Teal-Uebernahme oder der schlichteren App-Standard-Optik. Entstanden aus
 // mehreren Iterationsrunden an einem eigenstaendigen HTML-Mockup (als
-// Artifact "Effivo Goldstandard" freigegeben), hier 1:1 in den echten Code
-// uebernommen - siehe [[effivo_mvp_roadmap]] fuer den vollen Verlauf der
-// Design-Entscheidungen (Farben, Typografie, Hover-Zustaende, Animationen).
+// Artifact "Effivo Goldstandard" freigegeben) - siehe [[effivo_mvp_roadmap]]
+// fuer den vollen Verlauf der Design-Entscheidungen (Farben, Typografie,
+// Hover-Zustaende, Animationen).
 //
-// Bewusst weiterhin NUR fuer diese Seite (dash-scope), nicht app-weit - die
-// geteilte Navigation (layout.tsx) bleibt unveraendert im bestehenden
-// App-Standard-Look, das Ausrollen auf andere Seiten (Datenimporte, Kunden,
-// Faelle, Benutzer) ist als eigene, spaetere Phase geplant, nicht Teil
-// dieses Portierungsschritts.
+// Phase 2 (2026-08-30): app-weiter Rollout auf die geteilte Navigation
+// (layout.tsx/employer-nav.tsx) sowie Datenimporte/Kunden/Auftraege/Faelle/
+// Benutzer - alles innerhalb der Arbeitgeber-App (/arbeitgeber/...), NICHT
+// Admin/Mitarbeiter/die oeffentliche Startseite (jeweils eigene
+// Design-Systeme, siehe globals.css). Die generischen Listen-/Formular-
+// Bausteine dafuer (dashInputClass, dashPrimaryButtonClass, ...) stehen
+// weiter unten in diesem File, als Goldstandard-Pendant zu lib/ui.ts und
+// lib/import-ui.ts - bewusst NICHT durch Aendern jener beiden Dateien
+// erreicht, da beide auch von Admin-Seiten genutzt werden.
 
 // Inter statt Libre Franklin/Public Sans - explizite Vorgabe aus der
 // Design-Spezifikation, die der Nutzer als Ausgangspunkt vorgegeben hat
@@ -87,3 +92,46 @@ export const dashTextSecondarySm = "text-[11px]"; // kleinste Labels/Eyebrows
 export const dashDonutSizeClass = "h-[136px] w-[136px]"; // Durchmesser Pruefuebersicht-Donut
 export const dashDonutInsetClass = "inset-[20px]"; // Ringbreite des Donuts
 export const dashDonutColClass = "grid-cols-[136px_1fr]"; // Spaltenbreite fuer den Donut-Bereich
+
+// ---------------------------------------------------------------------------
+// App-weiter Rollout (Phase 2, 2026-08-30, siehe [[effivo_mvp_roadmap]]):
+// generische Bausteine fuer die "Listen/Formular"-Seiten (Datenimporte,
+// Kunden, Auftraege, Faelle, Benutzer, geteiltes Nav/Header) - Pendant zu
+// lib/ui.ts + lib/import-ui.ts, aber im Goldstandard-Farbsystem. Bewusst
+// NICHT ui.ts/import-ui.ts selbst umgestellt: beide werden auch von den
+// Admin-Datenimporte-Seiten genutzt (siehe Kommentar in import-ui.ts ueber
+// einen frueheren Vorfall, als eine Aenderung dort versehentlich Kunden/
+// Auftraege/Admin mitveraendert hat) - Admin ist nicht Teil dieses Rollouts.
+// Neue, eigene Exporte hier vermeiden dieses Risiko vollstaendig.
+export const dashInputClass =
+  "w-full rounded-lg border border-dash-line bg-dash-panel px-3 py-2 text-[14px] text-dash-text placeholder:text-dash-text-faint focus:outline-none focus:ring-2 focus:ring-dash-gold/40 focus:border-dash-gold/60 transition-colors";
+
+export const dashLabelClass = "block text-[13px] font-medium text-dash-text-secondary mb-1";
+
+export const dashPrimaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-dash-gold-deep to-dash-gold px-5 py-2.5 text-[14px] font-semibold text-dash-panel transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(226,188,107,0.14)] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none";
+
+export const dashSecondaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-xl border border-dash-line bg-dash-panel px-5 py-2.5 text-[14px] font-semibold text-dash-text hover:border-dash-gold/40 hover:bg-dash-panel-soft transition-colors disabled:opacity-50";
+
+export const dashDangerButtonClass =
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-dash-red/35 bg-dash-red-tint px-4 py-2 text-[13px] font-semibold text-dash-red hover:bg-dash-red/25 hover:border-dash-red/55 transition-colors disabled:opacity-50";
+
+// Gradient-Icon-Badge fuer Panel-/Listen-Kopfzeilen (Pendant zu
+// importIconGlowClass) - dasselbe Gold-Gradient wie die primaere
+// Schnellaktion-Kachel im Dashboard.
+export const dashIconGlowClass = "bg-gradient-to-br from-dash-gold-deep to-dash-gold text-dash-panel shadow-[0_0_20px_-5px_rgba(226,188,107,0.5)]";
+
+export const dashKebabPanelClass =
+  "absolute right-0 top-[calc(100%+8px)] z-30 w-[185px] overflow-hidden rounded-xl border border-dash-line bg-dash-panel shadow-[0_18px_42px_rgba(0,0,0,0.34)]";
+
+export const dashKebabTriggerClass =
+  "flex h-[34px] w-[34px] items-center justify-center rounded-full border border-dash-line bg-dash-panel-soft text-dash-text-secondary transition-colors hover:border-dash-gold/50 hover:text-dash-gold";
+
+// Zebra-Streifen fuer Listenzeilen - dasselbe Muster wie in findings-list.tsx/
+// activity-timeline.tsx auf der Uebersicht-Seite (bg-dash-panel-soft auf
+// geraden Zeilen), hier als kleine Hilfsfunktion statt Inline-Ternary an
+// jeder Aufrufstelle.
+export function dashZebraRowClass(index: number) {
+  return index % 2 === 0 ? "bg-dash-panel-soft" : "";
+}

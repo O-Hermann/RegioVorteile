@@ -2,7 +2,14 @@ import { headers } from "next/headers";
 import { requireCompanyMember } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { inviteCompanyMember, changeMembershipRole, removeMembership, resendCompanyInvite } from "@/actions/company";
-import { cardClass, primaryButtonClass, dangerButtonClass, secondaryButtonClass, labelClass, inputClass } from "@/lib/ui";
+import {
+  dashCardClass,
+  dashPrimaryButtonClass,
+  dashDangerButtonClass,
+  dashSecondaryButtonClass,
+  dashLabelClass,
+  dashInputClass,
+} from "@/components/dashboard/dash-ui";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import {
   COMPANY_ROLE_LABELS,
@@ -40,22 +47,22 @@ export default async function UnternehmensBenutzerPage({
   return (
     <div>
       <PageNav />
-      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Benutzer</h1>
-      <p className="mt-2 text-sand-600">Zugänge und Rollen für {company.name} verwalten.</p>
+      <h1 className="mt-2 text-3xl font-semibold text-dash-text">Benutzer</h1>
+      <p className="mt-2 text-dash-text-secondary">Zugänge und Rollen für {company.name} verwalten.</p>
 
       {newInviteToken && (
-        <div className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mt-4 rounded-lg bg-dash-green-tint px-3 py-2 text-sm text-dash-green">
           <p className="font-medium">Einladung erstellt.</p>
           <p className="mt-1 break-all">
             Einladungslink: {baseUrl}/einladung/{newInviteToken}
           </p>
-          <p className="mt-1 text-xs text-green-600">
+          <p className="mt-1 text-xs opacity-80">
             Kein E-Mail-Versand eingerichtet – Link manuell weitergeben.
           </p>
         </div>
       )}
       {error && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-lg bg-dash-red-tint px-3 py-2 text-sm text-dash-red">
           {INVITE_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}
         </p>
       )}
@@ -69,17 +76,17 @@ export default async function UnternehmensBenutzerPage({
               m.status === "ACTIVE" &&
               memberships.filter((x) => x.role === "OWNER" && x.status === "ACTIVE").length <= 1;
             return (
-              <div key={m.id} className={`${cardClass} flex flex-col gap-3`}>
+              <div key={m.id} className={`${dashCardClass} p-6 flex flex-col gap-3`}>
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sand-900">{name}</p>
+                      <p className="font-semibold text-dash-text">{name}</p>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${membershipStatusBadgeClass(m.status)}`}>
                         {MEMBERSHIP_STATUS_LABELS[m.status]}
                       </span>
                     </div>
-                    <p className="text-sm text-sand-500">{m.user.email}</p>
-                    <p className="mt-1 text-xs text-sand-400">
+                    <p className="text-sm text-dash-text-muted">{m.user.email}</p>
+                    <p className="mt-1 text-xs text-dash-text-faint">
                       {COMPANY_ROLE_LABELS[m.role]} · eingeladen am{" "}
                       {m.invitedAt.toLocaleDateString("de-DE")}
                       {m.activatedAt && ` · aktiviert am ${m.activatedAt.toLocaleDateString("de-DE")}`}
@@ -88,18 +95,18 @@ export default async function UnternehmensBenutzerPage({
                 </div>
 
                 {canManage && (
-                  <div className="flex flex-wrap items-center gap-2 border-t border-card-border pt-3">
+                  <div className="flex flex-wrap items-center gap-2 border-t border-dash-line pt-3">
                     <form action={changeMembershipRole} className="flex items-center gap-2">
                       <input type="hidden" name="membershipId" value={m.id} />
                       <input type="hidden" name="successPath" value={successPath} />
-                      <select name="role" defaultValue={m.role} className={`${inputClass} !w-auto py-2 text-sm`}>
+                      <select name="role" defaultValue={m.role} className={`${dashInputClass} !w-auto py-2 text-sm`}>
                         {roleOptions.map(([value, label]) => (
                           <option key={value} value={value}>
                             {label}
                           </option>
                         ))}
                       </select>
-                      <button type="submit" className={secondaryButtonClass} disabled={isLastActiveOwner && m.role === "OWNER"}>
+                      <button type="submit" className={dashSecondaryButtonClass} disabled={isLastActiveOwner && m.role === "OWNER"}>
                         Rolle ändern
                       </button>
                     </form>
@@ -107,7 +114,7 @@ export default async function UnternehmensBenutzerPage({
                       <form action={resendCompanyInvite}>
                         <input type="hidden" name="membershipId" value={m.id} />
                         <input type="hidden" name="successPath" value={successPath} />
-                        <button type="submit" className={secondaryButtonClass}>
+                        <button type="submit" className={dashSecondaryButtonClass}>
                           Einladung erneuern
                         </button>
                       </form>
@@ -118,7 +125,7 @@ export default async function UnternehmensBenutzerPage({
                         <input type="hidden" name="successPath" value={successPath} />
                         <ConfirmSubmitButton
                           confirmMessage={`${name} wirklich aus ${company.name} entfernen?`}
-                          className={dangerButtonClass}
+                          className={dashDangerButtonClass}
                         >
                           Entfernen
                         </ConfirmSubmitButton>
@@ -132,36 +139,36 @@ export default async function UnternehmensBenutzerPage({
         </div>
 
         {canManage && (
-          <div className={cardClass}>
-            <h2 className="font-display text-lg font-semibold text-sand-900">Benutzer einladen</h2>
+          <div className={`${dashCardClass} p-6`}>
+            <h2 className="text-lg font-semibold text-dash-text">Benutzer einladen</h2>
             <form action={inviteCompanyMember} className="mt-4 space-y-4">
               <input type="hidden" name="companyId" value={company.id} />
               <input type="hidden" name="successPath" value={successPath} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass} htmlFor="firstName">
+                  <label className={dashLabelClass} htmlFor="firstName">
                     Vorname
                   </label>
-                  <input className={inputClass} name="firstName" id="firstName" />
+                  <input className={dashInputClass} name="firstName" id="firstName" />
                 </div>
                 <div>
-                  <label className={labelClass} htmlFor="lastName">
+                  <label className={dashLabelClass} htmlFor="lastName">
                     Nachname
                   </label>
-                  <input className={inputClass} name="lastName" id="lastName" />
+                  <input className={dashInputClass} name="lastName" id="lastName" />
                 </div>
               </div>
               <div>
-                <label className={labelClass} htmlFor="email">
+                <label className={dashLabelClass} htmlFor="email">
                   E-Mail-Adresse
                 </label>
-                <input className={inputClass} type="email" name="email" id="email" required />
+                <input className={dashInputClass} type="email" name="email" id="email" required />
               </div>
               <div>
-                <label className={labelClass} htmlFor="role">
+                <label className={dashLabelClass} htmlFor="role">
                   Unternehmensrolle
                 </label>
-                <select className={inputClass} name="role" id="role" defaultValue="VIEWER" required>
+                <select className={dashInputClass} name="role" id="role" defaultValue="VIEWER" required>
                   {roleOptions.map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
@@ -169,7 +176,7 @@ export default async function UnternehmensBenutzerPage({
                   ))}
                 </select>
               </div>
-              <button type="submit" className={`w-full ${primaryButtonClass}`}>
+              <button type="submit" className={`w-full ${dashPrimaryButtonClass}`}>
                 Einladung erstellen
               </button>
             </form>
