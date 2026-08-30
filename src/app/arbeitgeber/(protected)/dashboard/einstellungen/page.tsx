@@ -1,11 +1,14 @@
 import Link from "next/link";
+import QRCode from "qrcode";
 import { requireCompanyMember } from "@/lib/auth";
 import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
 import { getNotificationPreference, getMappingTemplates, SETTINGS_ERROR_MESSAGES } from "@/lib/settings";
 import { updateCompanyProfile, updateNotificationPreference, changeOwnPassword } from "@/actions/settings";
 import { deleteMappingTemplate } from "@/actions/mapping-templates";
+import { generateTotpSecret, totpAuthUri } from "@/lib/totp";
 import { DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { TwoFactorSetup } from "@/components/two-factor-setup";
 import { PageNav } from "@/components/page-nav";
 import {
   dashCardClass,
@@ -44,7 +47,7 @@ export default async function EinstellungenPage({
 }: {
   searchParams: Promise<{ tab?: string; error?: string; saved?: string; deleted?: string }>;
 }) {
-  const { company, membership } = await requireCompanyMember();
+  const { company, membership, user } = await requireCompanyMember();
   const { tab, error, saved, deleted } = await searchParams;
   const activeTab: SettingsTab = isSettingsTab(tab) ? tab : "firma";
 
@@ -55,6 +58,19 @@ export default async function EinstellungenPage({
     activeTab === "benachrichtigungen" ? getNotificationPreference(company.id) : Promise.resolve(null),
     activeTab === "vorlagen" ? getMappingTemplates(company.id) : Promise.resolve([]),
   ]);
+
+  // Nur bei Bedarf (Konto-Tab) ein frisches Secret + QR-Bild erzeugen - wird
+  // auch bei bereits aktivem 2FA generiert (billig, wird dann von
+  // TwoFactorSetup einfach nicht angezeigt), damit ein spaeteres lokales
+  // Deaktivieren+Neueinrichten ohne Seiten-Reload funktioniert. Erst
+  // confirmTwoFactorSetup() nach einem gueltigen Code schreibt es in die DB
+  // (siehe Kommentar in two-factor-setup.tsx).
+  let totpSetup: { secret: string; qrDataUrl: string } | null = null;
+  if (activeTab === "konto") {
+    const secret = generateTotpSecret();
+    const qrDataUrl = await QRCode.toDataURL(totpAuthUri(user.email, secret), { margin: 1, width: 220 });
+    totpSetup = { secret, qrDataUrl };
+  }
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -304,6 +320,19 @@ export default async function EinstellungenPage({
               </button>
             </div>
           </form>
+
+          <div className="mt-8 border-t border-dash-line pt-6">
+            <h2 className="text-lg font-semibold text-dash-text">Zwei-Faktor-Authentifizierung</h2>
+            <p className={`mt-1 max-w-lg text-sm ${dashSecondaryTextClass}`}>
+              Schützt dein Konto zusätzlich mit einem Code aus einer Authenticator-App, selbst wenn dein Passwort bekannt wird.
+            </p>
+
+            {totpSetup && (
+              <div className="mt-4">
+                <TwoFactorSetup enabled={user.totpEnabled} secret={totpSetup.secret} qrDataUrl={totpSetup.qrDataUrl} />
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

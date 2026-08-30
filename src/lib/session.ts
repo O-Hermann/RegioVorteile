@@ -11,6 +11,15 @@ export type SessionData = {
   // requireCompanyMember()-Aufruf frisch gegen aktive Mitgliedschaften geprueft,
   // ist also nie alleinige Berechtigungsquelle.
   selectedCompanyId?: string;
+  // 2FA (siehe [[effivo_mvp_roadmap]], actions/two-factor.ts): Passwort war
+  // korrekt, aber der TOTP-Code steht noch aus - waehrend dieser Zwischenstufe
+  // ist "userId" bewusst NOCH NICHT gesetzt (kein Zugriff auf geschuetzte
+  // Seiten moeglich, solange nur pendingTwoFactorUserId gesetzt ist).
+  pendingTwoFactorUserId?: string;
+  // Nur vom generischen login() (siehe actions/auth.ts) gesetzt - dort gibt
+  // es (anders als beim Arbeitgeber-Login) eine "Angemeldet bleiben"-Option,
+  // die verifyTwoFactorLogin() beim finalen Session-Save uebernehmen muss.
+  pendingTwoFactorRemember?: boolean;
 };
 
 const sessionOptions: SessionOptions = {

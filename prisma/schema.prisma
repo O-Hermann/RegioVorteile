@@ -140,6 +140,19 @@ model User {
   lastLoginAt  DateTime?
   createdAt    DateTime      @default(now())
 
+  // MVP-Roadmap Phase 7-Erweiterung, 2FA (siehe [[effivo_mvp_roadmap]] und
+  // lib/totp.ts): totpSecret wird beim Start der Einrichtung generiert, aber
+  // erst mit totpEnabled=true "scharf" geschaltet, sobald der Nutzer einen
+  // gueltigen Code aus seiner Authenticator-App bestaetigt hat (verhindert,
+  // dass ein nie verifiziertes/falsch gescanntes Secret jemanden aussperrt).
+  // Secret bewusst PLAIN gespeichert (wie inviteToken/PasswordResetToken.token
+  // - kann nicht gehasht werden, da es zur Laufzeit fuer den TOTP-Vergleich
+  // gebraucht wird), backupCodes dagegen GEHASHT (bcrypt, wie passwordHash -
+  // sind Bearer-Credentials, nie im Klartext in der DB).
+  totpSecret      String?
+  totpEnabled     Boolean  @default(false)
+  totpBackupCodes String[] @default([])
+
   employer             Employer?
   passwordResetTokens  PasswordResetToken[]
   memberships          CompanyMembership[]  @relation("MemberUser")

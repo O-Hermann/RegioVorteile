@@ -44,6 +44,17 @@ export async function loginEmployer(formData: FormData) {
     redirect("/arbeitgeber/login?error=pending");
   }
 
+  // 2FA (siehe [[effivo_mvp_roadmap]], actions/two-factor.ts): Passwort ist
+  // korrekt, aber "userId" wird erst NACH einem gueltigen TOTP-Code gesetzt -
+  // bis dahin nur die Zwischenstufe "pendingTwoFactorUserId", die fuer sich
+  // allein keinen Zugriff auf geschuetzte Seiten gewaehrt.
+  if (user.totpEnabled) {
+    const session = await getSession();
+    session.pendingTwoFactorUserId = user.id;
+    await session.save();
+    redirect("/arbeitgeber/login/2fa");
+  }
+
   const session = await getSession();
   session.userId = user.id;
   session.selectedCompanyId = membership.companyId;
@@ -86,6 +97,18 @@ export async function login(formData: FormData) {
       where: { userId: user.id, status: "ACTIVE", company: { status: "ACTIVE" } },
       orderBy: { activatedAt: "asc" },
     });
+
+    // 2FA (siehe [[effivo_mvp_roadmap]]) - gleiche Zwischenstufe wie
+    // loginEmployer(). "remember" wird zusaetzlich in der (noch
+    // unvollstaendigen) Session gemerkt, damit verifyTwoFactorLogin() beim
+    // finalen Session-Save dieselbe Persistenz-Praeferenz uebernehmen kann.
+    if (user.totpEnabled) {
+      const session = await getSession({ persistent: remember });
+      session.pendingTwoFactorUserId = user.id;
+      session.pendingTwoFactorRemember = remember;
+      await session.save();
+      redirect(`/arbeitgeber/login/2fa${safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""}`);
+    }
 
     const session = await getSession({ persistent: remember });
     session.userId = user.id;
