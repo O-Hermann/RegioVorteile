@@ -502,6 +502,15 @@ model DataImportRecord {
   // Prozentsatz (z.B. 2.00 fuer 2%), siehe discount-detection.ts und
   // discountDeadline oben.
   discountPercent Decimal? @db.Decimal(5, 2)
+  // MVP-Roadmap Phase 3.1 (siehe [[effivo_mvp_roadmap]]): Rohtext einer
+  // "Zahlungsbedingungen"-Spalte (z.B. "2% 10 Tage, netto 30") - deckt
+  // Exporte ab, die Skontosatz/-frist nicht als eigene Spalten fuehren.
+  // Wird in import-process.ts geparst und befuellt discountPercent/
+  // discountDeadline NUR dort, wo diese sonst leer blieben (eine explizit
+  // gemappte Skontosatz-/Skontofrist-Spalte hat immer Vorrang). Rein
+  // informativer Rohwert, keine eigene Erkennungslogik liest dieses Feld
+  // direkt.
+  paymentTermsRaw String?
 
   accountNumber String?
   accountLabel  String?

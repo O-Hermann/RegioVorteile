@@ -29,6 +29,14 @@ import { Prisma } from "@/generated/prisma/client";
 // Companies ohne alle drei gemappten Felder (die grosse Mehrheit zu Beginn,
 // da diese Felder neu sind) haben schlicht null bei mindestens einem Feld -
 // detectMissedDiscounts liefert dann ehrlich 0 Faelle, kein falscher Treffer.
+//
+// MVP-Roadmap Phase 3.1: discountPercent/discountDeadline muessen nicht
+// zwingend aus eigenen Spalten stammen - sie koennen auch aus einer
+// "Zahlungsbedingungen"-Freitext-Spalte (z.B. "2% 10 Tage, netto 30")
+// hergeleitet worden sein, siehe parsePaymentTermsText() in import-fields.ts
+// und applyPaymentTermsFallback() in import-process.ts. Diese Funktion hier
+// bleibt davon unberuehrt - sie liest ausschliesslich die beiden bereits
+// befuellten Spalten, unabhaengig von ihrer Herkunft.
 // "key" ist die stabile Identitaet dieses Falls fuer case-sync.ts (Phase 2) -
 // siehe Kommentar in open-credit-note-detection.ts zur selben Konvention
 // (bevorzugt Referenznummer, sonst Zeilen-Id als Rueckfall).
@@ -53,7 +61,16 @@ export async function detectMissedDiscounts(companyId: string): Promise<MissedDi
       discountPercent: { gt: 0 },
       discountDeadline: { not: null },
       completionDate: { not: null },
-      documentType: { not: "CREDIT_NOTE" },
+      // Bugfix Phase 3.1 (siehe [[effivo_mvp_roadmap]]): "documentType: { not:
+      // 'CREDIT_NOTE' }" schliesst in diesem Prisma-7/Driver-Adapter-Setup
+      // faelschlich auch NULL-Zeilen aus (SQL-Dreiwertlogik statt des
+      // dokumentierten Prisma-Verhaltens) - jede Zeile ohne gemappte
+      // Belegart-Spalte (die grosse Mehrheit, da dieses Feld optional ist)
+      // waere NIE fuer die Skonto-Erkennung beruecksichtigt worden, unabhaengig
+      // davon, ob discountPercent/discountDeadline/completionDate gesetzt
+      // waren. Per E2E-Test entdeckt und bestaetigt. Explizites OR schliesst
+      // NULL korrekt mit ein.
+      OR: [{ documentType: null }, { documentType: { not: "CREDIT_NOTE" } }],
       dataImport: { category: "FINANCE", status: "PROCESSED" },
     },
     select: {

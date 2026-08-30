@@ -53,7 +53,13 @@ export async function detectPossibleOverpayments(companyId: string): Promise<Ove
     where: {
       companyId,
       paidAmount: { not: null },
-      documentType: { not: "CREDIT_NOTE" },
+      // Bugfix Phase 3.1 (siehe [[effivo_mvp_roadmap]] und derselbe Kommentar
+      // in discount-detection.ts): "documentType: { not: 'CREDIT_NOTE' }"
+      // schliesst in diesem Prisma-7/Driver-Adapter-Setup faelschlich auch
+      // NULL-Zeilen aus - jede Zeile ohne gemappte Belegart-Spalte waere NIE
+      // fuer die Ueberzahlungs-Erkennung beruecksichtigt worden. Explizites
+      // OR schliesst NULL korrekt mit ein.
+      OR: [{ documentType: null }, { documentType: { not: "CREDIT_NOTE" } }],
       dataImport: { category: "FINANCE", status: "PROCESSED" },
     },
     select: {

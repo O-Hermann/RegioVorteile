@@ -6,7 +6,7 @@ import type { DataImportCategory } from "@/generated/prisma/client";
 // alles andere (Vorschlagslogik, UI, Speicherung) ist kategorieunabhaengig.
 // Neue Felder/Kategorien lassen sich spaeter rein additiv ergaenzen.
 
-export type ImportFieldDataType = "text" | "number" | "date" | "status" | "documentType";
+export type ImportFieldDataType = "text" | "number" | "date" | "status" | "documentType" | "paymentTerms";
 
 // Generische Spalten von DataImportRecord (siehe schema.prisma), auf die ein
 // Zielfeld schreibt. Innerhalb EINER Kategorie ist jede storageColumn nur
@@ -33,6 +33,7 @@ export type RecordStorageColumn =
   | "amount"
   | "paidAmount"
   | "discountPercent"
+  | "paymentTermsRaw"
   | "accountNumber"
   | "accountLabel"
   | "metricLabel"
@@ -61,6 +62,7 @@ export const IMPORT_FIELD_DATA_TYPE_LABELS: Record<ImportFieldDataType, string> 
   date: "Datum",
   status: "Status",
   documentType: "Belegart",
+  paymentTerms: "Zahlungsbedingungen",
 };
 
 export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefinition[]> = {
@@ -136,6 +138,22 @@ export const IMPORT_FIELD_REGISTRY: Record<DataImportCategory, ImportFieldDefini
       dataType: "date",
       storageColumn: "discountDeadline",
       synonyms: ["Skontofrist", "Skonto bis", "Discount Deadline", "Skontodatum"],
+    },
+    // MVP-Roadmap Phase 3.1 (siehe [[effivo_mvp_roadmap]]): viele DATEV-/
+    // Lexware-nahe Exporte fuehren Skontosatz/-frist nicht als eigene
+    // Spalten, sondern nur als kombinierten Freitext wie "2% 10 Tage, netto
+    // 30" in einer "Zahlungsbedingungen"-Spalte. Diese Spalte deckt genau
+    // diesen Fall ab - siehe parsePaymentTermsText() unten und den
+    // Rueckfall-Mechanismus in import-process.ts (buildProcessedRecords).
+    // Eine explizit gemappte Skontosatz-/Skontofrist-Spalte hat immer
+    // Vorrang vor dem hieraus geparsten Wert.
+    {
+      key: "paymentTerms",
+      label: "Zahlungsbedingungen (Freitext)",
+      group: "Beleg / Rechnung",
+      dataType: "paymentTerms",
+      storageColumn: "paymentTermsRaw",
+      synonyms: ["Zahlungsbedingungen", "Zahlungskonditionen", "Payment Terms", "Zahlbedingungen", "Konditionen", "Zahlungsziel Text"],
     },
     {
       key: "netAmount",
@@ -569,6 +587,31 @@ export function normalizeDateFromString(raw: string): Date | null {
     return d;
   }
   return null;
+}
+
+// MVP-Roadmap Phase 3.1 (siehe [[effivo_mvp_roadmap]]): extrahiert
+// Skontosatz + Skontotage aus einem "Zahlungsbedingungen"-Freitext wie
+// "2% 10 Tage, netto 30" - dem in Deutschland ueblichen Notationsmuster
+// "Skontosatz% Skontotage Tage, netto Zahlungsziel". Bewusst NUR das
+// Muster "Prozentsatz zuerst, dann die naechstgelegene Tage-Angabe" -
+// der Lazy-Match "[^0-9]{0,20}?" zwischen % und der Tage-Zahl stellt
+// sicher, dass die ERSTE (naeher stehende) Tage-Angabe gefunden wird,
+// nicht eine spaeter im Text folgende "netto X Tage"-Angabe. Liefert
+// null bei jeder Mehrdeutigkeit oder unplausiblen Werten (Prozentsatz
+// ausserhalb 0-10%, Tage ausserhalb 1-60) statt zu raten - dieselbe
+// "lieber 0 als falsch"-Philosophie wie bei den anderen vier Detektoren.
+const PAYMENT_TERMS_RE = /(\d{1,2}(?:[.,]\d{1,2})?)\s*%[^0-9]{0,20}?(\d{1,3})\s*tag(?:e|en)?/i;
+
+export type ParsedPaymentTerms = { discountPercent: number; discountDays: number };
+
+export function parsePaymentTermsText(raw: string): ParsedPaymentTerms | null {
+  const match = raw.match(PAYMENT_TERMS_RE);
+  if (!match) return null;
+  const discountPercent = Number(match[1].replace(",", "."));
+  const discountDays = Number(match[2]);
+  if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 10) return null;
+  if (!Number.isFinite(discountDays) || discountDays < 1 || discountDays > 60) return null;
+  return { discountPercent, discountDays };
 }
 
 // Grobe, rein anzeigende Datentyp-Erkennung anhand von Beispielwerten (Punkt

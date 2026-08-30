@@ -10,6 +10,7 @@ import {
   normalizeDateFromString,
   normalizeStatusValue,
   normalizeDocumentTypeValue,
+  parsePaymentTermsText,
   IGNORE_FIELD_KEY,
 } from "@/lib/import-fields";
 
@@ -162,10 +163,38 @@ export function buildProcessedRecords(
         const { documentType, documentTypeRaw } = normalizeDocumentTypeCell(raw);
         fields.documentType = documentType;
         fields.documentTypeRaw = documentTypeRaw;
+      } else if (field.dataType === "paymentTerms") {
+        fields[field.storageColumn] = normalizeTextCell(raw);
       }
     }
+    applyPaymentTermsFallback(fields);
     return { rowNumber, ...fields };
   });
 
   return { records, rowErrors };
+}
+
+// MVP-Roadmap Phase 3.1 (siehe [[effivo_mvp_roadmap]]): befuellt
+// discountPercent/discountDeadline aus dem geparsten "Zahlungsbedingungen"-
+// Freitext, aber NUR dort, wo diese Felder nach der normalen Spalten-
+// Zuordnung noch leer sind - eine explizit gemappte Skontosatz-/
+// Skontofrist-Spalte hat immer Vorrang und wird hier nie ueberschrieben.
+// Die Skontofrist laesst sich nur berechnen, wenn zusaetzlich ein
+// Rechnungsdatum (primaryDate) gemappt ist (Skontotage werden ab
+// Rechnungsdatum gezaehlt) - ohne das bleibt discountDeadline leer, auch
+// wenn der Prozentsatz erfolgreich geparst wurde.
+function applyPaymentTermsFallback(fields: Record<string, unknown>): void {
+  const raw = fields.paymentTermsRaw;
+  if (typeof raw !== "string") return;
+  const parsed = parsePaymentTermsText(raw);
+  if (!parsed) return;
+
+  if (fields.discountPercent == null) {
+    fields.discountPercent = new Prisma.Decimal(parsed.discountPercent.toFixed(2));
+  }
+  if (fields.discountDeadline == null && fields.primaryDate instanceof Date) {
+    const deadline = new Date(fields.primaryDate);
+    deadline.setDate(deadline.getDate() + parsed.discountDays);
+    fields.discountDeadline = deadline;
+  }
 }
