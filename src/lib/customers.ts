@@ -178,9 +178,7 @@ export const CUSTOMER_STATUS_LABELS: Record<CustomerStatus, string> = {
 };
 
 export function customerStatusBadgeClass(status: CustomerStatus): string {
-  return status === "ACTIVE"
-    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-    : "bg-sand-200 text-sand-700 dark:bg-white/5 dark:text-cockpit-text-weak";
+  return status === "ACTIVE" ? "bg-dash-green-tint text-dash-green" : "bg-dash-panel-soft text-dash-text-faint";
 }
 
 export const CUSTOMER_ERROR_MESSAGES: Record<string, string> = {

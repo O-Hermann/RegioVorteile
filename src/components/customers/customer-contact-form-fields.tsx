@@ -1,4 +1,4 @@
-import { inputClass, labelClass } from "@/lib/ui";
+import { dashInputClass as inputClass, dashLabelClass as labelClass } from "@/components/dashboard/dash-ui";
 
 // Gemeinsame Felder fuer "Ansprechpartner hinzufügen" und "Ansprechpartner
 // bearbeiten" (Phase 6.1, Punkt 27/29).
@@ -53,9 +53,9 @@ export function CustomerContactFormFields({
           name="isPrimary"
           type="checkbox"
           defaultChecked={d.isPrimary}
-          className="h-4 w-4 rounded border-card-border text-ink-600 focus:ring-ink-500"
+          className="h-4 w-4 rounded border-dash-line text-dash-gold focus:ring-dash-gold/40"
         />
-        <label htmlFor="isPrimary" className="text-sm font-medium text-sand-800 dark:text-cockpit-text">
+        <label htmlFor="isPrimary" className="text-sm font-medium text-dash-text">
           Hauptansprechpartner
         </label>
       </div>

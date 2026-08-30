@@ -2,7 +2,13 @@ import Link from "next/link";
 import { requireCompanyMember, assertCanManageOrders } from "@/lib/auth";
 import { getCustomersForOrderSelect, ORDER_ERROR_MESSAGES } from "@/lib/orders";
 import { createOrder } from "@/actions/orders";
-import { cardClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+import {
+  dashCardClass,
+  dashInputClass,
+  dashLabelClass,
+  dashPrimaryButtonClass,
+  dashSecondaryButtonClass,
+} from "@/components/dashboard/dash-ui";
 import { PageNav } from "@/components/page-nav";
 import { DatePicker } from "@/components/date-picker";
 
@@ -45,33 +51,33 @@ export default async function NeuerAuftragPage({
   return (
     <div className="mx-auto max-w-2xl">
       <PageNav backHref={backHref} backLabel={backLabel} />
-      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Neuer Auftrag</h1>
-      <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">
+      <h1 className="mt-2 text-3xl font-semibold text-dash-text">Neuer Auftrag</h1>
+      <p className="mt-2 text-dash-text-secondary">
         Legen Sie einen neuen Auftrag an und ordnen Sie ihn einem Kunden zu.
       </p>
 
       {error && (
-        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+        <p className="mt-4 rounded-lg bg-dash-red-tint px-3 py-2 text-sm text-dash-red">
           {ORDER_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}
         </p>
       )}
 
-      <form action={createOrder} className={`mt-6 ${cardClass}`}>
+      <form action={createOrder} className={`mt-6 p-6 ${dashCardClass}`}>
         <section>
-          <h2 className="font-display text-lg font-semibold text-sand-900">Auftragsdaten</h2>
+          <h2 className="text-lg font-semibold text-dash-text">Auftragsdaten</h2>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className={labelClass} htmlFor="title">
+              <label className={dashLabelClass} htmlFor="title">
                 Auftragstitel *
               </label>
-              <input className={inputClass} id="title" name="title" maxLength={200} required />
+              <input className={dashInputClass} id="title" name="title" maxLength={200} required />
             </div>
             <div>
-              <label className={labelClass} htmlFor="orderNumber">
+              <label className={dashLabelClass} htmlFor="orderNumber">
                 Auftragsnummer *
               </label>
               <input
-                className={inputClass}
+                className={dashInputClass}
                 id="orderNumber"
                 name="orderNumber"
                 maxLength={50}
@@ -80,15 +86,15 @@ export default async function NeuerAuftragPage({
               />
             </div>
             <div>
-              <label className={labelClass} htmlFor="customerId">
+              <label className={dashLabelClass} htmlFor="customerId">
                 Kunde *
               </label>
               {customers.length === 0 ? (
-                <p className="mt-1 text-sm text-sand-500 dark:text-cockpit-text-secondary">
+                <p className="mt-1 text-sm text-dash-text-muted">
                   Bitte zuerst einen Kunden anlegen.
                 </p>
               ) : (
-                <select className={inputClass} id="customerId" name="customerId" defaultValue={preselectedCustomerId} required>
+                <select className={dashInputClass} id="customerId" name="customerId" defaultValue={preselectedCustomerId} required>
                   <option value="" disabled>
                     – bitte auswählen –
                   </option>
@@ -102,10 +108,10 @@ export default async function NeuerAuftragPage({
               )}
             </div>
             <div>
-              <label className={labelClass} htmlFor="status">
+              <label className={dashLabelClass} htmlFor="status">
                 Status
               </label>
-              <select className={inputClass} id="status" name="status" defaultValue="OPEN">
+              <select className={dashInputClass} id="status" name="status" defaultValue="OPEN">
                 <option value="OPEN">Offen</option>
                 <option value="IN_PROGRESS">In Bearbeitung</option>
                 <option value="WAITING">Wartet</option>
@@ -114,13 +120,13 @@ export default async function NeuerAuftragPage({
               </select>
             </div>
             <div>
-              <label className={labelClass} htmlFor="startDate">
+              <label className={dashLabelClass} htmlFor="startDate">
                 Startdatum
               </label>
               <DatePicker id="startDate" name="startDate" />
             </div>
             <div>
-              <label className={labelClass} htmlFor="dueDate">
+              <label className={dashLabelClass} htmlFor="dueDate">
                 Fälligkeitsdatum
               </label>
               <DatePicker id="dueDate" name="dueDate" />
@@ -129,10 +135,10 @@ export default async function NeuerAuftragPage({
         </section>
 
         <section className="mt-6">
-          <h2 className="font-display text-lg font-semibold text-sand-900">Beschreibung</h2>
+          <h2 className="text-lg font-semibold text-dash-text">Beschreibung</h2>
           <div className="mt-3">
             <textarea
-              className={`${inputClass} min-h-[100px] resize-y`}
+              className={`${dashInputClass} min-h-[100px] resize-y`}
               name="description"
               maxLength={5000}
               placeholder="Details zum Auftrag, interne Hinweise …"
@@ -140,11 +146,11 @@ export default async function NeuerAuftragPage({
           </div>
         </section>
 
-        <div className="mt-8 flex items-center justify-end gap-3 border-t border-card-border pt-5 dark:border-white/10">
-          <Link href="/arbeitgeber/dashboard/auftraege" className={secondaryButtonClass}>
+        <div className="mt-8 flex items-center justify-end gap-3 border-t border-dash-line pt-5">
+          <Link href="/arbeitgeber/dashboard/auftraege" className={dashSecondaryButtonClass}>
             Abbrechen
           </Link>
-          <button type="submit" className={primaryButtonClass} disabled={customers.length === 0}>
+          <button type="submit" className={dashPrimaryButtonClass} disabled={customers.length === 0}>
             Auftrag anlegen
           </button>
         </div>

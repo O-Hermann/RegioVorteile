@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon, ArrowRightIcon, CalendarIcon } from "@/components/icons";
-import { inputClass, secondaryButtonClass } from "@/lib/ui";
+import { dashInputClass as inputClass, dashSecondaryButtonClass as secondaryButtonClass } from "@/components/dashboard/dash-ui";
 import { toIsoDateString, parseIsoDateString, formatDateDe } from "@/lib/date-format";
 
 // Feinschliff Phase 6.2.2, Punkt 12/13: ersetzt das native <input type="date">
@@ -105,41 +105,41 @@ export function DatePicker({
         aria-expanded={open}
         className={`${inputClass} flex items-center justify-between gap-2 text-left`}
       >
-        <span className={selected ? "" : "text-sand-400 dark:text-cockpit-text-weak"}>
+        <span className={selected ? "" : "text-dash-text-faint"}>
           {selected ? formatDateDe(selected) : "TT.MM.JJJJ"}
         </span>
-        <CalendarIcon className="h-4 w-4 shrink-0 text-sand-400 dark:text-cockpit-text-weak" />
+        <CalendarIcon className="h-4 w-4 shrink-0 text-dash-text-faint" />
       </button>
 
       {open && (
         <div
           role="dialog"
           aria-label="Datum auswählen"
-          className="absolute left-0 top-full z-30 mt-1 w-[280px] max-w-[calc(100vw-2rem)] rounded-xl border border-card-border bg-card p-3 shadow-warm-lg dark:border-white/10 dark:bg-cockpit-card dark:shadow-2xl dark:shadow-black/40"
+          className="absolute left-0 top-full z-30 mt-1 w-[280px] max-w-[calc(100vw-2rem)] rounded-xl border border-dash-line bg-dash-panel p-3 shadow-[0_18px_42px_rgba(0,0,0,0.34)]"
         >
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
               aria-label="Vorheriger Monat"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-sand-600 hover:bg-sand-100 hover:text-sand-900 dark:text-cockpit-text-secondary dark:hover:bg-white/10 dark:hover:text-cockpit-text transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-dash-text-secondary hover:bg-dash-panel-soft hover:text-dash-text transition-colors"
             >
               <ArrowLeftIcon className="h-3.5 w-3.5" />
             </button>
-            <span className="text-sm font-semibold text-sand-900 dark:text-cockpit-heading">
+            <span className="text-sm font-semibold text-dash-text">
               {MONTH_LABELS_DE[viewMonth.getMonth()]} {viewMonth.getFullYear()}
             </span>
             <button
               type="button"
               onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
               aria-label="Nächster Monat"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-sand-600 hover:bg-sand-100 hover:text-sand-900 dark:text-cockpit-text-secondary dark:hover:bg-white/10 dark:hover:text-cockpit-text transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-dash-text-secondary hover:bg-dash-panel-soft hover:text-dash-text transition-colors"
             >
               <ArrowRightIcon className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-sand-400 dark:text-cockpit-text-weak">
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-dash-text-faint">
             {WEEKDAY_LABELS.map((d) => (
               <span key={d}>{d}</span>
             ))}
@@ -159,18 +159,18 @@ export function DatePicker({
                   aria-pressed={isSelected}
                   className={`h-8 rounded-lg text-sm transition-colors ${
                     isSelected
-                      ? "bg-ink-600 text-white dark:bg-cockpit-accent-light dark:text-cockpit-header"
+                      ? "bg-gradient-to-br from-dash-gold-deep to-dash-gold text-dash-panel"
                       : isToday
-                        ? "ring-1 ring-inset ring-ink-400 text-sand-900 hover:bg-sand-100 dark:ring-cockpit-accent-light/60 dark:text-cockpit-text dark:hover:bg-white/10"
-                        : "hover:bg-sand-100 dark:hover:bg-white/10"
+                        ? "ring-1 ring-inset ring-dash-gold/50 text-dash-text hover:bg-dash-panel-soft"
+                        : "hover:bg-dash-panel-soft"
                   } ${
                     isSelected
                       ? ""
                       : !inMonth
-                        ? "text-sand-300 dark:text-cockpit-text-weak/40"
+                        ? "text-dash-text-faint/40"
                         : isWeekend
-                          ? "text-sand-400 dark:text-cockpit-text-weak"
-                          : "text-sand-800 dark:text-cockpit-text"
+                          ? "text-dash-text-faint"
+                          : "text-dash-text"
                   }`}
                 >
                   {day.getDate()}
@@ -179,7 +179,7 @@ export function DatePicker({
             })}
           </div>
 
-          <div className="mt-3 flex justify-end border-t border-card-border pt-3 dark:border-white/10">
+          <div className="mt-3 flex justify-end border-t border-dash-line pt-3">
             <button type="button" onClick={clear} className={`!px-3 !py-1.5 text-xs ${secondaryButtonClass}`}>
               Leeren
             </button>

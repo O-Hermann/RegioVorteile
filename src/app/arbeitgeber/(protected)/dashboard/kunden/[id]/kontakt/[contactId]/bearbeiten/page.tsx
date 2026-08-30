@@ -4,7 +4,7 @@ import { requireCompanyMember, assertCanManageCustomers } from "@/lib/auth";
 import { getCustomer, getCustomerContact, CUSTOMER_ERROR_MESSAGES } from "@/lib/customers";
 import { updateCustomerContact } from "@/actions/customers";
 import { CustomerContactFormFields } from "@/components/customers/customer-contact-form-fields";
-import { cardClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
+import { dashCardClass, dashPrimaryButtonClass, dashSecondaryButtonClass } from "@/components/dashboard/dash-ui";
 import { PageNav } from "@/components/page-nav";
 
 export default async function AnsprechpartnerBearbeitenPage({
@@ -32,16 +32,16 @@ export default async function AnsprechpartnerBearbeitenPage({
   return (
     <div className="mx-auto max-w-xl">
       <PageNav backHref={`/arbeitgeber/dashboard/kunden/${customer.id}`} backLabel="Zurück zum Kunden" />
-      <h1 className="mt-2 font-display text-3xl font-semibold text-sand-900">Ansprechpartner bearbeiten</h1>
-      <p className="mt-2 text-sand-600 dark:text-cockpit-text-secondary">{customer.name}</p>
+      <h1 className="mt-2 text-3xl font-semibold text-dash-text">Ansprechpartner bearbeiten</h1>
+      <p className="mt-2 text-dash-text-secondary">{customer.name}</p>
 
       {error && (
-        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+        <p className="mt-4 rounded-lg bg-dash-red-tint px-3 py-2 text-sm text-dash-red">
           {CUSTOMER_ERROR_MESSAGES[error] ?? "Aktion konnte nicht ausgeführt werden."}
         </p>
       )}
 
-      <form action={updateCustomerContact} className={`mt-6 ${cardClass}`}>
+      <form action={updateCustomerContact} className={`mt-6 p-6 ${dashCardClass}`}>
         <input type="hidden" name="contactId" value={contact.id} />
         <CustomerContactFormFields
           defaults={{
@@ -53,11 +53,11 @@ export default async function AnsprechpartnerBearbeitenPage({
             isPrimary: contact.isPrimary,
           }}
         />
-        <div className="mt-8 flex items-center justify-end gap-3 border-t border-card-border pt-5 dark:border-white/10">
-          <Link href={`/arbeitgeber/dashboard/kunden/${customer.id}`} className={secondaryButtonClass}>
+        <div className="mt-8 flex items-center justify-end gap-3 border-t border-dash-line pt-5">
+          <Link href={`/arbeitgeber/dashboard/kunden/${customer.id}`} className={dashSecondaryButtonClass}>
             Abbrechen
           </Link>
-          <button type="submit" className={primaryButtonClass}>
+          <button type="submit" className={dashPrimaryButtonClass}>
             Änderungen speichern
           </button>
         </div>

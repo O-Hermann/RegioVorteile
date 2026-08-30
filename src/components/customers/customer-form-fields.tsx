@@ -1,4 +1,4 @@
-import { inputClass, labelClass } from "@/lib/ui";
+import { dashInputClass as inputClass, dashLabelClass as labelClass } from "@/components/dashboard/dash-ui";
 
 // Gemeinsame Stammdaten-/Kontakt-/Adress-/Notizfelder fuer "Neuer Kunde" und
 // "Kunde bearbeiten" (Phase 6.1, Punkt 16/30) - bewusst in klar getrennte
@@ -26,7 +26,7 @@ export function CustomerFormFields({
   return (
     <>
       <section>
-        <h2 className="font-display text-lg font-semibold text-sand-900">Stammdaten</h2>
+        <h2 className="text-lg font-semibold text-dash-text">Stammdaten</h2>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className={labelClass} htmlFor="name">
@@ -59,7 +59,7 @@ export function CustomerFormFields({
       </section>
 
       <section className="mt-6">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Kontaktdaten</h2>
+        <h2 className="text-lg font-semibold text-dash-text">Kontaktdaten</h2>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className={labelClass} htmlFor="email">
@@ -90,7 +90,7 @@ export function CustomerFormFields({
       </section>
 
       <section className="mt-6">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Adresse</h2>
+        <h2 className="text-lg font-semibold text-dash-text">Adresse</h2>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className={labelClass} htmlFor="street">
@@ -126,7 +126,7 @@ export function CustomerFormFields({
       </section>
 
       <section className="mt-6">
-        <h2 className="font-display text-lg font-semibold text-sand-900">Notizen</h2>
+        <h2 className="text-lg font-semibold text-dash-text">Notizen</h2>
         <div className="mt-3">
           <textarea
             className={`${inputClass} min-h-[100px] resize-y`}

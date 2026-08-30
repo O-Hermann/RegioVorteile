@@ -89,7 +89,7 @@ export function KebabMenu({
         aria-label={label}
         className={
           triggerClassName ??
-          "flex h-9 w-9 items-center justify-center rounded-full border border-card-border dark:border-white/15 text-sand-600 dark:text-cockpit-text-secondary hover:bg-sand-100 hover:text-sand-900 dark:hover:bg-white/5 dark:hover:text-cockpit-text transition-colors"
+          "flex h-9 w-9 items-center justify-center rounded-full border border-dash-line text-dash-text-secondary hover:bg-dash-panel-soft hover:text-dash-text transition-colors"
         }
       >
         <MoreVerticalIcon className="h-4 w-4" />
@@ -105,7 +105,7 @@ export function KebabMenu({
             style={{ position: "fixed", top: position.top, right: position.right, left: "auto" }}
             className={
               panelClassName ??
-              "z-30 w-56 overflow-hidden rounded-2xl border border-card-border/70 dark:border-white/10 bg-card dark:bg-cockpit-card shadow-warm-lg dark:shadow-2xl dark:shadow-black/40"
+              "z-30 w-56 overflow-hidden rounded-2xl border border-dash-line bg-dash-panel shadow-[0_18px_42px_rgba(0,0,0,0.34)]"
             }
           >
             <div className="p-1.5">{children}</div>

@@ -31,18 +31,22 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 // Farbsprache orientiert sich an den bereits bestehenden Status-Badges
 // (customerStatusBadgeClass, membershipStatusBadgeClass) - durchgaengig mit
 // dark:-Variante, damit die Badges nicht wieder zu blass im Dark Mode wirken.
+// Goldstandard-Rollout Phase 2 (2026-08-30): fuenf visuell unterscheidbare
+// Farben aus der bestehenden dash-*-Palette (rot/gruen/blau/lila/gold) -
+// dieselben Hues wie die vier Fund-Kategorien der Uebersicht, hier auf
+// Auftragsstatus gemappt.
 export function orderStatusBadgeClass(status: OrderStatus): string {
   switch (status) {
     case "OPEN":
-      return "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300";
+      return "bg-dash-blue-tint text-dash-blue";
     case "IN_PROGRESS":
-      return "bg-ink-100 text-ink-800 dark:bg-cockpit-accent-subtle/40 dark:text-cockpit-accent-light";
+      return "bg-dash-purple-tint text-dash-purple";
     case "WAITING":
-      return "bg-gold-100 text-gold-700 dark:bg-amber-500/10 dark:text-amber-300";
+      return "bg-dash-gold-glow text-dash-gold";
     case "COMPLETED":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
+      return "bg-dash-green-tint text-dash-green";
     case "CANCELED":
-      return "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300";
+      return "bg-dash-red-tint text-dash-red";
   }
 }
 
