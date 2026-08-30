@@ -158,6 +158,18 @@ model Company {
   status    CompanyStatus @default(ACTIVE)
   createdAt DateTime      @default(now())
 
+  // MVP-Roadmap Phase 7 (Einstellungen, siehe [[effivo_mvp_roadmap]]):
+  // Firmenprofil-Felder, ueber /arbeitgeber/dashboard/einstellungen von
+  // OWNER/COMPANY_ADMIN editierbar. Alle optional, da bestehende Companies
+  // (inkl. per Admin ueber createCompany() angelegte) sie noch nicht gesetzt
+  // haben.
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  street       String?
+  zipCode      String?
+  city         String?
+
   memberships                CompanyMembership[]
   feedback                   Feedback[]
   dataImports                DataImport[]
@@ -167,6 +179,32 @@ model Company {
   customers                  Customer[]
   orders                     Order[]
   cases                      Case[]
+  notificationPreference     NotificationPreference?
+}
+
+// MVP-Roadmap Phase 7 (siehe [[effivo_mvp_roadmap]]): reine Praeferenzen -
+// KEIN Versandmechanismus. Der Nutzer hat sich explizit dagegen entschieden,
+// jetzt eine externe E-Mail-Infrastruktur (Resend o.ae.) anzubinden, nur um
+// dieses Formular "echt" zu machen - die Werte werden gespeichert und auf der
+// Einstellungen-Seite klar als "wird noch nicht verschickt" gekennzeichnet.
+// Ein Feld pro Fund-Kategorie statt eines generischen Json-Feldes, damit
+// jede neue Kategorie eine bewusste Schema-Entscheidung bleibt (gleiches
+// Prinzip wie die expliziten "lieber 0 als falsch"-Felder anderswo im
+// Projekt) - EIN Datensatz pro Company (Unternehmens-, nicht Nutzer-weite
+// Einstellung), @@unique auf companyId erzwingt das.
+model NotificationPreference {
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id])
+
+  email String?
+
+  notifyDuplicatePayment Boolean @default(false)
+  notifyMissedDiscount   Boolean @default(false)
+  notifyOpenCreditNote   Boolean @default(false)
+  notifyOverpayment      Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
 }
 
 // Verbindet einen User mit einem Company - ein Nutzer kann Mitglied mehrerer

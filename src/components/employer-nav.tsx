@@ -23,7 +23,7 @@ const NAV: NavItem[] = [
   { label: "Auswertungen" },
   { label: "Berichte" },
   { label: "Benutzer", href: "/arbeitgeber/dashboard/benutzer" },
-  { label: "Einstellungen" },
+  { label: "Einstellungen", href: "/arbeitgeber/dashboard/einstellungen" },
 ];
 
 function NavLink({ item, mobile, active }: { item: NavItem; mobile?: boolean; active: boolean }) {
