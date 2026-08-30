@@ -62,4 +62,5 @@ export const SETTINGS_ERROR_MESSAGES: Record<string, string> = {
   "wrong-current": "Das aktuelle Passwort ist nicht korrekt.",
   "invalid-new": "Bitte zwei identische neue Passwörter mit mindestens 8 Zeichen eingeben.",
   "not-found": "Eintrag wurde nicht gefunden.",
+  "last-owner-self": "Du bist der letzte Inhaber mindestens eines Unternehmens. Bestimme zuerst einen neuen Inhaber, bevor du dein Konto löschst.",
 };

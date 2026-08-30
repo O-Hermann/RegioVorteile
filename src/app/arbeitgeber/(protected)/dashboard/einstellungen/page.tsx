@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { requireCompanyMember } from "@/lib/auth";
 import { COMPANY_MANAGER_ROLES, COMPANY_IMPORT_UPLOAD_ROLES } from "@/lib/company";
 import { getNotificationPreference, getMappingTemplates, SETTINGS_ERROR_MESSAGES } from "@/lib/settings";
-import { updateCompanyProfile, updateNotificationPreference, changeOwnPassword } from "@/actions/settings";
+import { updateCompanyProfile, updateNotificationPreference, changeOwnPassword, deleteOwnAccount } from "@/actions/settings";
 import { deleteMappingTemplate } from "@/actions/mapping-templates";
 import { generateTotpSecret, totpAuthUri } from "@/lib/totp";
 import { DATA_IMPORT_CATEGORY_LABELS } from "@/lib/data-import";
@@ -17,6 +17,7 @@ import {
   dashInputClass,
   dashLabelClass,
   dashPrimaryButtonClass,
+  dashSecondaryButtonClass,
   dashDangerButtonClass,
 } from "@/components/dashboard/dash-ui";
 
@@ -332,6 +333,42 @@ export default async function EinstellungenPage({
                 <TwoFactorSetup enabled={user.totpEnabled} secret={totpSetup.secret} qrDataUrl={totpSetup.qrDataUrl} />
               </div>
             )}
+          </div>
+
+          <div className="mt-8 border-t border-dash-line pt-6">
+            <h2 className="text-lg font-semibold text-dash-text">Meine Daten</h2>
+            <p className={`mt-1 max-w-lg text-sm ${dashSecondaryTextClass}`}>
+              Lade eine Kopie deiner persönlichen Kontodaten herunter (Name, E-Mail, Mitgliedschaften) - keine Firmen- oder Geschäftsdaten.
+            </p>
+            <a
+              href="/arbeitgeber/dashboard/einstellungen/export"
+              className={`mt-3 inline-flex ${dashSecondaryButtonClass}`}
+            >
+              Meine Daten exportieren
+            </a>
+          </div>
+
+          <div className="mt-8 border-t border-dash-line pt-6">
+            <h2 className="text-lg font-semibold text-dash-red">Konto löschen</h2>
+            <p className={`mt-1 max-w-lg text-sm ${dashSecondaryTextClass}`}>
+              Löscht deinen persönlichen Zugang unwiderruflich - du wirst aus allen Unternehmen entfernt und kannst dich danach nicht mehr anmelden. Bereits
+              importierte Daten und Fälle deines Unternehmens bleiben unverändert bestehen. Bist du der letzte Inhaber eines Unternehmens, bestimme zuerst
+              einen neuen Inhaber.
+            </p>
+            <form action={deleteOwnAccount} className="mt-3 flex flex-wrap items-end gap-2">
+              <div>
+                <label className={dashLabelClass} htmlFor="deleteAccountPassword">
+                  Aktuelles Passwort zur Bestätigung
+                </label>
+                <input id="deleteAccountPassword" name="currentPassword" type="password" required className={`!w-56 ${dashInputClass}`} />
+              </div>
+              <ConfirmSubmitButton
+                confirmMessage="Dein Konto wirklich unwiderruflich löschen? Du wirst sofort abgemeldet und kannst dich danach nicht mehr einloggen."
+                className={dashDangerButtonClass}
+              >
+                Konto endgültig löschen
+              </ConfirmSubmitButton>
+            </form>
           </div>
         </div>
       )}

@@ -7,9 +7,9 @@ import { SITE_NAME } from "@/lib/site-config";
 export default async function ArbeitgeberLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; reset?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string; deleted?: string }>;
 }) {
-  const { error, reset } = await searchParams;
+  const { error, reset, deleted } = await searchParams;
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-16">
@@ -24,6 +24,11 @@ export default async function ArbeitgeberLoginPage({
         {reset && (
           <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
             Passwort erfolgreich geändert. Sie können sich jetzt anmelden.
+          </p>
+        )}
+        {deleted && (
+          <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+            Ihr Konto wurde gelöscht. Sie sind jetzt abgemeldet.
           </p>
         )}
         {error === "pending" && (
