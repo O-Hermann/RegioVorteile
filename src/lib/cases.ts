@@ -22,6 +22,20 @@ export type CaseListItem = {
   reviewedAt: Date | null;
 };
 
+export type CaseListResult = {
+  items: CaseListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+};
+
+// MVP-Roadmap Phase 6 (siehe [[effivo_mvp_roadmap]]): serverseitige
+// Paginierung, gleiches Rueckgabe-/Query-Muster wie getCustomers()/getOrders()
+// (lib/customers.ts/lib/orders.ts) - nie alle Faelle einer Company auf einmal
+// laden, unabhaengig davon, wie viele Monate/Funde bereits aufgelaufen sind.
+export const CASES_PAGE_SIZE = 25;
+
 // Sortierung bewusst nur nach Betrag absteigend, nicht zusaetzlich nach
 // Status (die Enum-Reihenfolge NEW/IN_REVIEW/REVIEWED/CLOSED ist alphabetisch
 // nicht die Pipeline-Reihenfolge) - die Statusfilterung uebernimmt stattdessen
@@ -30,25 +44,45 @@ export type CaseListItem = {
 // die "X Fälle ansehen"-Buttons der einzelnen Fund-Kategorien-Karten gezielt
 // auf genau ihre Kategorie, statt immer die komplette, ungefilterte Liste zu
 // zeigen.
-export async function getCases(companyId: string, statusFilter: CaseStatusFilter, categoryFilter: CaseCategoryFilter = "all"): Promise<CaseListItem[]> {
-  const rows = await prisma.case.findMany({
-    where: {
-      companyId,
-      ...(statusFilter !== "all" ? { status: statusFilter } : {}),
-      ...(categoryFilter !== "all" ? { category: categoryFilter } : {}),
-    },
-    orderBy: { amount: "desc" },
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    category: r.category,
-    who: r.who,
-    what: r.what,
-    amount: formatEuroDetailed(r.amount),
-    status: r.status,
-    createdAt: r.createdAt,
-    reviewedAt: r.reviewedAt,
-  }));
+export async function getCases(
+  companyId: string,
+  statusFilter: CaseStatusFilter,
+  categoryFilter: CaseCategoryFilter = "all",
+  page = 1,
+): Promise<CaseListResult> {
+  const pageNum = Math.max(1, Math.floor(page));
+  const where = {
+    companyId,
+    ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+    ...(categoryFilter !== "all" ? { category: categoryFilter } : {}),
+  };
+
+  const [total, rows] = await Promise.all([
+    prisma.case.count({ where }),
+    prisma.case.findMany({
+      where,
+      orderBy: { amount: "desc" },
+      skip: (pageNum - 1) * CASES_PAGE_SIZE,
+      take: CASES_PAGE_SIZE,
+    }),
+  ]);
+
+  return {
+    items: rows.map((r) => ({
+      id: r.id,
+      category: r.category,
+      who: r.who,
+      what: r.what,
+      amount: formatEuroDetailed(r.amount),
+      status: r.status,
+      createdAt: r.createdAt,
+      reviewedAt: r.reviewedAt,
+    })),
+    total,
+    page: pageNum,
+    pageSize: CASES_PAGE_SIZE,
+    pageCount: Math.max(1, Math.ceil(total / CASES_PAGE_SIZE)),
+  };
 }
 
 export async function getCaseCounts(companyId: string): Promise<Record<CaseStatusFilter, number>> {

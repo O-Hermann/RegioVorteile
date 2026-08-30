@@ -49,18 +49,29 @@ function statusTabHref(status: CaseStatusFilter, category: string | undefined): 
   return qs ? `/arbeitgeber/dashboard/faelle?${qs}` : "/arbeitgeber/dashboard/faelle";
 }
 
+function pageHref(status: CaseStatusFilter, category: string | undefined, page: number): string {
+  const params = new URLSearchParams();
+  if (status !== "all") params.set("status", status);
+  if (category) params.set("category", category);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/arbeitgeber/dashboard/faelle?${qs}` : "/arbeitgeber/dashboard/faelle";
+}
+
 export default async function FaellePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string }>;
+  searchParams: Promise<{ status?: string; category?: string; page?: string }>;
 }) {
   const { company } = await requireCompanyMember();
-  const { status, category } = await searchParams;
+  const { status, category, page } = await searchParams;
   const statusFilter: CaseStatusFilter = isCaseStatusFilter(status) ? status : "all";
   const categoryFilter = isCaseCategory(category) ? category : "all";
+  const pageNum = Number(page) > 0 ? Number(page) : 1;
 
   await syncCases(company.id);
-  const [cases, counts] = await Promise.all([getCases(company.id, statusFilter, categoryFilter), getCaseCounts(company.id)]);
+  const [result, counts] = await Promise.all([getCases(company.id, statusFilter, categoryFilter, pageNum), getCaseCounts(company.id)]);
+  const cases = result.items;
 
   return (
     <div>
@@ -140,6 +151,32 @@ export default async function FaellePage({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {result.pageCount > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <Link
+            href={pageHref(statusFilter, category, result.page - 1)}
+            aria-disabled={result.page <= 1}
+            className={`rounded-full border border-dash-line px-4 py-2 text-xs font-semibold text-dash-text transition-colors ${
+              result.page <= 1 ? "pointer-events-none opacity-40" : "hover:border-dash-gold/40 hover:text-dash-gold"
+            }`}
+          >
+            Zurück
+          </Link>
+          <span className={`text-xs ${dashSecondaryTextClass}`}>
+            Seite {result.page} von {result.pageCount}
+          </span>
+          <Link
+            href={pageHref(statusFilter, category, result.page + 1)}
+            aria-disabled={result.page >= result.pageCount}
+            className={`rounded-full border border-dash-line px-4 py-2 text-xs font-semibold text-dash-text transition-colors ${
+              result.page >= result.pageCount ? "pointer-events-none opacity-40" : "hover:border-dash-gold/40 hover:text-dash-gold"
+            }`}
+          >
+            Weiter
+          </Link>
         </div>
       )}
     </div>
