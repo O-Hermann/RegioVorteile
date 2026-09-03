@@ -2,10 +2,13 @@ import { submitContactRequest } from "@/actions/contact-request";
 import { LandingHeader } from "@/components/landing-header";
 import { LandingFooter } from "@/components/landing-footer";
 
+// Kundensicht-Audit (2026-08-30, siehe [[effivo_mvp_roadmap]]): auf den
+// --landing-*-Namensraum umgestellt, siehe gleichlautender Kommentar in
+// src/app/login/page.tsx.
 const inputClass =
-  "w-full rounded-lg border border-petrol-200 dark:border-cockpit-border bg-white dark:bg-cockpit-card-dark px-3 py-2 text-sm text-slate-900 dark:text-cockpit-heading placeholder:text-slate-400 dark:placeholder:text-cockpit-text-weak focus:outline-none focus:ring-2 focus:ring-cockpit-accent focus:border-cockpit-accent transition-colors";
+  "w-full rounded-lg border border-landing-border bg-landing-card px-3 py-2 text-sm text-landing-text-primary placeholder:text-landing-text-muted focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-landing-accent transition-colors";
 
-const labelClass = "block text-sm font-medium text-slate-700 dark:text-cockpit-text mb-1";
+const labelClass = "block text-sm font-medium text-landing-text-secondary mb-1";
 
 export default async function KontaktPage({
   searchParams,
@@ -17,24 +20,24 @@ export default async function KontaktPage({
   return (
     <>
       <LandingHeader />
-      <main className="flex-1 bg-white dark:bg-cockpit-hero">
+      <main className="flex-1 bg-landing-bg">
         <div className="mx-auto max-w-xl px-4 sm:px-6 py-16">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-cockpit-heading">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-landing-text-primary">
             Jetzt Kontakt aufnehmen
           </h1>
-          <p className="mt-3 text-slate-600 dark:text-cockpit-text">
+          <p className="mt-3 text-landing-text-secondary">
             Hinterlassen Sie uns Ihre Daten – wir melden uns bei Ihnen und besprechen die
             nächsten Schritte für die Pilotphase.
           </p>
 
-          <div className="mt-8 rounded-2xl border border-petrol-100 dark:border-cockpit-border bg-white dark:bg-cockpit-card p-6 sm:p-8">
+          <div className="mt-8 rounded-2xl border border-landing-border bg-landing-card p-6 sm:p-8">
             {sent && (
-              <p className="mb-4 rounded-lg bg-petrol-50 dark:bg-cockpit-accent-subtle px-3 py-2 text-sm text-petrol-800 dark:text-cockpit-accent-light">
+              <p className="mb-4 rounded-lg bg-landing-accent-subtle px-3 py-2 text-sm text-landing-accent">
                 Vielen Dank! Ihre Anfrage ist bei uns eingegangen, wir melden uns zeitnah.
               </p>
             )}
             {error && (
-              <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-cockpit-negative">
+              <p className="mb-4 rounded-lg bg-landing-danger-subtle px-3 py-2 text-sm text-landing-danger">
                 Bitte füllen Sie alle Pflichtfelder aus.
               </p>
             )}
@@ -94,7 +97,7 @@ export default async function KontaktPage({
               </div>
               <button
                 type="submit"
-                className="w-full rounded-full bg-cockpit-accent hover:bg-cockpit-accent-hover px-6 py-3 text-sm font-semibold text-white transition-colors"
+                className="w-full rounded-full bg-landing-accent hover:bg-landing-accent-hover px-6 py-3 text-sm font-semibold text-white transition-colors"
               >
                 Anfrage senden
               </button>
